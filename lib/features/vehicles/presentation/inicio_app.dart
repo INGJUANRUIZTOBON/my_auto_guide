@@ -84,7 +84,14 @@ import 'Agregar_carro.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/services/vehicle_catalog_service.dart';
 import '../../../core/services/odometer_history_service.dart';
+import '../../../core/services/custom_maintenance_service.dart';
+import '../../../core/services/maintenance_config_service.dart';
 import 'widgets/insurance_picker_sheet.dart';
+import 'widgets/pico_y_placa_card.dart';
+import 'widgets/custom_maintenances_card.dart';
+import 'widgets/legal_extras_sheet.dart';
+import '../../expenses/presentation/driver_profitability_screen.dart';
+import '../../fleet/presentation/fleet_dashboard_screen.dart';
 import '../../obd_scanner/presentation/screens/scanner_dashboard_screen.dart';
 
 // Modelos Refactorizados
@@ -879,6 +886,32 @@ class _InicioAppState extends State<InicioApp> {
     }
 
     try {
+      final prefs = await SharedPreferences.getInstance();
+      RuntVehicleProfile? runtProfile;
+      final rawRemote = vData?['runt_data'];
+      if (rawRemote is Map) {
+        runtProfile = RuntVehicleProfile.fromMap(Map<String, dynamic>.from(rawRemote));
+      } else if (rawRemote is String && rawRemote.trim().isNotEmpty) {
+        runtProfile = RuntVehicleProfile.tryDecodeWebViewResult(rawRemote);
+      }
+      if (runtProfile == null || !runtProfile.hasAnyData) {
+        final localRaw = prefs.getString('runt_full_data_${widget.vehiculoId}');
+        if (localRaw != null) {
+          runtProfile = RuntVehicleProfile.tryDecodeWebViewResult(localRaw);
+        }
+      }
+
+      final customMaintenances =
+          await CustomMaintenanceService().getItems(widget.vehiculoId);
+      final legalExtras = <String, String?>{
+        'licencia': vData?['licencia_vencimiento']?.toString() ??
+            prefs.getString('extra_lic_${widget.vehiculoId}'),
+        'impuesto': vData?['impuesto_vencimiento']?.toString() ??
+            prefs.getString('extra_imp_${widget.vehiculoId}'),
+        'extintor': vData?['extintor_vencimiento']?.toString() ??
+            prefs.getString('extra_ext_${widget.vehiculoId}'),
+      };
+
       final pdfBytes = await VehiclePdfReportService.generatePdfReport(
         placa: placa,
         marca: marca,
@@ -894,6 +927,9 @@ class _InicioAppState extends State<InicioApp> {
         lastAceite: lastAceite,
         kmsLastAceite: kmsLastAceite,
         vehicleImageUrl: imagePath,
+        runtProfile: runtProfile,
+        customMaintenances: customMaintenances,
+        legalExtras: legalExtras,
       );
 
       if (modo == 'imprimir') {
@@ -2502,12 +2538,18 @@ class _InicioAppState extends State<InicioApp> {
                         child: Row(
                           children: [
                             IndicatorTile(
-                                title: 'Cadena',
+                                title: MaintenanceConfigService.labelFor(
+                                  'cadena',
+                                  isCar: _isCarForScanner(v),
+                                ),
                                 value: _pctCadena,
                                 color: _colorFor(_pctCadena)),
                             const SizedBox(width: 12),
                             IndicatorTile(
-                                title: 'Filtro Aire',
+                                title: MaintenanceConfigService.labelFor(
+                                  'filtro',
+                                  isCar: _isCarForScanner(v),
+                                ),
                                 value: _pctFiltro,
                                 color: _colorFor(_pctFiltro)),
                             const SizedBox(width: 12),
@@ -2540,6 +2582,19 @@ class _InicioAppState extends State<InicioApp> {
                       ),
                     ],
                   ),
+                ),
+                const SizedBox(height: 24),
+                PicoYPlacaCard(
+                  plate: (v['placa'] ?? '').toString(),
+                  isCar: _isCarForScanner(v),
+                  brandTheme: bTheme,
+                ),
+                const SizedBox(height: 16),
+                CustomMaintenancesCard(
+                  vehiculoId: widget.vehiculoId,
+                  currentKms: double.tryParse(kms) ?? 0.0,
+                  isCar: _isCarForScanner(v),
+                  brandTheme: bTheme,
                 ),
                 const SizedBox(height: 24),
                 _StaggeredFadeIn(
@@ -2643,6 +2698,49 @@ class _InicioAppState extends State<InicioApp> {
                           icon: Icons.local_gas_station_rounded,
                           text: 'Bitácora de Tanqueo',
                           onTap: _abrirBitacoraTanqueo,
+                          brandTheme: bTheme),
+                      const SizedBox(height: 12),
+                      GradientButton(
+                          icon: Icons.badge_rounded,
+                          text: 'Licencia, Impuesto y Extintor',
+                          onTap: () => LegalExtrasSheet.show(
+                            context,
+                            vehiculoId: widget.vehiculoId,
+                            vehicleData: v,
+                          ),
+                          brandTheme: bTheme),
+                      const SizedBox(height: 12),
+                      GradientButton(
+                          icon: Icons.trending_up_rounded,
+                          text: 'Modo Conductor (Rentabilidad COP/km)',
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => DriverProfitabilityScreen(
+                                vehiculoId: widget.vehiculoId,
+                                marcaModelo: '$marca $modelo',
+                                placa: (v['placa'] ?? '').toString(),
+                              ),
+                            ),
+                          ),
+                          brandTheme: bTheme),
+                      const SizedBox(height: 12),
+                      GradientButton(
+                          icon: Icons.local_shipping_rounded,
+                          text: 'Mi Flota & Preoperacional PESV',
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => FleetDashboardScreen(
+                                vehiculoId: widget.vehiculoId,
+                                placa: (v['placa'] ?? '').toString(),
+                                marcaModelo: '$marca $modelo',
+                                isCar: _isCarForScanner(v),
+                                soatVencimiento: v['last_soat']?.toString(),
+                                tecnoVencimiento: v['last_tecno']?.toString(),
+                              ),
+                            ),
+                          ),
                           brandTheme: bTheme),
                       const SizedBox(height: 12),
                       GradientButton(

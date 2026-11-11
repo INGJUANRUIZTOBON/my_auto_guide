@@ -20,6 +20,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/services/sync_service.dart';
 import '../../../core/services/background_nav_service.dart';
+import '../../../core/services/colombia_tolls_service.dart';
+import '../../../core/services/pico_y_placa_service.dart';
+import '../../../core/services/auto_bluetooth_trip_service.dart';
 import '../../../core/services/navigation_service.dart';
 import '../../../core/services/voice_navigation_service.dart';
 import '../../../core/services/secure_storage_service.dart'; // VULN-01: almacenamiento cifrado
@@ -28,6 +31,7 @@ import 'logic/map_tile_config.dart';
 import 'logic/telemetry_calculator.dart';
 import 'presentation/controllers/navigation_controller.dart';
 import 'presentation/widgets/navigation_widgets.dart';
+import 'presentation/widgets/fuel_prices_sheet.dart';
 import 'presentation/historial_rutas_screen.dart';
 import '../../shared/widgets/app_snack_bar.dart';
 import '../../../core/services/camera_radar_service.dart';
@@ -63,7 +67,7 @@ class _RutasScreenState extends State<RutasScreen>
   bool _autoFollow = true;
   MapStyle? _mapStyle;
   String? _vehicleImagePath;
-  String _vehiclePlate = '';
+  PicoYPlacaStatus? _picoStatus;
   
   List<NominatimPlace> _searchResults = [];
   bool _isSearching = false;
@@ -139,21 +143,118 @@ class _RutasScreenState extends State<RutasScreen>
   
   Future<void> _cargarInfoVehiculo() async {
     try {
-      final data = await supabase.from('vehiculos').select('modelo, marca, placa, image_path').eq('id', widget.vehiculoId).single();
+      final data = await supabase
+          .from('vehiculos')
+          .select('modelo, marca, placa, image_path')
+          .eq('id', widget.vehiculoId)
+          .single();
       final marca = (data['marca'] as String? ?? '').toUpperCase();
       final modelo = data['modelo'] ?? 'Vehículo';
-      final placa = data['placa'] ?? '';
-      final isCar = marca.contains('TOYOTA') || marca.contains('MAZDA') || marca.contains('CHEVROLET');
-      
+      final placa = data['placa']?.toString() ?? '';
+      final imagePath = (data['image_path'] as String? ?? '').toLowerCase();
+      final isCar = imagePath.contains('carros/') ||
+          marca.contains('TOYOTA') ||
+          marca.contains('MAZDA') ||
+          marca.contains('CHEVROLET');
+
       if (mounted) {
         setState(() {
           _vehicleImagePath = data['image_path'] as String?;
-          _vehiclePlate = placa;
         });
       }
-      
+
       _controller.updateVehicleInfo(model: modelo, isCar: isCar);
+
+      // Verificar Pico y Placa por GPS y si hay Bluetooth vinculado conectado
+      if (placa.isNotEmpty) {
+        final pico = await PicoYPlacaService().detectAndEvaluate(
+          plate: placa,
+          isCar: isCar,
+          schedulePushReminders: false,
+        );
+        if (mounted) setState(() => _picoStatus = pico);
+      }
+
+      final btConnected =
+          await AutoBluetoothTripService().isTargetDeviceConnected(widget.vehiculoId);
+      if (btConnected &&
+          mounted &&
+          _controller.state == NavigationState.idle) {
+        AppSnackBar.show(
+          context,
+          'Bluetooth del vehículo detectado. ¿Iniciar grabación de ruta?',
+          duration: const Duration(seconds: 6),
+          action: SnackBarAction(
+            label: 'Iniciar',
+            onPressed: () => _iniciarNav(isFree: true),
+          ),
+        );
+      }
     } catch (_) {}
+  }
+
+  Future<void> _configurarAutoBluetooth() async {
+    final current = await AutoBluetoothTripService().getConfig(widget.vehiculoId);
+    if (!mounted) return;
+    final ctrl = TextEditingController(text: current.deviceName);
+    bool enabled = current.enabled;
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: const Text('Auto-Inicio por Bluetooth'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Cuando tu teléfono se conecte al radio del carro o intercomunicador del casco, la app te sugerirá iniciar la ruta automáticamente.',
+                style: TextStyle(fontSize: 13),
+              ),
+              const SizedBox(height: 12),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Activar detección'),
+                value: enabled,
+                onChanged: (v) => setDialogState(() => enabled = v),
+              ),
+              TextField(
+                controller: ctrl,
+                decoration: const InputDecoration(
+                  labelText: 'Nombre del Bluetooth (ej: CAR BT, SENA)',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: () async {
+                await AutoBluetoothTripService().saveConfig(
+                  vehiculoId: widget.vehiculoId,
+                  enabled: enabled,
+                  deviceName: ctrl.text,
+                );
+                if (ctx.mounted) Navigator.pop(ctx);
+                if (mounted) {
+                  AppSnackBar.show(
+                    context,
+                    enabled
+                        ? 'Auto-inicio Bluetooth guardado (${ctrl.text.trim()})'
+                        : 'Auto-inicio Bluetooth desactivado',
+                  );
+                }
+              },
+              child: const Text('Guardar'),
+            ),
+          ],
+        ),
+      ),
+    );
+    ctrl.dispose();
   }
 
   Future<void> _obtenerUbicacionInicial() async {
@@ -873,6 +974,30 @@ class _RutasScreenState extends State<RutasScreen>
                     ),
                     const SizedBox(height: 10),
                     FloatingActionButton.small(
+                      heroTag: 'btn_fuel_prices',
+                      tooltip: 'Precios Gasolina',
+                      backgroundColor: const Color(0xFF1C1C1E).withOpacity(0.9),
+                      onPressed: () {
+                        final pos = t.currentPos ?? const LatLng(4.6097, -74.0817);
+                        FuelPricesSheet.show(
+                          context,
+                          lat: pos.latitude,
+                          lng: pos.longitude,
+                          city: _picoStatus?.cityName ?? 'Colombia',
+                        );
+                      },
+                      child: const Icon(Icons.local_gas_station_rounded, color: Color(0xFFFF9500), size: 20),
+                    ),
+                    const SizedBox(height: 10),
+                    FloatingActionButton.small(
+                      heroTag: 'btn_auto_bt',
+                      tooltip: 'Auto-Inicio Bluetooth',
+                      backgroundColor: const Color(0xFF1C1C1E).withOpacity(0.9),
+                      onPressed: _configurarAutoBluetooth,
+                      child: const Icon(Icons.bluetooth_audio_rounded, color: Color(0xFF38BDF8), size: 20),
+                    ),
+                    const SizedBox(height: 10),
+                    FloatingActionButton.small(
                       heroTag: 'btn_recenter_map',
                       backgroundColor: const Color(0xFF1C1C1E).withOpacity(0.9),
                       onPressed: _recenterMap,
@@ -889,7 +1014,12 @@ class _RutasScreenState extends State<RutasScreen>
                       onPressed: () {
                         final pos = t.currentPos;
                         if (pos != null) {
-                          WazeReportSheet.show(context, lat: pos.latitude, lng: pos.longitude);
+                          WazeReportSheet.show(
+                            context,
+                            lat: pos.latitude,
+                            lng: pos.longitude,
+                            isCar: _controller.isCar,
+                          );
                         }
                       },
                       child: const Icon(Icons.add_location_alt_rounded, color: Colors.white),
@@ -1014,6 +1144,18 @@ class _RutasScreenState extends State<RutasScreen>
                 case WazeIncidentType.flooding:
                   iconData = Icons.water_drop_rounded;
                   iconColor = const Color(0xFF30D158);
+                  break;
+                case WazeIncidentType.pothole:
+                  iconData = Icons.warning_amber_rounded;
+                  iconColor = const Color(0xFFF59E0B);
+                  break;
+                case WazeIncidentType.speedBump:
+                  iconData = Icons.speed_rounded;
+                  iconColor = const Color(0xFFA855F7);
+                  break;
+                case WazeIncidentType.tollQueue:
+                  iconData = Icons.toll_rounded;
+                  iconColor = const Color(0xFF38BDF8);
                   break;
               }
 
@@ -1429,20 +1571,38 @@ class _RutasScreenState extends State<RutasScreen>
                     ],
                   ),
                   const SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      InfoChip(
-                        icon: Icons.straighten_rounded,
-                        label: '${_controller.routeDistanceKm.toStringAsFixed(1)} km',
-                        color: const Color(0xFF00C6FF),
-                      ),
-                      InfoChip(
-                        icon: Icons.timer_outlined,
-                        label: '${_controller.routeDurationMin.round()} min',
-                        color: Colors.orangeAccent,
-                      ),
-                    ],
+                  Builder(
+                    builder: (_) {
+                      final tolls = ColombiaTollsService.estimateRouteTolls(
+                        _controller.routePoints,
+                        isCar: _controller.isCar,
+                      );
+                      return Wrap(
+                        spacing: 10,
+                        runSpacing: 8,
+                        alignment: WrapAlignment.center,
+                        children: [
+                          InfoChip(
+                            icon: Icons.straighten_rounded,
+                            label: '${_controller.routeDistanceKm.toStringAsFixed(1)} km',
+                            color: const Color(0xFF00C6FF),
+                          ),
+                          InfoChip(
+                            icon: Icons.timer_outlined,
+                            label: '${_controller.routeDurationMin.round()} min',
+                            color: Colors.orangeAccent,
+                          ),
+                          if (tolls.count > 0)
+                            InfoChip(
+                              icon: Icons.toll_rounded,
+                              label: _controller.isCar
+                                  ? '${tolls.count} peaje(s) ~\$${(tolls.totalCostCop / 1000).toStringAsFixed(1)}k'
+                                  : '${tolls.count} peaje(s) Moto \$0',
+                              color: const Color(0xFF00FF87),
+                            ),
+                        ],
+                      );
+                    },
                   ),
                   const SizedBox(height: 16),
                   Row(

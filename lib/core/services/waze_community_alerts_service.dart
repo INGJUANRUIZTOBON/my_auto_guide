@@ -16,6 +16,36 @@ enum WazeIncidentType {
   accident, // 🚗 Accidente de Tránsito / Carro Varado
   construction, // 🚧 Obra en la Vía / Tráfico Pesado
   flooding, // 🌧️ Vía Inundada / Mal Estado
+  pothole, // 🕳️ Hueco / Cráter peligroso (Moto / Carro)
+  speedBump, // ⚠️ Resalto / Policía Acostado sin señalizar
+  tollQueue, // 🛣️ Trancón en Peaje
+}
+
+/// Interpreta una frase dictada por voz manos libres y la asigna a un incidente vial.
+({WazeIncidentType type, String title}) parseWazeVoiceCommand(String spoken) {
+  final text = spoken.toLowerCase().trim();
+  if (text.contains('hueco') || text.contains('crater') || text.contains('bache')) {
+    return (type: WazeIncidentType.pothole, title: '🕳️ Hueco Peligroso en Vía');
+  }
+  if (text.contains('resalto') || text.contains('policia acostado') || text.contains('reductor')) {
+    return (type: WazeIncidentType.speedBump, title: '⚠️ Resalto / Reductor Sin Señal');
+  }
+  if (text.contains('peaje') || text.contains('trancon')) {
+    return (type: WazeIncidentType.tollQueue, title: '🛣️ Trancón en Peaje');
+  }
+  if (text.contains('fotomulta') || text.contains('camara') || text.contains('radar')) {
+    return (type: WazeIncidentType.radar, title: '🚨 Cámara / Radar de Fotomulta');
+  }
+  if (text.contains('accidente') || text.contains('choque') || text.contains('varado')) {
+    return (type: WazeIncidentType.accident, title: '🚗 Accidente de Tránsito');
+  }
+  if (text.contains('obra') || text.contains('cerrada') || text.contains('trafico')) {
+    return (type: WazeIncidentType.construction, title: '🚧 Obra en Vía / Tráfico');
+  }
+  if (text.contains('inunda') || text.contains('agua') || text.contains('lluvia')) {
+    return (type: WazeIncidentType.flooding, title: '🌧️ Vía Inundada / Mal Estado');
+  }
+  return (type: WazeIncidentType.police, title: '👮 Retén de Policía / Tránsito');
 }
 
 class WazeIncidentReport {
@@ -185,7 +215,7 @@ class WazeCommunityAlertsService {
 
       final List<WazeIncidentReport> fetched = [];
       for (final row in data) {
-        fetched.add(WazeIncidentReport.fromSupabase(row as Map<String, dynamic>));
+        fetched.add(WazeIncidentReport.fromSupabase(row));
       }
 
       _memoryIncidents.clear();

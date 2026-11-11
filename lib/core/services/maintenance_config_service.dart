@@ -29,4 +29,42 @@ class MaintenanceConfigService {
   int getKmsCycle(String key) => _kmsCycles[key] ?? 5000;
   
   Map<String, int> getAllCycles() => _cycles;
+
+  /// Etiqueta contextual según sea carro o moto.
+  static String labelFor(String key, {required bool isCar}) {
+    switch (key) {
+      case 'cadena':
+        return isCar ? 'Distribución' : 'Kit Arrastre';
+      case 'filtro':
+        return isCar ? 'Filtros' : 'Filtro Aire';
+      case 'aceite':
+        return 'Aceite';
+      case 'soat':
+        return 'SOAT';
+      case 'tecno':
+        return 'Tecno';
+      default:
+        return key;
+    }
+  }
+
+  /// Ciclo recomendado en días según tipo de vehículo.
+  int cycleDaysFor(String key, {required bool isCar}) {
+    if (isCar) {
+      if (key == 'cadena') return 365;
+      if (key == 'filtro') return 180;
+      if (key == 'aceite') return 180;
+    }
+    return getCycle(key);
+  }
+
+  /// Ciclo recomendado en km según tipo de vehículo.
+  int cycleKmsFor(String key, {required bool isCar}) {
+    if (isCar) {
+      if (key == 'cadena') return 40000;
+      if (key == 'filtro') return 10000;
+      if (key == 'aceite') return 8000;
+    }
+    return getKmsCycle(key);
+  }
 }

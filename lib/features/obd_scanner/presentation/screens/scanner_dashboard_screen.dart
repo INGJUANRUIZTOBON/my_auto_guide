@@ -8,6 +8,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:my_auto_guide/core/theme/app_apple_theme.dart';
 import 'package:my_auto_guide/core/services/ai_bot_service.dart';
 import '../providers/scanner_provider.dart';
+import '../widgets/obd_pro_widgets.dart';
 import 'widgets/bluetooth_device_list.dart';
 
 class ScannerDashboardScreen extends StatefulWidget {
@@ -215,6 +216,30 @@ class _ScannerDashboardScreenState extends State<ScannerDashboardScreen> with Si
               ],
             ),
           ),
+
+          if (provider.state == ScannerState.connected) ...[
+            CupertinoButton(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              color: AppAppleTheme.electricBlue.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(14),
+              onPressed: () {
+                HapticFeedback.selectionClick();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => ObdHudScreen(provider: provider)),
+                );
+              },
+              child: Text(
+                'HUD',
+                style: GoogleFonts.outfit(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: AppAppleTheme.electricCyan,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
 
           // Badge de estado estilo iOS Live Activity
           _buildLiveStatusBadge(provider.state),
@@ -807,6 +832,14 @@ class _ScannerDashboardScreenState extends State<ScannerDashboardScreen> with Si
             ),
           ],
         ),
+
+        const SizedBox(height: 14),
+
+        // 4. Gráfica en vivo (RPM & Velocidad)
+        ObdLiveSparklineCard(
+          rpmValues: provider.rpmHistory,
+          speedValues: provider.speedHistory,
+        ),
       ],
     );
   }
@@ -981,8 +1014,72 @@ class _ScannerDashboardScreenState extends State<ScannerDashboardScreen> with Si
                           ],
                         ),
                       ),
+                      CupertinoButton(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        color: Colors.white.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(12),
+                        onPressed: provider.loadingFreezeFrame ? null : provider.readFreezeFrame,
+                        child: Text(
+                          provider.loadingFreezeFrame ? '...' : 'Freeze Frame',
+                          style: GoogleFonts.outfit(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: AppAppleTheme.electricCyan,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
+
+                  if (provider.freezeFrame.isNotEmpty) ...[
+                    const SizedBox(height: 14),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppAppleTheme.electricCyan.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: AppAppleTheme.electricCyan.withValues(alpha: 0.35),
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Freeze Frame ECU (Modo 02)',
+                            style: GoogleFonts.outfit(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: AppAppleTheme.electricCyan,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Wrap(
+                            spacing: 10,
+                            runSpacing: 6,
+                            children: provider.freezeFrame.entries.map((e) {
+                              return Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.25),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  '${e.key}: ${e.value}',
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
 
                   if (hasDtcs) ...[
                     const SizedBox(height: 16),

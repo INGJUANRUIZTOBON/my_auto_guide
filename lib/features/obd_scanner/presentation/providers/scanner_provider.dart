@@ -99,6 +99,18 @@ class ScannerProvider extends ChangeNotifier {
   final Map<String, dynamic> _liveMetrics = {};
   Map<String, dynamic> get liveMetrics => Map.unmodifiable(_liveMetrics);
 
+  // Historial reciente para gráficas en tiempo real (últimas 30 lecturas)
+  final List<double> _rpmHistory = [];
+  List<double> get rpmHistory => List.unmodifiable(_rpmHistory);
+  final List<double> _speedHistory = [];
+  List<double> get speedHistory => List.unmodifiable(_speedHistory);
+
+  // Captura Freeze Frame (Modo 02)
+  final Map<String, dynamic> _freezeFrame = {};
+  Map<String, dynamic> get freezeFrame => Map.unmodifiable(_freezeFrame);
+  bool _loadingFreezeFrame = false;
+  bool get loadingFreezeFrame => _loadingFreezeFrame;
+
   // Códigos de Falla Confirmados (Modo 03) y Pendientes (Modo 07)
   List<String> _currentDtcs = [];
   List<String> get currentDtcs => List.unmodifiable(_currentDtcs);
@@ -519,10 +531,43 @@ class ScannerProvider extends ChangeNotifier {
     final metric = ObdDecoder.decodeLiveResponse(rawResponse);
     if (metric != null) {
       _liveMetrics[metric['type']] = metric;
+      final val = metric['value'];
+      if (val is num) {
+        if (metric['type'] == 'RPM') {
+          _rpmHistory.add(val.toDouble());
+          if (_rpmHistory.length > 30) _rpmHistory.removeAt(0);
+        } else if (metric['type'] == 'Speed') {
+          _speedHistory.add(val.toDouble());
+          if (_speedHistory.length > 30) _speedHistory.removeAt(0);
+        }
+      }
       notifyListeners();
       return metric;
     }
     return null;
+  }
+
+  /// Consulta datos congelados (Modo 02 Freeze Frame) en la ECU del motor.
+  Future<void> readFreezeFrame() async {
+    if (_state != ScannerState.connected || _loadingFreezeFrame) return;
+    _loadingFreezeFrame = true;
+    notifyListeners();
+
+    try {
+      _freezeFrame.clear();
+      for (final cmd in const ['020C00', '020D00', '020500', '020400']) {
+        try {
+          final res = await _btService.sendCommand(cmd, timeout: const Duration(seconds: 2));
+          final decoded = ObdDecoder.decodeFreezeFrameResponse(res);
+          if (decoded != null) {
+            _freezeFrame[decoded['type']] = decoded;
+          }
+        } catch (_) {}
+      }
+    } finally {
+      _loadingFreezeFrame = false;
+      notifyListeners();
+    }
   }
 
   void _parseDtc(String rawResponse) {
@@ -574,6 +619,9 @@ class ScannerProvider extends ChangeNotifier {
     await _btService.disconnect();
     _state = ScannerState.disconnected;
     _liveMetrics.clear();
+    _rpmHistory.clear();
+    _speedHistory.clear();
+    _freezeFrame.clear();
     _currentDtcs.clear();
     _pendingDtcs.clear();
     _supportedPids.clear();

@@ -55,6 +55,45 @@ class ObdDecoder {
     return null;
   }
 
+  /// Interpreta respuestas OBD-II Modo 02 (Freeze Frame: captura en el instante de una falla).
+  /// Formato SAE J1979: "42 <PID> <FRAME:00> <DATA...>" (o "42 <PID> <DATA...>").
+  static Map<String, dynamic>? decodeFreezeFrameResponse(String rawData) {
+    if (rawData.isEmpty) return null;
+    final upper = rawData.toUpperCase();
+    if (upper.contains("NO DATA") ||
+        upper.contains("UNABLE TO CONNECT") ||
+        upper.contains("ERROR")) {
+      return null;
+    }
+
+    final lines = upper
+        .replaceAll('>', '')
+        .split(RegExp(r'[\r\n]+'))
+        .map((l) => l.trim())
+        .where((l) => l.isNotEmpty);
+
+    for (final line in lines) {
+      var cleanLine = line;
+      if (RegExp(r'^[0-9A-F]{3}\s+[0-9A-F]{2}\s+').hasMatch(cleanLine)) {
+        cleanLine = cleanLine.replaceFirst(RegExp(r'^[0-9A-F]{3}\s+[0-9A-F]{2}\s+'), '');
+      }
+      final compact = cleanLine.replaceAll(RegExp(r'\s+'), '');
+      final modeIdx = compact.indexOf('42');
+      if (modeIdx == -1 || compact.length < modeIdx + 6) continue;
+
+      final payload = compact.substring(modeIdx);
+      final pid = payload.substring(2, 4);
+      var dataHex = payload.substring(4);
+      // Quitar byte de número de frame "00" según SAE J1979 cuando viene incluido
+      if (dataHex.startsWith('00') && dataHex.length >= 4) {
+        dataHex = dataHex.substring(2);
+      }
+      final metric = _parsePid(pid, dataHex);
+      if (metric != null) return metric;
+    }
+    return null;
+  }
+
   static Map<String, dynamic>? _parsePid(String pid, String dataHex) {
     try {
       switch (pid) {
