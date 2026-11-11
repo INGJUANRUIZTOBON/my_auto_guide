@@ -1,11 +1,84 @@
+import 'dart:convert';
+import 'dart:io';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'cinematic_painters.dart';
 
+/// Snapshot ligero en caché para mostrar marca/tipo/foto real del usuario desde el frame 0 al abrir la app.
+class BootVehicleSnapshot {
+  static const String _prefKey = 'last_boot_vehicle_snapshot';
+
+  final String marca;
+  final String modelo;
+  final String placa;
+  final bool isCar;
+  final String? imagePath;
+
+  const BootVehicleSnapshot({
+    required this.marca,
+    required this.modelo,
+    required this.placa,
+    required this.isCar,
+    this.imagePath,
+  });
+
+  static Future<void> save({
+    required String marca,
+    required String modelo,
+    required String placa,
+    required bool isCar,
+    String? imagePath,
+  }) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(
+        _prefKey,
+        jsonEncode({
+          'marca': marca,
+          'modelo': modelo,
+          'placa': placa,
+          'isCar': isCar,
+          'imagePath': imagePath,
+        }),
+      );
+    } catch (_) {}
+  }
+
+  static Future<BootVehicleSnapshot?> load() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_prefKey);
+      if (raw == null || raw.isEmpty) return null;
+      final map = Map<String, dynamic>.from(jsonDecode(raw) as Map);
+      return BootVehicleSnapshot(
+        marca: map['marca']?.toString() ?? '',
+        modelo: map['modelo']?.toString() ?? '',
+        placa: map['placa']?.toString() ?? '',
+        isCar: map['isCar'] != false,
+        imagePath: map['imagePath']?.toString(),
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+}
+
+/// Secuencia cinemática de arranque automotriz:
+/// Ignición de faros -> Barrido real de tacómetro (0 a redline y ralentí) -> Escaneo holográfico -> Checklist Colombia OK.
 class CinematicVehicleLoader extends StatefulWidget {
   final String statusText;
+  final bool isDataReady;
+  final VoidCallback? onIntroComplete;
+  final VoidCallback? onSkip;
+
   const CinematicVehicleLoader({
     super.key,
     this.statusText = 'SINCRONIZANDO MY AUTO GUIDE...',
+    this.isDataReady = false,
+    this.onIntroComplete,
+    this.onSkip,
   });
 
   @override
@@ -14,597 +87,447 @@ class CinematicVehicleLoader extends StatefulWidget {
 
 class _CinematicVehicleLoaderState extends State<CinematicVehicleLoader>
     with TickerProviderStateMixin {
-  late AnimationController _scanController;
-  late AnimationController _rpmController;
-  late AnimationController _pulseController;
+  late final AnimationController _ignitionController;
+  late final AnimationController _idleController;
 
-  late Animation<double> _scanAnimation;
-  late Animation<double> _rpmAnimation;
-  late Animation<double> _pulseAnimation;
+  BootVehicleSnapshot? _snapshot;
+  bool _hapticIgnitionFired = false;
+  bool _hapticReadyFired = false;
+  bool _introNotified = false;
 
   @override
   void initState() {
     super.initState();
+    _loadSnapshot();
 
-    // 1. Escaneo láser continuo
-    _scanController = AnimationController(
+    _ignitionController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2200),
+      duration: const Duration(milliseconds: 2400),
+    )..addListener(_handleTimelineEvents)
+     ..addStatusListener((status) {
+       if (status == AnimationStatus.completed && !_introNotified) {
+         _introNotified = true;
+         widget.onIntroComplete?.call();
+       }
+     });
+
+    _idleController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2600),
     )..repeat();
 
-    _scanAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _scanController, curve: Curves.easeInOut),
-    );
+    _ignitionController.forward();
+  }
 
-    // 2. Tacómetro / RPM Acelerando
-    _rpmController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1800),
-    )..repeat(reverse: true);
+  Future<void> _loadSnapshot() async {
+    final loaded = await BootVehicleSnapshot.load();
+    if (mounted && loaded != null) {
+      setState(() => _snapshot = loaded);
+    }
+  }
 
-    _rpmAnimation = Tween<double>(begin: 0.15, end: 0.92).animate(
-      CurvedAnimation(parent: _rpmController, curve: Curves.easeInOutCubic),
-    );
-
-    // 3. Pulso de neón
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1200),
-    )..repeat(reverse: true);
-
-    _pulseAnimation = Tween<double>(begin: 0.65, end: 1.0).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
-    );
+  void _handleTimelineEvents() {
+    final t = _ignitionController.value;
+    if (t >= 0.14 && !_hapticIgnitionFired) {
+      _hapticIgnitionFired = true;
+      HapticFeedback.mediumImpact();
+    }
+    if (t >= 0.88 && !_hapticReadyFired) {
+      _hapticReadyFired = true;
+      HapticFeedback.lightImpact();
+    }
   }
 
   @override
   void dispose() {
-    _scanController.dispose();
-    _rpmController.dispose();
-    _pulseController.dispose();
+    _ignitionController.dispose();
+    _idleController.dispose();
     super.dispose();
+  }
+
+  double _computeRpmCurve(double t, double idleWave) {
+    if (t < 0.16) {
+      // Encendido inicial
+      return Curves.easeOut.transform(t / 0.16) * 0.08;
+    } else if (t < 0.44) {
+      // Needle Sweep ascendente rápido hasta redline
+      final p = (t - 0.16) / 0.28;
+      return 0.08 + Curves.easeOutCubic.transform(p) * 0.90;
+    } else if (t < 0.68) {
+      // Caída natural del tacómetro hasta ralentí estable (~850 RPM = 13%)
+      final p = (t - 0.44) / 0.24;
+      return 0.98 - Curves.easeInOutCubic.transform(p) * 0.84;
+    }
+    // Ralentí vivo con micro-pulsación realista
+    return 0.14 + math.sin(idleWave * math.pi * 2) * 0.018;
+  }
+
+  double _computeHeadlightFlare(double t, double idleWave) {
+    if (t < 0.08) return 0.0;
+    if (t < 0.24) return Curves.easeOut.transform((t - 0.08) / 0.16);
+    if (t < 0.45) return 1.0 - Curves.easeOut.transform((t - 0.24) / 0.21) * 0.58;
+    return 0.42 + math.sin(idleWave * math.pi * 2) * 0.05;
+  }
+
+  double _computeLaserScan(double t) {
+    if (t < 0.42 || t > 0.84) return -1.0;
+    return Curves.easeInOut.transform((t - 0.42) / 0.42);
+  }
+
+  void _handleTap() {
+    if (!widget.isDataReady) return;
+    HapticFeedback.selectionClick();
+    if (!_introNotified) {
+      _introNotified = true;
+      (widget.onSkip ?? widget.onIntroComplete)?.call();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      height: double.infinity,
-      color: const Color(0xFF0A0C10),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          // Fondo con malla de cuadrícula cibernética
-          Positioned.fill(
-            child: CustomPaint(
-              painter: _CyberGridPainter(),
-            ),
-          ),
+    final bool reduceMotion = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
 
-          // Contenido Central: Tacómetro + Silueta BMW M4 + Escaneo Láser
-          AnimatedBuilder(
-            animation: Listenable.merge([_scanAnimation, _rpmAnimation, _pulseAnimation]),
-            builder: (context, child) {
-              final double rpmVal = _rpmAnimation.value;
-              final double scanVal = _scanAnimation.value;
-              final double pulseVal = _pulseAnimation.value;
-              final int speedDisplay = (rpmVal * 190).round();
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: _handleTap,
+      child: Container(
+        width: double.infinity,
+        height: double.infinity,
+        color: const Color(0xFF06080C),
+        child: AnimatedBuilder(
+          animation: Listenable.merge([_ignitionController, _idleController]),
+          builder: (context, _) {
+            final t = reduceMotion ? 1.0 : _ignitionController.value;
+            final idle = reduceMotion ? 0.0 : _idleController.value;
+            final ignition = Curves.easeOut.transform((t / 0.22).clamp(0.0, 1.0));
+            final rpmVal = _computeRpmCurve(t, idle);
+            final int rpmDisplay = (rpmVal * 8000).round();
+            final int speedPeakDisplay = t < 0.68 ? (rpmVal * 220).round() : 0;
+            final flare = _computeHeadlightFlare(t, idle);
+            final scan = _computeLaserScan(t);
+            final bool showMoto = _snapshot != null
+                ? !_snapshot!.isCar
+                : (idle > 0.5 && _snapshot == null);
 
-              return Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Anillo / Tacómetro M-Performance
-                  SizedBox(
-                    width: 260,
-                    height: 260,
-                    child: Stack(
-                      alignment: Alignment.center,
+            return Stack(
+              alignment: Alignment.center,
+              children: [
+                Positioned.fill(
+                  child: RepaintBoundary(
+                    child: CustomPaint(
+                      painter: ShowroomBackdropPainter(
+                        ignition: ignition,
+                        idlePhase: idle,
+                      ),
+                    ),
+                  ),
+                ),
+                SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // Custom Painter del Tacómetro
-                        CustomPaint(
-                          size: const Size(260, 260),
-                          painter: _TachometerPainter(
-                            progress: rpmVal,
-                            pulse: pulseVal,
-                          ),
-                        ),
-
-                        // Silueta BMW M4 Coupé con Laser Scan
-                        CustomPaint(
-                          size: const Size(180, 110),
-                          painter: _BmwM4SilhouettePainter(
-                            scanProgress: scanVal,
-                            pulse: pulseVal,
-                          ),
-                        ),
-
-                        // Velocidad Digital y Badge M
-                        Positioned(
-                          bottom: 24,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
+                        _buildIdentityHeader(ignition),
+                        const SizedBox(height: 18),
+                        SizedBox(
+                          width: 292,
+                          height: 292,
+                          child: Stack(
+                            alignment: Alignment.center,
                             children: [
-                              Text(
-                                '$speedDisplay',
-                                style: const TextStyle(
-                                  fontFamily: 'monospace',
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.w900,
-                                  color: Colors.white,
-                                  letterSpacing: 2.0,
-                                  shadows: [
-                                    Shadow(
-                                      color: Color(0xFF00E5FF),
-                                      blurRadius: 18,
+                              RepaintBoundary(
+                                child: CustomPaint(
+                                  size: const Size(292, 292),
+                                  painter: CockpitTachometerPainter(
+                                    rpmProgress: rpmVal,
+                                    ignition: ignition,
+                                  ),
+                                ),
+                              ),
+                              Opacity(
+                                opacity: ignition,
+                                child: Transform.scale(
+                                  scale: 0.94 + ignition * 0.06,
+                                  child: ClipOval(
+                                    child: SizedBox(
+                                      width: 232,
+                                      height: 232,
+                                      child: Stack(
+                                        fit: StackFit.expand,
+                                        children: [
+                                          _buildVehicleVisual(showMoto),
+                                          CustomPaint(
+                                            painter: HeadlightAndScanPainter(
+                                              flareIntensity: flare,
+                                              scanProgress: scan,
+                                              isCar: !showMoto,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                bottom: 18,
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      t < 0.68
+                                          ? '$speedPeakDisplay KM/H'
+                                          : '$rpmDisplay RPM',
+                                      style: const TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w900,
+                                        letterSpacing: 1.5,
+                                        color: Colors.white,
+                                        fontFeatures: [FontFeature.tabularFigures()],
+                                        shadows: [
+                                          Shadow(color: Color(0xFF00E5FF), blurRadius: 14),
+                                        ],
+                                      ),
+                                    ),
+                                    Text(
+                                      t < 0.68 ? 'IGNITION SWEEP' : 'RALENTÍ ESTABLE • READY',
+                                      style: TextStyle(
+                                        fontSize: 9.5,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: 1.4,
+                                        color: t >= 0.68
+                                            ? const Color(0xFF10B981)
+                                            : const Color(0xFF00E5FF),
+                                      ),
                                     ),
                                   ],
                                 ),
                               ),
-                              const Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.electric_bolt_rounded,
-                                    size: 13,
-                                    color: Color(0xFF00E5FF),
-                                  ),
-                                  SizedBox(width: 4),
-                                  Text(
-                                    'KM/H • SYS READY',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w800,
-                                      letterSpacing: 1.6,
-                                      color: Color(0xFF00E5FF),
-                                    ),
-                                  ),
-                                ],
-                              ),
                             ],
                           ),
                         ),
+                        const SizedBox(height: 26),
+                        _buildSystemChecklist(t),
+                        const SizedBox(height: 20),
+                        _buildBottomPrompt(t, idle),
                       ],
                     ),
                   ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
 
-                  const SizedBox(height: 32),
+  Widget _buildIdentityHeader(double ignition) {
+    final snap = _snapshot;
+    final hasSnap = snap != null && (snap.marca.isNotEmpty || snap.placa.isNotEmpty);
+    final label = hasSnap
+        ? '${snap.marca.toUpperCase()} ${snap.modelo}'.trim()
+        : 'MY AUTO GUIDE';
+    final sub = hasSnap && snap.placa.isNotEmpty
+        ? 'PLACA ${snap.placa.toUpperCase()} • TELEMETRÍA'
+        : 'ECOSISTEMA VEHICULAR COLOMBIA';
 
-                  // Barra de Carga Neón M-Power
-                  Container(
-                    width: 200,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.white10,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                    child: FractionallySizedBox(
-                      alignment: Alignment.centerLeft,
-                      widthFactor: rpmVal,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(2),
-                          gradient: const LinearGradient(
-                            colors: [
-                              Color(0xFF00E5FF), // Cyan M
-                              Color(0xFF2979FF), // Blue M
-                              Color(0xFFFF1744), // Red M
-                            ],
-                          ),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Color(0xFF00E5FF),
-                              blurRadius: 10,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Texto de Estado Diagnóstico Dinámico
-                  Text(
-                    _getStatusText(rpmVal),
-                    style: TextStyle(
-                      fontFamily: 'monospace',
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 2.0,
-                      color: Colors.white.withValues(alpha: 0.9),
+    return Opacity(
+      opacity: ignition,
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.06),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.35)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (snap?.imagePath != null && snap!.imagePath!.isNotEmpty) ...[
+                  ClipOval(
+                    child: SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: _buildTinyAvatar(snap.imagePath!, snap.isCar),
                     ),
                   ),
-
-                  const SizedBox(height: 6),
-
-                  const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.satellite_alt_rounded, size: 13, color: Color(0xFF30D158)),
-                      SizedBox(width: 6),
-                      Text(
-                        'MY AUTO GUIDE TELEMETRY',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 1.2,
-                          color: Color(0xFF30D158),
-                        ),
-                      ),
-                    ],
-                  ),
+                  const SizedBox(width: 8),
+                ] else ...[
+                  const Icon(Icons.shield_outlined, size: 15, color: Color(0xFF00E5FF)),
+                  const SizedBox(width: 6),
                 ],
-              );
-            },
+                Text(
+                  label,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            sub,
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.55),
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 1.6,
+            ),
           ),
         ],
       ),
     );
   }
 
-  String _getStatusText(double progress) {
-    if (progress < 0.40) {
-      return 'INICIALIZANDO TELEMETRÍA...';
-    } else if (progress < 0.75) {
-      return 'SINCRONIZANDO GARAJE Y SENSORES...';
-    } else {
-      return 'DIAGNÓSTICO IA LISTO • ACCEDIENDO';
+  Widget _buildTinyAvatar(String path, bool isCar) {
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      return Image.network(
+        path,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) =>
+            Icon(isCar ? Icons.directions_car : Icons.two_wheeler, size: 14, color: Colors.white),
+      );
     }
-  }
-}
-
-/// CustomPainter para el fondo de cuadrícula cibernética
-class _CyberGridPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xFF00E5FF).withValues(alpha: 0.03)
-      ..strokeWidth = 1.0;
-
-    const double step = 32.0;
-    for (double x = 0; x < size.width; x += step) {
-      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
+    if (path.startsWith('assets/')) {
+      return Image.asset(
+        path,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) =>
+            Icon(isCar ? Icons.directions_car : Icons.two_wheeler, size: 14, color: Colors.white),
+      );
     }
-    for (double y = 0; y < size.height; y += step) {
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
-    }
-
-    final vignettePaint = Paint()
-      ..shader = RadialGradient(
-        colors: [
-          Colors.transparent,
-          const Color(0xFF0A0C10).withValues(alpha: 0.95),
-        ],
-        stops: const [0.3, 1.0],
-      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
-
-    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), vignettePaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-/// CustomPainter para el Tacómetro M-Performance
-class _TachometerPainter extends CustomPainter {
-  final double progress;
-  final double pulse;
-
-  _TachometerPainter({required this.progress, required this.pulse});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2 - 12;
-
-    const double startAngle = math.pi * 0.75;
-    const double sweepTotal = math.pi * 1.5;
-
-    // 1. Arco base oscuro
-    final basePaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.08)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 6.0
-      ..strokeCap = StrokeCap.round;
-
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      startAngle,
-      sweepTotal,
-      false,
-      basePaint,
-    );
-
-    // 2. Arco activo iluminado con gradiente M-Power
-    final activePaint = Paint()
-      ..shader = const SweepGradient(
-        startAngle: startAngle,
-        endAngle: startAngle + sweepTotal,
-        colors: [
-          Color(0xFF00E5FF),
-          Color(0xFF2979FF),
-          Color(0xFFFF9100),
-          Color(0xFFFF1744),
-        ],
-        stops: [0.0, 0.45, 0.78, 1.0],
-      ).createShader(Rect.fromCircle(center: center, radius: radius))
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 7.5
-      ..strokeCap = StrokeCap.round;
-
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      startAngle,
-      sweepTotal * progress,
-      false,
-      activePaint,
-    );
-
-    // 3. Ticks de revoluciones
-    final tickPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.35)
-      ..strokeWidth = 1.5;
-
-    const int totalTicks = 18;
-    for (int i = 0; i <= totalTicks; i++) {
-      final double angle = startAngle + (sweepTotal * (i / totalTicks));
-      final double innerR = radius - (i % 3 == 0 ? 15 : 8);
-      final double outerR = radius - 4;
-
-      final p1 = Offset(center.dx + innerR * math.cos(angle), center.dy + innerR * math.sin(angle));
-      final p2 = Offset(center.dx + outerR * math.cos(angle), center.dy + outerR * math.sin(angle));
-      canvas.drawLine(p1, p2, tickPaint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _TachometerPainter oldDelegate) =>
-      oldDelegate.progress != progress || oldDelegate.pulse != pulse;
-}
-
-/// CustomPainter para la silueta icónica en perspectiva 3/4 del BMW M4 Coupé
-class _BmwM4SilhouettePainter extends CustomPainter {
-  final double scanProgress;
-  final double pulse;
-
-  _BmwM4SilhouettePainter({required this.scanProgress, required this.pulse});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final double w = size.width;
-    final double h = size.height;
-    final double ox = 0;
-    final double oy = 0;
-
-    // Colores y pinturas
-    final glowPaint = Paint()
-      ..color = const Color(0xFF00E5FF).withValues(alpha: 0.14 * pulse)
-      ..style = PaintingStyle.fill;
-
-    final primaryStroke = Paint()
-      ..color = const Color(0xFF00E5FF).withValues(alpha: 0.95 * pulse)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.2
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-
-    final detailStroke = Paint()
-      ..color = const Color(0xFF00E5FF).withValues(alpha: 0.65 * pulse)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.4
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-
-    final accentStroke = Paint()
-      ..color = const Color(0xFFFF1744).withValues(alpha: 0.85 * pulse)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.8
-      ..strokeCap = StrokeCap.round;
-
-    final wheelFill = Paint()
-      ..color = const Color(0xFF0A1526).withValues(alpha: 0.85)
-      ..style = PaintingStyle.fill;
-
-    final wheelStroke = Paint()
-      ..color = const Color(0xFF2979FF).withValues(alpha: 0.9 * pulse)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0;
-
-    // ─── 1. SILUETA EXTERIOR PRINCIPAL (BMW M4 3/4 VIEW) ───
-    final outline = Path();
-    // Splitter frontal izquierdo
-    outline.moveTo(ox + w * 0.08, oy + h * 0.76);
-    // Labio inferior y splitter
-    outline.lineTo(ox + w * 0.54, oy + h * 0.77);
-    // Arco rueda delantera
-    outline.arcToPoint(
-      Offset(ox + w * 0.68, oy + h * 0.65),
-      radius: Radius.circular(w * 0.12),
-      clockwise: false,
-    );
-    // Talonera lateral aerodinámica M
-    outline.lineTo(ox + w * 0.84, oy + h * 0.68);
-    // Arco rueda trasera
-    outline.arcToPoint(
-      Offset(ox + w * 0.92, oy + h * 0.61),
-      radius: Radius.circular(w * 0.08),
-      clockwise: false,
-    );
-    // Parachoques trasero / difusor
-    outline.lineTo(ox + w * 0.94, oy + h * 0.54);
-    // Maletero y Alerón trasero GT
-    outline.lineTo(ox + w * 0.93, oy + h * 0.44);
-    outline.lineTo(ox + w * 0.86, oy + h * 0.40);
-    // Luneta trasera inclinada Fastback
-    outline.lineTo(ox + w * 0.76, oy + h * 0.32);
-    // Techo Coupé M con canal aerodinámico central
-    outline.lineTo(ox + w * 0.65, oy + h * 0.28);
-    outline.lineTo(ox + w * 0.44, oy + h * 0.31);
-    // Pilar A y Parabrisas delantero
-    outline.lineTo(ox + w * 0.32, oy + h * 0.42);
-    // Capó esculpido Powerdome hacia el frontal
-    outline.lineTo(ox + w * 0.16, oy + h * 0.50);
-    // Punta del morro y caída de riñones
-    outline.lineTo(ox + w * 0.08, oy + h * 0.58);
-    outline.lineTo(ox + w * 0.06, oy + h * 0.68);
-    outline.close();
-
-    canvas.drawPath(outline, glowPaint);
-    canvas.drawPath(outline, primaryStroke);
-
-    // ─── 2. RIÑONES VERTICALES ICÓNICOS BMW M4 (G82 DUAL KIDNEYS) ───
-    // Riñón izquierdo (más frontal)
-    final leftKidney = Path();
-    leftKidney.moveTo(ox + w * 0.14, oy + h * 0.54);
-    leftKidney.lineTo(ox + w * 0.21, oy + h * 0.54);
-    leftKidney.lineTo(ox + w * 0.22, oy + h * 0.74);
-    leftKidney.lineTo(ox + w * 0.13, oy + h * 0.73);
-    leftKidney.close();
-    canvas.drawPath(leftKidney, primaryStroke);
-
-    // Riñón derecho (perspectiva 3/4)
-    final rightKidney = Path();
-    rightKidney.moveTo(ox + w * 0.23, oy + h * 0.54);
-    rightKidney.lineTo(ox + w * 0.31, oy + h * 0.55);
-    rightKidney.lineTo(ox + w * 0.32, oy + h * 0.73);
-    rightKidney.lineTo(ox + w * 0.24, oy + h * 0.74);
-    rightKidney.close();
-    canvas.drawPath(rightKidney, primaryStroke);
-
-    // Barras horizontales internas de los riñones
-    canvas.drawLine(Offset(ox + w * 0.14, oy + h * 0.60), Offset(ox + w * 0.21, oy + h * 0.60), detailStroke);
-    canvas.drawLine(Offset(ox + w * 0.14, oy + h * 0.67), Offset(ox + w * 0.215, oy + h * 0.67), detailStroke);
-    canvas.drawLine(Offset(ox + w * 0.235, oy + h * 0.60), Offset(ox + w * 0.31, oy + h * 0.60), detailStroke);
-    canvas.drawLine(Offset(ox + w * 0.24, oy + h * 0.67), Offset(ox + w * 0.315, oy + h * 0.67), detailStroke);
-
-    // ─── 3. FAROS LÁSER AFILADOS M (ANGULAR HEADLIGHTS) ───
-    // Faro izquierdo
-    final leftHeadlight = Path();
-    leftHeadlight.moveTo(ox + w * 0.08, oy + h * 0.53);
-    leftHeadlight.lineTo(ox + w * 0.13, oy + h * 0.54);
-    leftHeadlight.lineTo(ox + w * 0.10, oy + h * 0.58);
-    leftHeadlight.close();
-    canvas.drawPath(leftHeadlight, accentStroke);
-
-    // Faro derecho (más largo hacia el lateral)
-    final rightHeadlight = Path();
-    rightHeadlight.moveTo(ox + w * 0.33, oy + h * 0.54);
-    rightHeadlight.lineTo(ox + w * 0.48, oy + h * 0.53);
-    rightHeadlight.lineTo(ox + w * 0.45, oy + h * 0.59);
-    rightHeadlight.lineTo(ox + w * 0.35, oy + h * 0.59);
-    rightHeadlight.close();
-    canvas.drawPath(rightHeadlight, primaryStroke);
-
-    // DRLs LED en faro derecho
-    canvas.drawLine(Offset(ox + w * 0.36, oy + h * 0.56), Offset(ox + w * 0.43, oy + h * 0.55), accentStroke);
-
-    // ─── 4. LÍNEAS DEL CAPÓ Y POWERDOME ───
-    canvas.drawLine(Offset(ox + w * 0.18, oy + h * 0.53), Offset(ox + w * 0.32, oy + h * 0.43), detailStroke);
-    canvas.drawLine(Offset(ox + w * 0.26, oy + h * 0.53), Offset(ox + w * 0.39, oy + h * 0.43), detailStroke);
-    canvas.drawLine(Offset(ox + w * 0.44, oy + h * 0.52), Offset(ox + w * 0.50, oy + h * 0.44), detailStroke);
-
-    // ─── 5. CABINA, VENTANAS Y HOFMEISTER KINK ───
-    // Parabrisas
-    final windshield = Path();
-    windshield.moveTo(ox + w * 0.34, oy + h * 0.43);
-    windshield.lineTo(ox + w * 0.45, oy + h * 0.33);
-    windshield.lineTo(ox + w * 0.63, oy + h * 0.31);
-    windshield.lineTo(ox + w * 0.58, oy + h * 0.43);
-    windshield.close();
-    canvas.drawPath(windshield, detailStroke);
-
-    // Ventana lateral con Hofmeister Kink
-    final sideWindow = Path();
-    sideWindow.moveTo(ox + w * 0.60, oy + h * 0.42);
-    sideWindow.lineTo(ox + w * 0.66, oy + h * 0.31);
-    sideWindow.lineTo(ox + w * 0.77, oy + h * 0.36);
-    // Kink
-    sideWindow.lineTo(ox + w * 0.78, oy + h * 0.43);
-    sideWindow.close();
-    canvas.drawPath(sideWindow, detailStroke);
-
-    // Espejo retrovisor M con doble brazo
-    final mirror = Path();
-    mirror.moveTo(ox + w * 0.58, oy + h * 0.41);
-    mirror.lineTo(ox + w * 0.65, oy + h * 0.40);
-    mirror.lineTo(ox + w * 0.64, oy + h * 0.45);
-    mirror.lineTo(ox + w * 0.58, oy + h * 0.45);
-    mirror.close();
-    canvas.drawPath(mirror, primaryStroke);
-
-    // ─── 6. ALERÓN TRASERO GT (REAR SPOILER) ───
-    final spoiler = Path();
-    spoiler.moveTo(ox + w * 0.83, oy + h * 0.36);
-    spoiler.lineTo(ox + w * 0.92, oy + h * 0.35);
-    spoiler.lineTo(ox + w * 0.93, oy + h * 0.39);
-    spoiler.lineTo(ox + w * 0.84, oy + h * 0.40);
-    spoiler.close();
-    canvas.drawPath(spoiler, accentStroke);
-
-    // Soportes de alerón
-    canvas.drawLine(Offset(ox + w * 0.86, oy + h * 0.40), Offset(ox + w * 0.86, oy + h * 0.43), detailStroke);
-    canvas.drawLine(Offset(ox + w * 0.90, oy + h * 0.39), Offset(ox + w * 0.90, oy + h * 0.44), detailStroke);
-
-    // ─── 7. RUEDAS M SPORT EN PERSPECTIVA 3/4 CON RINES MULTIRRADIO ───
-    // Rueda delantera (3/4)
-    final frontWheelCenter = Offset(ox + w * 0.59, oy + h * 0.67);
-    canvas.drawOval(
-      Rect.fromCenter(center: frontWheelCenter, width: w * 0.19, height: h * 0.30),
-      wheelFill,
-    );
-    canvas.drawOval(
-      Rect.fromCenter(center: frontWheelCenter, width: w * 0.19, height: h * 0.30),
-      wheelStroke,
-    );
-    // Radios M rueda delantera
-    for (int i = 0; i < 5; i++) {
-      final angle = (i * math.pi / 2.5);
-      final rx = (w * 0.08) * math.cos(angle);
-      final ry = (h * 0.13) * math.sin(angle);
-      canvas.drawLine(frontWheelCenter, Offset(frontWheelCenter.dx + rx, frontWheelCenter.dy + ry), detailStroke);
-    }
-
-    // Rueda trasera (3/4)
-    final rearWheelCenter = Offset(ox + w * 0.87, oy + h * 0.61);
-    canvas.drawOval(
-      Rect.fromCenter(center: rearWheelCenter, width: w * 0.13, height: h * 0.22),
-      wheelFill,
-    );
-    canvas.drawOval(
-      Rect.fromCenter(center: rearWheelCenter, width: w * 0.13, height: h * 0.22),
-      wheelStroke,
-    );
-    // Radios M rueda trasera
-    for (int i = 0; i < 4; i++) {
-      final angle = (i * math.pi / 2.0);
-      final rx = (w * 0.055) * math.cos(angle);
-      final ry = (h * 0.09) * math.sin(angle);
-      canvas.drawLine(rearWheelCenter, Offset(rearWheelCenter.dx + rx, rearWheelCenter.dy + ry), detailStroke);
-    }
-
-    // ─── 8. LÍNEA DE ESCANEO LÁSER VERTICAL CIBERNÉTICA ───
-    final double laserX = ox + (w * scanProgress);
-    final laserPaint = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [
-          Colors.transparent,
-          const Color(0xFF00E5FF).withValues(alpha: 0.95),
-          const Color(0xFFFF1744).withValues(alpha: 0.95),
-          Colors.transparent,
-        ],
-      ).createShader(Rect.fromLTWH(laserX - 2, oy, 4, h + 10))
-      ..strokeWidth = 2.5;
-
-    canvas.drawLine(
-      Offset(laserX, oy + h * 0.15),
-      Offset(laserX, oy + h * 0.88),
-      laserPaint,
+    return Image.file(
+      File(path),
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) =>
+          Icon(isCar ? Icons.directions_car : Icons.two_wheeler, size: 14, color: Colors.white),
     );
   }
 
-  @override
-  bool shouldRepaint(covariant _BmwM4SilhouettePainter oldDelegate) =>
-      oldDelegate.scanProgress != scanProgress || oldDelegate.pulse != pulse;
+  Widget _buildVehicleVisual(bool showMoto) {
+    final asset = showMoto
+        ? 'assets/images/splash_moto.jpg'
+        : 'assets/images/splash_car.jpg';
+
+    return ShaderMask(
+      shaderCallback: (rect) => const RadialGradient(
+        colors: [Colors.white, Colors.white, Colors.transparent],
+        stops: [0.0, 0.72, 1.0],
+      ).createShader(rect),
+      blendMode: BlendMode.dstIn,
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 600),
+        child: Image.asset(
+          asset,
+          key: ValueKey(asset),
+          fit: BoxFit.cover,
+          cacheWidth: 900,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSystemChecklist(double t) {
+    final checks = [
+      ('GPS & RUTA', t >= 0.34),
+      ('PICO Y PLACA', t >= 0.54),
+      ('RUNT & SOAT', t >= 0.72),
+      ('MOTOR IA', t >= 0.88),
+    ];
+
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 8,
+      runSpacing: 8,
+      children: checks.map((c) {
+        final ok = c.$2;
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 220),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: ok
+                ? const Color(0xFF10B981).withValues(alpha: 0.14)
+                : Colors.white.withValues(alpha: 0.04),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: ok
+                  ? const Color(0xFF10B981).withValues(alpha: 0.55)
+                  : Colors.white.withValues(alpha: 0.10),
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                ok ? Icons.check_circle_rounded : Icons.radio_button_unchecked,
+                size: 13,
+                color: ok ? const Color(0xFF10B981) : Colors.white38,
+              ),
+              const SizedBox(width: 5),
+              Text(
+                c.$1,
+                style: TextStyle(
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.8,
+                  color: ok ? Colors.white : Colors.white54,
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildBottomPrompt(double t, double idle) {
+    if (widget.isDataReady) {
+      final pulse = 0.65 + math.sin(idle * math.pi * 2) * 0.35;
+      return Opacity(
+        opacity: pulse.clamp(0.4, 1.0),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: const Color(0xFF00E5FF).withValues(alpha: 0.14),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.45)),
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.touch_app_rounded, size: 15, color: Color(0xFF00E5FF)),
+              SizedBox(width: 6),
+              Text(
+                'DATOS LISTOS • TOCA PARA ENTRAR',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.2,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Text(
+      t >= 0.88 ? 'SINCRONIZANDO CON SUPABASE...' : widget.statusText,
+      style: TextStyle(
+        fontSize: 11,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 1.4,
+        color: Colors.white.withValues(alpha: 0.55),
+      ),
+    );
+  }
 }

@@ -149,6 +149,7 @@ class _InicioAppState extends State<InicioApp> {
   final Map<String, dynamic> _urlCache = {};
   bool _notificacionesProcesadas = false;
   bool _checkedKm24h = false;
+  bool _introCompleted = false;
   late Future<Map<String, dynamic>> _initAppFuture;
   StreamSubscription<AuthState>? _authSub;
 
@@ -662,6 +663,15 @@ class _InicioAppState extends State<InicioApp> {
           .single();
       _cachedVehicleData = row;
       _aplicarDatosVehiculo(row);
+      unawaited(
+        BootVehicleSnapshot.save(
+          marca: (row['marca'] as String? ?? ''),
+          modelo: (row['modelo'] as String? ?? ''),
+          placa: (row['placa'] as String? ?? ''),
+          isCar: _isCarForScanner(row),
+          imagePath: row['image_path'] as String?,
+        ),
+      );
       return row;
     } catch (e) {
       debugPrint('Error cargando datos del vehículo: $e');
@@ -2152,10 +2162,24 @@ class _InicioAppState extends State<InicioApp> {
     return FutureBuilder<Map<String, dynamic>>(
       future: _initAppFuture,
       builder: (context, s) {
-        if (s.connectionState != ConnectionState.done) {
-          return const Scaffold(
-            backgroundColor: Color(0xFF0A0C10),
-            body: CinematicVehicleLoader(),
+        final bool dataReady = s.connectionState == ConnectionState.done;
+        if (!dataReady || !_introCompleted) {
+          return Scaffold(
+            key: const ValueKey('boot_loader'),
+            backgroundColor: const Color(0xFF06080C),
+            body: CinematicVehicleLoader(
+              isDataReady: dataReady,
+              onIntroComplete: () {
+                if (mounted && !_introCompleted) {
+                  setState(() => _introCompleted = true);
+                }
+              },
+              onSkip: () {
+                if (mounted && !_introCompleted) {
+                  setState(() => _introCompleted = true);
+                }
+              },
+            ),
           );
         }
         if (s.hasError) {

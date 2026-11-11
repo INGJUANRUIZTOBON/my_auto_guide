@@ -1,16 +1,16 @@
 # Graph Report - my_auto_guide  (2026-11-11)
 
 ## Corpus Check
-- 1529 files · ~1,331,640 words
+- 1532 files · ~1,332,335 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 21736 nodes · 31328 edges · 1386 communities (1202 shown, 184 thin omitted)
+- 21769 nodes · 31369 edges · 1373 communities (1189 shown, 184 thin omitted)
 - Extraction: 96% EXTRACTED · 4% INFERRED · 0% AMBIGUOUS · INFERRED: 1242 edges (avg confidence: 0.56)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `a6dd9707`
+- Built from commit: `de9d05dc`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -21,7 +21,7 @@
 - sanitizers/index.mjs
 - workspace-resolver.mjs
 - rutas_screen.dart
-- profile.py
+- test_people_finder.py
 - discover.py
 - ai_chat_screen.dart
 - vehicle_registration_view.dart
@@ -31,36 +31,36 @@
 - vehicle_analytics_test.dart
 - extract-claims.mjs
 - captura_360_screen.dart
-- List
+- achievements_card.dart
 - gates/index.mjs
 - historial_rutas_screen.dart
 - guia.dart
 - support-topics.mjs
-- gastos_screen.dart
-- package:flutter/foundation.dart
+- precleared.py
+- vehicle_pdf_report_service.dart
 - SimpleEntry
 - my_application.cc
 - config.py
-- navigation_widgets.dart
+- cinematic_vehicle_loader.dart
 - Autonomous Loops Skill
-- sync_service.dart
-- state.py
+- auth_service.dart
+- Prospect
 - navigation_controller.dart
 - motorcycle_manual_model.dart
 - route-normalize.mjs
 - lineOf
 - test_ats_hiring.py
-- database.dart
-- main.py
+- verify-and-regen.mjs
+- brain.py
 - test_accelerators_funding.py
 - Scout
 - GeneratedPluginRegistrant.swift
 - test_precleared_hold.py
-- supabase_service.dart
-- registro_screen.dart
+- test_export_suppression.py
+- microsoft.py
 - scripts/deep-dive.mjs
 - verify-claim.mjs
-- bitacora_tanqueo_screen.dart
+- count-correct.mjs
 - test_send_window.py
 - app_update_service.dart
 - Handler
@@ -69,25 +69,25 @@
 - WindowClassRegistrar
 - collect-sub-agent-outputs.mjs
 - vehicle_ai_logic.dart
-- obd_bluetooth_service.dart
+- _StubCodex
 - Accessibility Guidelines
-- navigation_service.dart
-- email_finder.py
+- 1. Optionals and Safety
+- test_email_finder.py
 - throttle.mjs
 - android.content.SharedPreferences
 - test_precleared.py
-- vehicle_expenses_logic.dart
-- FakeProvider
-- fuel_prices_service.dart
+- ai_bot_service.dart
+- seed_prospect
+- 7. Modern Concurrency (async/await)
 - FlutterWindow
 - Adaptive Screens Guidelines
 - Performance & Stability Guidelines
 - Visual Design Guidelines
-- ._connect
+- StateManager
 - Privacy & Security Guidelines
-- manuales_screen.dart
+- 1. Layout & Safe Areas
 - scanner_provider.dart
-- Map
+- preoperational_check_screen.dart
 - test_brain_provider.py
 - ai-application.md
 - Win32Window
@@ -109,7 +109,7 @@
 - scanner-driven.mjs
 - test_prompt_injection.py
 - .application
-- dashboard_widgets.dart
+- pico_y_placa_service.dart
 - Vercel CLI with Tokens
 - merge-signals.mjs
 - large-static-asset.mjs
@@ -128,17 +128,17 @@
 - lib/reconcile-candidates.mjs
 - FlutterMacOS
 - test_codex_e2e.py
-- make_sender
-- simit_webview.dart
-- test_pidfile.py
-- Prospect
+- FakeProvider
+- runt_parser.dart
+- main.py
+- test_company_inbox.py
 - send_window.py
 - test_compliance_footer.py
 - Skill Creation Process
 - MainDashboardScreen
 - audit-docs.py
-- driver_income_service.dart
-- StateManager
+- 2. Navigation
+- 6. Error Handling
 - display-labels.mjs
 - test_codex.py
 - test_utf8.py
@@ -244,13 +244,13 @@
 - Verification
 - Vercel Optimize
 - Writer
-- package:supabase_flutter/supabase_flutter.dart
+- driver_income_service.dart
 - Frontend Design
 - Company
 - test_yc_startups.py
 - 10. System Integration
 - Laravel Security Best Practices
-- codex.py
+- pick_default_model
 - 9. Privacy & Permissions
 - Software Engineering Principles
 - Android Mobile Design
@@ -268,7 +268,7 @@
 - test_warmup.py
 - 2. Naming Conventions
 - CodexError
-- background_nav_service.dart
+- voice_navigation_service.dart
 - Sections
 - API service
 - Content site
@@ -341,7 +341,7 @@
 - graphify reference: incremental update and cluster-only
 - Examples
 - Vue.js Patterns and Best Practices
-- auth_service.dart
+- EmailResult
 - Windows Desktop E2E Testing
 - Support Topics
 - async-cheap-condition-before-await.md
@@ -351,7 +351,7 @@
 - 6. React State
 - Core Concepts
 - How Multiple VTs Interact
-- fleet_dashboard_screen.dart
+- _DownBrain
 - How Multiple VTs Interact
 - Documento_Proyecto_My_Auto_Guide_0b78f25f.md
 - graphify reference: add a URL and watch a folder
@@ -489,7 +489,7 @@
 - test_signals_export.py
 - obd_decoder.dart
 - test_discover.py
-- _
+- 6. Gestures & Input
 - Quarkus Verification Loop
 - Examples
 - lib/render-report.mjs
@@ -501,10 +501,10 @@
 - test_microsoft.py
 - Kotlin Development Patterns
 - MonkeyPatch
-- render_horizontal_16x9.py
+- extract_and_seed_manuals.py
 - PRP Plan
 - impact-label.mjs
-- ProfileCollector
+- profile.py
 - asyncio
 - Rust Development Patterns
 - gemini-chat/index.ts
@@ -520,9 +520,9 @@
 - Code Examples
 - Rust Testing Patterns
 - Agentic OS
-- HarveyConfig
-- platform-fluid-compute.mjs
-- test_humanize.py
+- external-api-slow.mjs
+- platform-bot-protection.mjs
+- writer.py
 - Modern Perl Development Patterns
 - Cloud Security Checklist
 - test_grader.py
@@ -543,14 +543,14 @@
 - PRP Implement
 - Django Testing with TDD
 - Flox Environments
-- test_email_evidence.py
+- derive_pattern
 - Cold Email Copywriting
 - test_gmail_history.py
 - Ktor Server Patterns
 - Laravel Testing with TDD
 - Code Examples
 - Redis Patterns
-- runt_parser.dart
+- types.d.ts
 - Bengali (Bangla) NLP Patterns
 - Deployment Patterns
 - trulyinbox.py
@@ -560,8 +560,8 @@
 - Django Development Patterns
 - public_http_client
 - Checklist
-- ._contacts_from_company
-- _utcnow
+- scout.py
+- 8. Platform-Specific Concerns
 - register
 - Plankton Code Quality Skill
 - Signal Forms
@@ -589,7 +589,7 @@
 - Laravel Plugin Discovery
 - Anti-Patterns
 - Best Practices
-- pico_y_placa_service.dart
+- test_real_server_started_like_the_cli
 - _load_instincts_from_dir
 - LinkedInAutomation
 - Jira Integration Skill
@@ -606,7 +606,7 @@
 - ECC Tools Cost Audit
 - Frontend Development Patterns
 - Setup Flow
-- .run
+- codex.py
 - test_codex_platform.py
 - Cold Email Copywriting
 - Hexagonal Architecture
@@ -632,9 +632,8 @@
 - Autonomous Agent Harness
 - cmd_evolve
 - C++ Testing (Agent Skill)
-- decide_next_action
+- heartbeat
 - Harvey
-- client
 - timedelta
 - Intent-Driven Development
 - IconError
@@ -667,7 +666,6 @@
 - scan-codebase.mjs
 - X API
 - Plan - Multi-Model Collaborative Planning
-- fuel_prices_sheet.dart
 - HarmonyOS / ArkTS Patterns
 - React Patterns
 - Accessibility (WCAG 2.2)
@@ -714,8 +712,6 @@
 - ECC Guide
 - Error Handling Patterns
 - Analyst
-- export.py
-- _norm
 - LinkedIn Outreach Skills
 - test_writer_feedback.py
 - LinkedIn Outreach Skills
@@ -747,7 +743,6 @@
 - load_all_instincts
 - How It Works
 - Documentation Governance Router
-- _colleagues
 - Objection Handling Skills
 - Objection Handling Skills
 - How It Works
@@ -866,7 +861,6 @@
 - Finance Billing Ops
 - Flutter/Dart Code Review Best Practices
 - Growth Log Skill
-- startups.py
 - Account Navigation: Working Multiple Contacts at One Company
 - Signal → angle map
 - POSIX
@@ -923,7 +917,6 @@
 - Examples
 - FastAPI Patterns
 - harvey/__init__.py
-- .get_observations
 - Lead Qualification Skills
 - Lead Qualification Skills
 - Harvey — Autonomous AI Sales Agent
@@ -979,7 +972,7 @@
 - Google Workspace Ops
 - Changelog
 - Sending from a Microsoft 365 mailbox
-- test_gmail_send_outcomes.py
+- Harness
 - harvey/SKILL.md
 - How It Works
 - MCP Server Patterns
@@ -1183,9 +1176,7 @@
 - Enterprise Agent Ops
 - Animation Patterns Reference
 - attest_effective_config
-- test_docker_config.py
 - Skills
-- test_dashboard_pipeline.py
 - test_scout_profile_search_gate.py
 - test_smtp_header_injection.py
 - Skills
@@ -1300,7 +1291,6 @@
 - [0.2.1] — 2026-10-13
 - Contributing to Harvey
 - test_scout_serper_caps_request
-- _Brain
 - pick
 - 注意事项
 - Testing Async Code
@@ -1334,7 +1324,6 @@
 - extract_pptx
 - The skills library
 - test_packaging.py
-- state
 - 对话语气指南
 - pytest Fundamentals
 - Best Practices
@@ -1357,7 +1346,6 @@
 - seed_motorcycle_manuals.py
 - migrate-homunculus.sh
 - _protected_requests
-- test_collected_links_cannot_run_script_in_the_dashboard
 - test_an_unmappable_term_is_reported_not_silently_skipped
 - test_empty_api_key_runs_nothing_and_says_so
 - gacha.sh script
@@ -1405,23 +1393,23 @@
 ## Import Cycles
 - None detected.
 
-## Communities (1386 total, 184 thin omitted)
+## Communities (1373 total, 184 thin omitted)
 
 ### Community 0 - "inicio_app.dart"
 Cohesion: 0.02
-Nodes (130): Agregar_carro.dart, Agregar_vehiculo.dart, ../../ai_bot/presentation/ai_chat_screen.dart, ../../auth/login_screen.dart, ../../auth/widgets/change_password_sheet.dart, captura_360_screen.dart, ../../../core/services/calendar_sync_service.dart, ../../../core/services/maintenance_config_service.dart (+122 more)
+Nodes (131): Agregar_carro.dart, Agregar_vehiculo.dart, ../../ai_bot/presentation/ai_chat_screen.dart, ../../auth/login_screen.dart, ../../auth/widgets/change_password_sheet.dart, captura_360_screen.dart, ../../../core/services/calendar_sync_service.dart, ../../../core/services/maintenance_config_service.dart (+123 more)
 
 ### Community 1 - "dashboard.py"
 Cohesion: 0.03
-Nodes (144): estimate_cost(), provider_menu(), Projected spend. Always call this before a run — and print it., The menu the dashboard renders: what each provider does, and its cost. The CLI…, _active_brain(), _active_provider(), add_feedback(), _brain_status() (+136 more)
+Nodes (153): active_brain_status(), The stored status if it belongs to ``provider`` (the one configured now), else…, estimate_cost(), provider_menu(), Projected spend. Always call this before a run — and print it., The menu the dashboard renders: what each provider does, and its cost. The CLI…, _active_brain(), _active_provider() (+145 more)
 
 ### Community 2 - "dedup-recs.mjs"
 Cohesion: 0.18
 Nodes (25): affectedFiles(), appliesAlsoEntry(), cacheLifeIntent(), dedupEditTarget(), dedupeRecommendations(), dedupIntent(), firstAffectedFile(), fixShape() (+17 more)
 
 ### Community 3 - "sanitizers/index.mjs"
-Cohesion: 0.06
-Nodes (34): applyDollarStrip(), stripDollarLiterals(), metadata, STRING_FIELDS, metadata, STRING_FIELDS, apply(), COUNT_CLAIM_TYPES (+26 more)
+Cohesion: 0.07
+Nodes (26): applyDollarStrip(), stripDollarLiterals(), metadata, STRING_FIELDS, metadata, STRING_FIELDS, metadata, STRING_FIELDS (+18 more)
 
 ### Community 4 - "workspace-resolver.mjs"
 Cohesion: 0.11
@@ -1429,23 +1417,23 @@ Nodes (35): buildPackageLookup(), DEFAULT_RESOLVE_OPTIONS, escapeRegExp(), expan
 
 ### Community 5 - "rutas_screen.dart"
 Cohesion: 0.03
-Nodes (71): ../../../core/services/auto_bluetooth_trip_service.dart, ../../../core/services/camera_radar_service.dart, ../../../core/services/colombia_tolls_service.dart, ../../../core/services/navigation_service.dart, ../../../core/services/secure_storage_service.dart, FocusNode, _, buildTileLayer (+63 more)
+Nodes (80): ../../../core/services/auto_bluetooth_trip_service.dart, ../../../core/services/camera_radar_service.dart, ../../../core/services/colombia_tolls_service.dart, ../../../core/services/navigation_service.dart, ../../../core/services/secure_storage_service.dart, ../../../core/services/voice_navigation_service.dart, ../../../core/services/waze_community_alerts_service.dart, FocusNode (+72 more)
 
-### Community 6 - "profile.py"
+### Community 6 - "test_people_finder.py"
 Cohesion: 0.04
-Nodes (111): _alnum(), _business_blob(), _cf_decode(), _clean_for_target(), _close_of(), _departed(), _domain_label(), drop_quoted() (+103 more)
+Nodes (93): _alnum(), _business_blob(), _cf_decode(), _clean_for_target(), _close_of(), _departed(), _domain_label(), drop_quoted() (+85 more)
 
 ### Community 7 - "discover.py"
 Cohesion: 0.03
-Nodes (77): _best(), Business, business_name(), company_host(), dataforseo_location_name(), DataForSEOListings, DataForSEOMaps, DataForSEOSerp (+69 more)
+Nodes (79): _best(), Business, business_name(), company_host(), dataforseo_location_name(), DataForSEOListings, DataForSEOMaps, DataForSEOSerp (+71 more)
 
 ### Community 8 - "ai_chat_screen.dart"
 Cohesion: 0.06
 Nodes (31): ImagePicker, AIChatScreen, _AIChatScreenState, build, _buildInputArea, bytes, _ChatMessage, createState (+23 more)
 
 ### Community 9 - "vehicle_registration_view.dart"
-Cohesion: 0.04
-Nodes (57): ../../../../core/services/insurance_catalog_service.dart, ../../domain/models/insurance_company_model.dart, ../inicio_app.dart, insurance_picker_sheet.dart, defaultReportMessage, emergencyPhone, id, InsuranceCompany (+49 more)
+Cohesion: 0.05
+Nodes (43): ../inicio_app.dart, insurance_picker_sheet.dart, _apodoController, _aseguradoraId, brandColors, build, _buildField, _buildInsuranceSelectorField (+35 more)
 
 ### Community 10 - "vercel.mjs"
 Cohesion: 0.10
@@ -1457,47 +1445,47 @@ Nodes (42): class, ../../../core/services/ocr_service.dart, _aceite, _btnScale, 
 
 ### Community 12 - "login_screen.dart"
 Cohesion: 0.03
-Nodes (61): core/logic/app_widget_logic.dart, ../../core/logic/performance_guard.dart, core/providers/auth_provider.dart, core/providers/vehicle_provider.dart, core/services/auth_service.dart, core/services/background_nav_service.dart, ../../core/services/biometric_service.dart, ../../core/services/notification_service.dart (+53 more)
+Nodes (72): ../../core/logic/performance_guard.dart, ../../core/services/biometric_service.dart, _auth, _authSub, _biometric, _bootstrapSession, canUseBiometrics, CarRentalLoginScreen (+64 more)
 
 ### Community 13 - "vehicle_analytics_test.dart"
 Cohesion: 0.22
 Nodes (6): package:my_auto_guide/core/logic/vehicle_ai_logic.dart, package:my_auto_guide/features/vehicles/domain/models/vehicle_analytics.dart, package:my_auto_guide/features/vehicles/domain/models/weekly_stats.dart, main, main, main
 
 ### Community 14 - "extract-claims.mjs"
-Cohesion: 0.09
-Nodes (53): asArray(), cacheRecommendationFiles(), extractClaims(), isCacheCandidate(), mentionsAuthSensitiveParallelization(), mentionsCachedNotFoundOr404(), mentionsCacheLifeCdnHeaderClaim(), mentionsCacheLifetimeChange() (+45 more)
+Cohesion: 0.18
+Nodes (31): asArray(), cacheRecommendationFiles(), extractClaims(), isCacheCandidate(), mentionsAuthSensitiveParallelization(), mentionsCachedNotFoundOr404(), mentionsCacheLifeCdnHeaderClaim(), mentionsCacheLifetimeChange() (+23 more)
 
 ### Community 15 - "captura_360_screen.dart"
 Cohesion: 0.05
 Nodes (39): ../../../../core/services/vehicle_catalog_service.dart, ../../../core/services/vehicle_storage_service.dart, ImageSource, Angle360Guide, angleDegrees, build, _buildAngleCard, Captura360Screen (+31 more)
 
-### Community 16 - "List"
-Cohesion: 0.03
-Nodes (62): ai_insights_panel.dart, ../../../../core/logic/fuel_efficiency_logic.dart, ../../../../core/logic/vehicle_health_logic.dart, ../../../../core/services/achievements_service.dart, ../../domain/models/maintenance_prediction.dart, ../../domain/models/weekly_stats.dart, advice, _asDouble (+54 more)
+### Community 16 - "achievements_card.dart"
+Cohesion: 0.05
+Nodes (40): ../../../../core/services/achievements_service.dart, ../../domain/models/weekly_stats.dart, advice, _asDouble, avgDailyKm, careScore, consistency, empty (+32 more)
 
 ### Community 17 - "gates/index.mjs"
-Cohesion: 0.04
-Nodes (51): gate(), metadata, unique(), extractColdStarts(), gate(), metadata, extractCallCounts(), extractExternalApis() (+43 more)
+Cohesion: 0.05
+Nodes (47): gate(), metadata, unique(), extractColdStarts(), gate(), metadata, GATE_VERSION, gates (+39 more)
 
 ### Community 18 - "historial_rutas_screen.dart"
-Cohesion: 0.03
-Nodes (77): ../../../core/logic/vehicle_ai_logic.dart, ../../../core/services/report_service.dart, ../../domain/models/vehicle_analytics.dart, _ChatBubble, _PendingImageBanner, _TypingIndicator, _SocialButton, build (+69 more)
+Cohesion: 0.02
+Nodes (81): ../../../core/logic/vehicle_ai_logic.dart, ../../../core/services/fuel_tracker_service.dart, ../../../core/services/report_service.dart, ../../../../core/services/supabase_service.dart, ../../../core/utils/formatters.dart, ../data/driver_income_service.dart, ../domain/models/fuel_log_model.dart, _abrirDialogoAgregar (+73 more)
 
 ### Community 19 - "guia.dart"
-Cohesion: 0.03
-Nodes (58): CupertinoPageRoute, ../../data/models/guide_video_model.dart, data/repositories/guide_storage_repository.dart, addEventToCalendar, CalendarSyncService, GuideVideo, AccidenteScreen, _AccidenteScreenState (+50 more)
+Cohesion: 0.02
+Nodes (133): ../../../../core/services/insurance_catalog_service.dart, core/theme/app_apple_theme.dart, CupertinoPageRoute, dart:ui, ../../data/models/guide_protocol_model.dart, ../../data/models/guide_video_model.dart, ../data/models/motorcycle_manual_model.dart, data/repositories/guide_storage_repository.dart (+125 more)
 
 ### Community 20 - "support-topics.mjs"
 Cohesion: 0.08
 Nodes (45): compareVersion(), HERE, isKnownUrl(), LIBRARY_PATH, libraryForStack(), loadLibrary(), lookupSkillRule(), lookupUrl() (+37 more)
 
-### Community 21 - "gastos_screen.dart"
-Cohesion: 0.07
-Nodes (30): ../../../core/logic/pdf_report_logic.dart, ../../../core/logic/vehicle_expenses_logic.dart, apodo, brandLogoPath, build, _BuildEmptyState, _BuildFinancialDashboard, createState (+22 more)
+### Community 21 - "precleared.py"
+Cohesion: 0.09
+Nodes (28): _buy_url(), _contains_key(), _country(), _error_code(), _from_cache(), _name(), datetime, Response (+20 more)
 
-### Community 22 - "package:flutter/foundation.dart"
-Cohesion: 0.03
-Nodes (67): custom_maintenance_service.dart, dart:typed_data, generateAndShareExpenseReport, PdfReportLogic, auth, authenticate, BiometricService, isBiometricAvailable (+59 more)
+### Community 22 - "vehicle_pdf_report_service.dart"
+Cohesion: 0.02
+Nodes (92): custom_maintenance_service.dart, dart:io, dart:typed_data, generateAndShareExpenseReport, PdfReportLogic, calculateTotal, categories, color (+84 more)
 
 ### Community 23 - "SimpleEntry"
 Cohesion: 0.11
@@ -1508,36 +1496,36 @@ Cohesion: 0.09
 Nodes (22): FlPluginRegistry, FlView, GApplication, gboolean, gchar, GObject, GtkApplication, fl_register_plugins() (+14 more)
 
 ### Community 25 - "config.py"
-Cohesion: 0.04
-Nodes (80): Brain, datetime, Sender — deploys campaigns via Instantly, or sends natively via the configured…, The time zone this recipient's send window is in: their own when it can be told…, _send_zone, but a failure to work the zone out falls back to…, The recipient's country when Harvey is sure of it, for the compliance check…, The company's name and the person's full name, for the compliance check: the…, Use the send loop's recipient facts when counting held email. (+72 more)
-
-### Community 26 - "navigation_widgets.dart"
 Cohesion: 0.03
-Nodes (80): Animation, AnimationController, ../../../core/services/app_update_service.dart, CustomPainter, _SamsungHorseshoePainter, AppUpdateInfo, _DonutPainter, avgSpeedKmH (+72 more)
+Nodes (89): Brain, Brain, Brain, datetime, Sender — deploys campaigns via Instantly, or sends natively via the configured…, The time zone this recipient's send window is in: their own when it can be told…, _send_zone, but a failure to work the zone out falls back to…, The recipient's country when Harvey is sure of it, for the compliance check… (+81 more)
+
+### Community 26 - "cinematic_vehicle_loader.dart"
+Cohesion: 0.05
+Nodes (38): cinematic_painters.dart, BootVehicleSnapshot, build, _buildBottomPrompt, _buildIdentityHeader, _buildSystemChecklist, _buildTinyAvatar, _buildVehicleVisual (+30 more)
 
 ### Community 27 - "Autonomous Loops Skill"
 Cohesion: 0.04
 Nodes (46): 1. Sequential Pipeline (`claude -p`), 2. NanoClaw REPL, 3. Infinite Agentic Loop, 4. Continuous Claude PR Loop, 5. The De-Sloppify Pattern, 6. Ralphinho / RFC-Driven DAG Orchestration, Anti-Patterns, Architecture Overview (+38 more)
 
-### Community 28 - "sync_service.dart"
-Cohesion: 0.04
-Nodes (54): bool get, ChangeNotifier, Connectivity, adaptiveBlur, initialize, _instance, _isLowEnd, PerformanceGuard (+46 more)
+### Community 28 - "auth_service.dart"
+Cohesion: 0.02
+Nodes (109): bool get, Connectivity, adaptiveBlur, initialize, _instance, _isLowEnd, PerformanceGuard, _init (+101 more)
 
-### Community 29 - "state.py"
+### Community 29 - "Prospect"
 Cohesion: 0.04
-Nodes (85): Scout — DIY prospecting without expensive tools. Architecture: Python does ALL…, Writer — crafts personalized email sequences. With a native mail provider…, Campaign, EmailStep, BaseModel, datetime, Naive UTC now (consistent with DB storage; avoids deprecated utcnow)., Parse a stored sequence; tolerates NULL/empty/corrupt JSON. (+77 more)
+Nodes (105): conversation_history(), The thread as the reply prompt shows it, oldest first. Each message is a…, Campaign, EmailStep, BaseModel, datetime, Naive UTC now (consistent with DB storage; avoids deprecated utcnow)., Parse a stored sequence; tolerates NULL/empty/corrupt JSON. (+97 more)
 
 ### Community 30 - "navigation_controller.dart"
-Cohesion: 0.04
-Nodes (55): domain/models/navigation_telemetry.dart, Duration, LatLng?, LatLng? get, averageSpeedKmH, avgSpeedKmH, copyWith, currentPos (+47 more)
+Cohesion: 0.02
+Nodes (119): ../../../core/logic/vehicle_performance_logic.dart, ../../domain/models/maintenance_prediction.dart, domain/models/navigation_telemetry.dart, Duration, int get, LatLng?, LatLng? get, _ (+111 more)
 
 ### Community 31 - "motorcycle_manual_model.dart"
 Cohesion: 0.04
 Nodes (44): clutch, compression, cooling, displacement, dryWeight, emission, engine, frame (+36 more)
 
 ### Community 32 - "route-normalize.mjs"
-Cohesion: 0.08
-Nodes (42): byRoute(), gate(), metadata, ratioOverThreshold(), round2(), sumRows(), extractErrors(), extractFromStatusRows() (+34 more)
+Cohesion: 0.09
+Nodes (38): byRoute(), gate(), metadata, ratioOverThreshold(), round2(), sumRows(), extractErrors(), extractFromStatusRows() (+30 more)
 
 ### Community 33 - "lineOf"
 Cohesion: 0.07
@@ -1545,39 +1533,39 @@ Nodes (39): apply(), metadata, apply(), metadata, MODE_PATTERNS, countMatches(),
 
 ### Community 34 - "test_ats_hiring.py"
 Cohesion: 0.05
-Nodes (82): _alnum(), _ashby(), Board, _day(), detect_board(), feed_url(), _greenhouse(), _lever() (+74 more)
+Nodes (80): _alnum(), _ashby(), Board, _day(), detect_board(), feed_url(), _greenhouse(), _lever() (+72 more)
 
-### Community 35 - "database.dart"
-Cohesion: 0.09
-Nodes (21): AppDatabase, _database, deletePendingExpense, deletePendingKmsUpdate, deletePendingRoute, getPendingExpenses, getPendingKmsUpdates, getPendingRoutes (+13 more)
+### Community 35 - "verify-and-regen.mjs"
+Cohesion: 0.18
+Nodes (22): summarizeClaimResults(), applyQualityFloor(), grade(), gradeRecommendation(), isAccountScope(), roundTo(), scoreActionability(), scoreEvidence() (+14 more)
 
-### Community 36 - "main.py"
-Cohesion: 0.03
-Nodes (71): Brain — Harvey's thinking engine. Runs on the operator's Claude subscription…, Discover businesses and record what was learned about them. ``dry_run``…, run_discovery(), load_env(), Load environment variables from .env file., LinkedIn browser automation via Playwright. Safety-first: humanlike randomized…, heartbeat(), in_quiet_hours() (+63 more)
+### Community 36 - "brain.py"
+Cohesion: 0.06
+Nodes (50): parse_brain_status(), Brain — Harvey's thinking engine. Runs on the operator's Claude subscription…, The stored BRAIN_STATUS_KEY value as a dict ({} if absent or bad)., _env_key(), Set keys in .env, keeping every other line (comments, order, other keys) as it…, _write_env_file(), Canonical filesystem locations for the Harvey checkout. Harvey is repo-centric:…, _newlines() (+42 more)
 
 ### Community 37 - "test_accelerators_funding.py"
-Cohesion: 0.04
-Nodes (83): is_junk(), preset_problem(), preset_templates(), A preset's search templates: one ``term``, or several ``terms``., Why ``preset`` can't run on ``provider_key`` (with ``config``), or None., True when this row would pollute the database rather than fill it., accelerators(), funding_round() (+75 more)
+Cohesion: 0.05
+Nodes (73): build_queries(), is_junk(), preset_problem(), preset_templates(), A preset's search templates: one ``term``, or several ``terms``., Why ``preset`` can't run on ``provider_key`` (with ``config``), or None., Turn the configured ICP into a concrete query list. One query per (industry or…, True when this row would pollute the database rather than fill it. (+65 more)
 
 ### Community 38 - "Scout"
-Cohesion: 0.04
-Nodes (45): Response, A domain worth pursuing: real, unseen, not noise., Scrape a directory/list page for company links., Extract potential company domains mentioned in a search snippet., Build search queries to find ICP-matching companies., Use Claude to score and add personalization notes to found contacts. Falls back…, Deterministic ICP fit score used as a fallback / baseline., Get or create a company record. Returns company_id. (+37 more)
+Cohesion: 0.03
+Nodes (63): Response, A domain worth pursuing: real, unseen, not noise., Scrape a directory/list page for company links., Extract potential company domains mentioned in a search snippet., Build search queries to find ICP-matching companies., Find an email and return (address, honest_status). Status is one of verified /…, Use Claude to score and add personalization notes to found contacts. Falls back…, Deterministic ICP fit score used as a fallback / baseline. (+55 more)
 
 ### Community 39 - "GeneratedPluginRegistrant.swift"
 Cohesion: 0.08
 Nodes (23): app_links, connectivity_plus, device_info_plus, file_picker, file_selector_macos, firebase_core, firebase_messaging, flutter_blue_plus_darwin (+15 more)
 
 ### Community 40 - "test_precleared_hold.py"
-Cohesion: 0.05
-Nodes (78): _buy_url(), _clean(), Clearance, _contains_key(), _country(), current_hold(), _error_code(), _from_cache() (+70 more)
+Cohesion: 0.14
+Nodes (40): Clearance, Precleared's answer for one address. ``allowed``: send it. ``held``: the check…, Store that cold email is waiting on the check, and how to fix it. ``since`` is…, record_hold(), check_on(), fake_config(), _has_control(), _now() (+32 more)
 
-### Community 41 - "supabase_service.dart"
-Cohesion: 0.08
-Nodes (23): addExpense, authStateChanges, client, createVehicle, currentUser, deleteExpense, getExpenses, getRouteHistory (+15 more)
+### Community 41 - "test_export_suppression.py"
+Cohesion: 0.26
+Nodes (15): export_prospects_csv(), Export prospects to CSV. Returns (row_count, csv_text). Writes to ``out_path``…, _names(), asyncio, fixture, parametrize, Outreach exports honor opt-outs; raw exports retain them for inspection., _seed_state() (+7 more)
 
-### Community 42 - "registro_screen.dart"
-Cohesion: 0.08
-Nodes (26): _authSub, build, _buildRegistrarTextField, canSwitchEmail, _completeEmailVerification, confirmPasswordController, createState, dispose (+18 more)
+### Community 42 - "microsoft.py"
+Cohesion: 0.33
+Nodes (9): _LoopbackServer, _LoopbackServerV6, _pkce_pair(), Microsoft 365 / Outlook mailbox provider — Microsoft Graph, no SDK. Microsoft…, One-time sign-in (authorization code + PKCE, loopback redirect). Blocks until…, run_auth_flow(), _save_token(), _token_url() (+1 more)
 
 ### Community 43 - "scripts/deep-dive.mjs"
 Cohesion: 0.14
@@ -1587,25 +1575,25 @@ Nodes (22): escapeODataString(), mergeIntoEvidence(), odataEq(), SCANNER_KINDS, 
 Cohesion: 0.06
 Nodes (85): findRecContradictions(), asArray(), buildScriptHasMigrationSideEffect(), cacheInvalidationFileCache, cacheLifeNeedsContentFreshnessProof(), cleanHeaderValue(), compilePattern(), configContainsTag() (+77 more)
 
-### Community 45 - "bitacora_tanqueo_screen.dart"
-Cohesion: 0.04
-Nodes (52): ../../../core/services/fuel_tracker_service.dart, ../../../../core/services/supabase_service.dart, ../../../core/utils/formatters.dart, ../data/driver_income_service.dart, ../domain/models/fuel_log_model.dart, build, ChangePasswordSheet, _ChangePasswordSheetState (+44 more)
+### Community 45 - "count-correct.mjs"
+Cohesion: 0.29
+Nodes (8): apply(), COUNT_CLAIM_TYPES, metadata, rewriteCount(), apply(), metadata, STRIP_DIRECTIVES, escapeRegex()
 
 ### Community 46 - "test_send_window.py"
-Cohesion: 0.08
-Nodes (85): When cold email may go out, in each recipient's local time. Off unless…, SendWindowConfig, next_send_time(), _place(), The IANA time zone for a recipient, or "" when it can't be told. ``location``…, The first moment at or after ``after`` (naive UTC) inside the window in…, The company's location and the "lat,lon" discovery cached for it., The recipient's country when Harvey is sure of it, for Precleared's… (+77 more)
+Cohesion: 0.07
+Nodes (85): When cold email may go out, in each recipient's local time. Off unless…, SendWindowConfig, next_send_time(), The IANA time zone for a recipient, or "" when it can't be told. ``location``…, The first moment at or after ``after`` (naive UTC) inside the window in…, The recipient's country when Harvey is sure of it, for Precleared's…, recipient_country(), zone_for() (+77 more)
 
 ### Community 47 - "app_update_service.dart"
 Cohesion: 0.04
-Nodes (51): dart:io, dart:isolate, AppUpdateService, checkForUpdate, downloadAndExtractApk, fileSizeBytes, fromMap, installApk (+43 more)
+Nodes (49): dart:isolate, AppUpdateService, checkForUpdate, downloadAndExtractApk, fileSizeBytes, fromMap, installApk, _instance (+41 more)
 
 ### Community 48 - "Handler"
-Cohesion: 0.04
-Nodes (55): conversation_history(), _flat(), Handler, _opt_out_reason(), OurText, Handler — monitors replies and manages conversations. Works against Instantly…, What Harvey wrote for one person, to tell their words from our quote., Their reply without our text: lines that repeat ours are dropped, and any of… (+47 more)
+Cohesion: 0.05
+Nodes (48): _flat(), Handler, _opt_out_reason(), OurText, Handler — monitors replies and manages conversations. Works against Instantly…, What Harvey wrote for one person, to tell their words from our quote., Their reply without our text: lines that repeat ours are dropped, and any of…, Which opt-out rule their reply trips, and on what words, or None. their_text:… (+40 more)
 
 ### Community 49 - "app_localizations.dart"
-Cohesion: 0.07
-Nodes (33): app_localizations.dart, app_localizations_en.dart, app_localizations_es.dart, AppLocalizations, _AppLocalizationsDelegate, appTitle, delegate, email (+25 more)
+Cohesion: 0.04
+Nodes (53): app_localizations.dart, app_localizations_en.dart, app_localizations_es.dart, addEventToCalendar, CalendarSyncService, _, AppFormat, currency (+45 more)
 
 ### Community 50 - "Functional Requirements"
 Cohesion: 0.05
@@ -1623,21 +1611,17 @@ Nodes (16): collectInputFiles(), escapeRegExp(), extractFenceBlocks(), extractJs
 Cohesion: 0.08
 Nodes (22): calculateEfficiencyScore, calculateSavings, FuelEfficiencyLogic, getEfficiencyLabel, analyzeJourneyPatterns, avgSpeedKmH, calculateSmartSavings, formatWeekLabel (+14 more)
 
-### Community 54 - "obd_bluetooth_service.dart"
-Cohesion: 0.04
-Nodes (51): BluetoothCharacteristic?, BluetoothDevice?, BluetoothDevice? get, main, Completer, AutoBluetoothTripService, _deviceNameKey, _enabledKey (+43 more)
-
 ### Community 55 - "Accessibility Guidelines"
 Cohesion: 0.05
 Nodes (36): Accessibility Guidelines, Adding Actions, android:hint, android:labelFor, Automated Testing, Checklist, Color and Visual Cues, Content Labels (+28 more)
 
-### Community 56 - "navigation_service.dart"
-Cohesion: 0.07
-Nodes (28): _buildSpanishInstruction, calculateRoute, displayName, distanceKm, distanceMeters, durationMin, durationSeconds, fromJson (+20 more)
+### Community 56 - "1. Optionals and Safety"
+Cohesion: 0.29
+Nodes (7): 1.1 Safe Unwrapping with if let, 1.2 Guard for Early Exit, 1.3 Nil Coalescing for Defaults, 1.4 Optional Chaining, 1.5 Optional map/flatMap, 1.6 Never Force Unwrap, 1. Optionals and Safety
 
-### Community 57 - "email_finder.py"
-Cohesion: 0.05
-Nodes (76): _belongs_to_someone_else(), build_email(), classify_mx(), _clean_domain(), _clean_name_part(), derive_pattern(), detect_catch_all(), _disambiguate() (+68 more)
+### Community 57 - "test_email_finder.py"
+Cohesion: 0.09
+Nodes (38): _belongs_to_someone_else(), build_email(), classify_mx(), _clean_name_part(), _disambiguate(), find_email(), generate_patterns(), infer_pattern_from_email() (+30 more)
 
 ### Community 58 - "throttle.mjs"
 Cohesion: 0.16
@@ -1649,19 +1633,19 @@ Nodes (14): AppWidgetProvider, Override, Override, RemoteViews, VehicleStatusLis
 
 ### Community 60 - "test_precleared.py"
 Cohesion: 0.07
-Nodes (74): PreclearedConfig, Optional per-recipient cold-email check through Precleared. Off by default.…, PreclearedClient, Build a client when the check is switched on, else return None., checked_send(), asyncio, parametrize, Checkout safety and quota recovery; all requests and sending are mocked. (+66 more)
+Nodes (75): PreclearedConfig, Optional per-recipient cold-email check through Precleared. Off by default.…, PreclearedClient, Build a client when the check is switched on, else return None., checked_send(), asyncio, parametrize, Checkout safety and quota recovery; all requests and sending are mocked. (+67 more)
 
-### Community 61 - "vehicle_expenses_logic.dart"
-Cohesion: 0.05
-Nodes (35): calculateTotal, categories, color, DonutSegment, ExpenseCategory, formatCurrency, getDonutSegments, groupByValues (+27 more)
-
-### Community 62 - "FakeProvider"
-Cohesion: 0.08
-Nodes (69): collect_prospects(), Fetch prospects matching the filters as export-ready dicts. Default view is the…, InboundMessage, test_campaign_text_counts_as_ours_without_an_outbox_row(), test_template_lines_with_merge_tags_are_recognised_when_quoted(), parametrize, test_the_handler_doesnt_confirm_when_a_reply_wasnt_handled(), _approved() (+61 more)
-
-### Community 63 - "fuel_prices_service.dart"
+### Community 61 - "ai_bot_service.dart"
 Cohesion: 0.04
-Nodes (44): ../../features/vehicles/domain/models/insurance_company_model.dart, _cacheKey, ciudad, createdAt, estacion, fetchPrices, fromMap, FuelPriceReport (+36 more)
+Nodes (54): ../../features/vehicles/domain/models/insurance_company_model.dart, AIBotService, _decodeMap, _fallbackModels, _history, initialize, _initialized, _instance (+46 more)
+
+### Community 62 - "seed_prospect"
+Cohesion: 0.07
+Nodes (71): collect_prospects(), Fetch prospects matching the filters as export-ready dicts. Default view is the…, InboundMessage, test_campaign_text_counts_as_ours_without_an_outbox_row(), test_template_lines_with_merge_tags_are_recognised_when_quoted(), parametrize, test_the_handler_doesnt_confirm_when_a_reply_wasnt_handled(), _approved() (+63 more)
+
+### Community 63 - "7. Modern Concurrency (async/await)"
+Cohesion: 0.29
+Nodes (7): 7.1 Async Functions, 7.2 Parallel Execution with TaskGroup, 7.3 async let for Concurrent Bindings, 7.4 Actors for Thread-Safe State, 7.5 MainActor for UI Updates, 7.6 Task Cancellation, 7. Modern Concurrency (async/await)
 
 ### Community 64 - "FlutterWindow"
 Cohesion: 0.13
@@ -1679,29 +1663,29 @@ Nodes (33): Android Vitals Thresholds, ANR Prevention, ANR Triggers, Background 
 Cohesion: 0.09
 Nodes (21): 8dp Grid System, Adaptive Icons (App Icon), Component Dimensions, Corner Radius, Elevation Levels, Elevation & Shadows, Icon Guidelines, Icons (+13 more)
 
-### Community 68 - "._connect"
-Cohesion: 0.03
-Nodes (31): _new_id(), skip_unready_follow_ups: leave out sequence follow-ups whose previous step…, Everything Harvey wrote for this person, which a reply may quote back: their…, Emails autopilot sent back for a human, still waiting., The campaign's planned wait before `step` (days after the step before it), or…, The email a sequence follow-up follows (same campaign and person, one step…, Register a signal in the vocabulary. Never downgrades a user's decision: an…, Confirm / reject a proposed signal. Only confirmed signals are collected —… (+23 more)
+### Community 68 - "StateManager"
+Cohesion: 0.02
+Nodes (88): Analyst — tracks performance and identifies what's working., parse_funding(), funding_text, read back into its parts (any may be "")., _colleagues(), _company_answered(), _email_domain(), _new_id(), _norm() (+80 more)
 
 ### Community 69 - "Privacy & Security Guidelines"
 Cohesion: 0.05
 Nodes (39): Alternative Approaches, App Components Security, Autofill Support, Avoid, Avoid Dangerous Practices, Biometric Authentication, Certificate Pinning (Optional), Code Security (+31 more)
 
-### Community 70 - "manuales_screen.dart"
-Cohesion: 0.08
-Nodes (25): ../data/models/motorcycle_manual_model.dart, ../data/repositories/motorcycle_manuals_repository.dart, build, _buildDetailRow, _buildManualCard, _buildSectionHeader, _buildSpecPill, createState (+17 more)
+### Community 70 - "1. Layout & Safe Areas"
+Cohesion: 0.29
+Nodes (7): 1.1 Minimum 44pt Touch Targets, 1.2 Respect Safe Areas, 1.3 Primary Actions in Thumb Zone, 1.4 Support All Screen Sizes, 1.5 8pt Grid Alignment, 1.6 Landscape Support, 1. Layout & Safe Areas
 
 ### Community 71 - "scanner_provider.dart"
-Cohesion: 0.04
-Nodes (52): ../../data/obd_bluetooth_service.dart, ../../data/obd_decoder.dart, ../../data/vin_decoder_service.dart, _batteryVoltage, _btService, checkDtcsNow, clearAllDtcs, connectToDevice (+44 more)
+Cohesion: 0.02
+Nodes (96): BluetoothCharacteristic?, BluetoothDevice?, BluetoothDevice? get, main, Completer, ../../data/obd_bluetooth_service.dart, ../../data/obd_decoder.dart, ../../data/vin_decoder_service.dart (+88 more)
 
-### Community 72 - "Map"
-Cohesion: 0.07
-Nodes (28): cycleDays, cycleDaysFor, cycleKmsFor, _cycles, getAllCycles, getCycle, getKmsCycle, _instance (+20 more)
+### Community 72 - "preoperational_check_screen.dart"
+Cohesion: 0.04
+Nodes (47): ../data/fleet_service.dart, cycleDays, cycleDaysFor, cycleKmsFor, _cycles, getAllCycles, getCycle, getKmsCycle (+39 more)
 
 ### Community 73 - "test_brain_provider.py"
-Cohesion: 0.05
-Nodes (65): CodexResult, BrainConfig, Which subscription Harvey thinks with. ``claude`` (default) runs Claude Code…, _answering(), _capture_exec(), client(), _codex_brain(), _codex_platform() (+57 more)
+Cohesion: 0.06
+Nodes (63): CodexResult, BrainConfig, Which subscription Harvey thinks with. ``claude`` (default) runs Claude Code…, _answering(), _capture_exec(), client(), _codex_brain(), _codex_platform() (+55 more)
 
 ### Community 74 - "ai-application.md"
 Cohesion: 0.06
@@ -1720,24 +1704,24 @@ Cohesion: 0.14
 Nodes (32): candidateTarget(), contradictsNoChangeReason(), evidenceText(), hasImplementationGradeObservationAction(), hasStaleNextCacheApiObservation(), hasUnsafeBotProtectionObservation(), hasUnsupportedCacheLifeCdnClaim(), hasUnsupportedCacheLifeCdnText() (+24 more)
 
 ### Community 78 - "camera_radar_service.dart"
-Cohesion: 0.05
-Nodes (41): dart:math, calculateHealthIndex, calculateHybridPercentage, calculateProjectedRemainingDays, getProactiveAdvice, getQualityCertifications, getUserLevel, getVehicleStatus (+33 more)
+Cohesion: 0.02
+Nodes (88): ../../../core/logic/pdf_report_logic.dart, ../../../core/logic/vehicle_expenses_logic.dart, CustomPainter, dart:math, _SamsungHorseshoePainter, calculateHealthIndex, calculateHybridPercentage, calculateProjectedRemainingDays (+80 more)
 
 ### Community 79 - "load_config"
-Cohesion: 0.05
-Nodes (73): cmd_trulyinbox(), Connect TrulyInbox, record another warmup service, or show the status., ConfigError, _email_section(), load_config(), Exception, Path, QuietHoursConfig (+65 more)
+Cohesion: 0.06
+Nodes (68): cmd_trulyinbox(), Connect TrulyInbox, record another warmup service, or show the status., ConfigError, ConfigFileNotFoundError, do_not_contact_from_file(), _email_section(), _find_config_file(), live_do_not_contact() (+60 more)
 
 ### Community 80 - "investigation-brief.mjs"
-Cohesion: 0.12
-Nodes (38): absoluteBriefPath(), briefRoots(), buildBrief(), cachePolicyGuidance(), capBriefFiles(), citationSubset(), closestAncestorLayoutFiles(), inferFrameworkPlaybook() (+30 more)
+Cohesion: 0.11
+Nodes (39): absoluteBriefPath(), briefRoots(), buildBrief(), cachePolicyGuidance(), capBriefFiles(), citationSubset(), closestAncestorLayoutFiles(), inferFrameworkPlaybook() (+31 more)
 
 ### Community 81 - "wWinMain"
 Cohesion: 0.24
 Nodes (9): _In_, _In_opt_, vector, wWinMain(), string, wchar_t, CreateAndAttachConsole(), GetCommandLineArguments() (+1 more)
 
 ### Community 82 - "cli.py"
-Cohesion: 0.04
-Nodes (69): active_brain_status(), The stored status if it belongs to ``provider`` (the one configured now), else…, _check_python_version(), cmd_dashboard(), cmd_export(), cmd_gmail(), cmd_install(), cmd_microsoft() (+61 more)
+Cohesion: 0.03
+Nodes (78): _check_python_version(), cmd_dashboard(), cmd_export(), cmd_gmail(), cmd_install(), cmd_microsoft(), cmd_outbox(), cmd_profile() (+70 more)
 
 ### Community 83 - "fuel_log_model.dart"
 Cohesion: 0.15
@@ -1745,7 +1729,7 @@ Nodes (12): esTanqueLleno, fecha, fromJson, FuelLogModel, galones, id, kmsActual
 
 ### Community 84 - "scanner_dashboard_screen.dart"
 Cohesion: 0.03
-Nodes (76): AppAppleTheme, electricBlue, electricBlueLight, electricCyan, glassBackground, glassBackgroundLight, glassBlurSigma, glassBorder (+68 more)
+Nodes (61): ChangeNotifier, AuthProvider, VehicleProvider, NavigationController, ScannerProvider, build, _buildAirbagInfoCard, _buildDtcSection (+53 more)
 
 ### Community 85 - "manifest.json"
 Cohesion: 0.18
@@ -1757,15 +1741,15 @@ Nodes (55): contextDirPath, projects, resolved, resolved, cargo, claudeMd, gitCo
 
 ### Community 87 - "Brain"
 Cohesion: 0.06
-Nodes (41): Brain, parse_brain_status(), Can this Brain be used right now? Returns "" or the reason not. Codex only…, Claude: the installed CLI must support every isolation flag…, Record recovery once a usage-limit pause has run out., Send a prompt to the configured provider and return the response. Retries…, One isolated Codex turn per attempt (see harvey/codex.py)., One usage row per Codex call. ChatGPT plans aren't billed per token, so cost is… (+33 more)
+Nodes (39): Brain, Can this Brain be used right now? Returns "" or the reason not. Codex only…, Claude: the installed CLI must support every isolation flag…, Record recovery once a usage-limit pause has run out., Send a prompt to the configured provider and return the response. Retries…, One isolated Codex turn per attempt (see harvey/codex.py)., One usage row per Codex call. ChatGPT plans aren't billed per token, so cost is…, Split CLI JSON output into (response_text, result_payload). With ``--output-… (+31 more)
 
 ### Community 89 - "State"
-Cohesion: 0.06
-Nodes (52): IosProtocolCard, _IosProtocolCardState, SuccessCheckmark, _SuccessCheckmarkState, PulsingLocationMarker, _PulsingLocationMarkerState, ScannerDashboardScreen, _ScannerDashboardScreenState (+44 more)
+Cohesion: 0.03
+Nodes (77): Animation, AnimationController, ../../../core/services/app_update_service.dart, AppUpdateInfo, IosProtocolCard, _IosProtocolCardState, SuccessCheckmark, _SuccessCheckmarkState (+69 more)
 
 ### Community 90 - "test_do_not_contact.py"
-Cohesion: 0.06
-Nodes (65): ComplianceConfig, do_not_contact_match(), pre_send_check(), The do-not-contact entry ``to_email`` matches, or "". An entry with an "@" is…, Run every deterministic check. Returns ok=False with reasons on any hit.…, test_the_gate_refuses_cold_email_missing_its_configured_address(), _check(), _now_iso() (+57 more)
+Cohesion: 0.05
+Nodes (73): ComplianceConfig, do_not_contact_domain_match(), do_not_contact_match(), pre_send_check(), The do-not-contact entry ``to_email`` matches, or "". An entry with an "@" is…, The do-not-contact entry ``domain`` belongs to, or "". Only domain entries…, Run every deterministic check. Returns ok=False with reasons on any hit.…, test_the_gate_refuses_cold_email_missing_its_configured_address() (+65 more)
 
 ### Community 91 - "scanner-driven.mjs"
 Cohesion: 0.36
@@ -1773,15 +1757,15 @@ Nodes (8): candidateForGroup(), gate(), groupFindings(), metadata, observedCache
 
 ### Community 92 - "test_prompt_injection.py"
 Cohesion: 0.05
-Nodes (60): One string is a list; blanks and duplicates are dropped. Normalising here…, allowed_link_domains(), autopilot_review(), _booking_prefix(), _clean_text(), _dnc_domain(), do_not_contact_domain_match(), do_not_contact_entries() (+52 more)
+Nodes (60): One string is a list; blanks and duplicates are dropped. Normalising here…, allowed_link_domains(), autopilot_review(), _booking_prefix(), _clean_text(), _dnc_domain(), do_not_contact_entries(), do_not_contact_entry() (+52 more)
 
 ### Community 93 - ".application"
 Cohesion: 0.16
 Nodes (10): Flutter, FlutterAppDelegate, AppDelegate, Any, Bool, AppDelegate, Bool, NSApplication (+2 more)
 
-### Community 94 - "dashboard_widgets.dart"
+### Community 94 - "pico_y_placa_service.dart"
 Cohesion: 0.03
-Nodes (70): ../../../../core/services/custom_maintenance_service.dart, ../../../../core/services/pico_y_placa_service.dart, ../../../../core/theme/brand_theme.dart, PicoYPlacaStatus, accentColor, BrandTheme, defaultTheme, getTheme (+62 more)
+Nodes (58): ../../../../core/services/custom_maintenance_service.dart, ../../../../core/services/pico_y_placa_service.dart, ../../../../core/theme/brand_theme.dart, appliesToVehicleType, _checkCityDayRestriction, cityName, _colombiaHolidays, detail (+50 more)
 
 ### Community 95 - "Vercel CLI with Tokens"
 Cohesion: 0.07
@@ -1829,7 +1813,7 @@ Nodes (6): detectBuildCacheDisabled(), lineOfMatch(), metadata, safeScripts(), s
 
 ### Community 106 - "setup.py"
 Cohesion: 0.06
-Nodes (47): normalize_prospect_country(), A two-letter country code ("us" -> "US", "UK" -> "GB"), or "" for none. Raises…, AsyncBaseTransport, _ask(), _ask_brain_config(), _ask_yes_no(), _check_claude_cli(), _check_codex_cli() (+39 more)
+Nodes (45): normalize_prospect_country(), A two-letter country code ("us" -> "US", "UK" -> "GB"), or "" for none. Raises…, AsyncBaseTransport, _ask(), _ask_brain_config(), _ask_yes_no(), _check_claude_cli(), _check_codex_cli() (+37 more)
 
 ### Community 107 - "vehicle_performance_logic.dart"
 Cohesion: 0.29
@@ -1844,32 +1828,32 @@ Cohesion: 0.13
 Nodes (11): Cocoa, FlutterMacOS, FlutterPluginRegistry, FlutterViewController, RunnerTests, RegisterGeneratedPlugins(), MainFlutterWindow, RunnerTests (+3 more)
 
 ### Community 112 - "test_codex_e2e.py"
-Cohesion: 0.07
-Nodes (54): _approved_item(), _DownBrain, Harness, harvey(), _load_pre_codex_db(), _none(), _open_thread(), asyncio (+46 more)
+Cohesion: 0.12
+Nodes (43): _approved_item(), _load_pre_codex_db(), _none(), _open_thread(), asyncio, parametrize, Path, End-to-end: the real heartbeat, agents, Brain and Codex adapter, driven through… (+35 more)
 
-### Community 113 - "make_sender"
+### Community 113 - "FakeProvider"
 Cohesion: 0.14
-Nodes (61): make_sender(), mock_raw(), mock_status(), make_due_again(), people(), asyncio, parametrize, What a failed Precleared check holds back, and what still goes out. A check… (+53 more)
+Nodes (61): FakeProvider, make_sender(), mock_raw(), make_due_again(), people(), asyncio, parametrize, What a failed Precleared check holds back, and what still goes out. A check… (+53 more)
 
-### Community 114 - "simit_webview.dart"
+### Community 114 - "runt_parser.dart"
 Cohesion: 0.03
-Nodes (58): app_snack_bar.dart, ../../core/services/ai_bot_service.dart, ../../core/services/email_service.dart, ../../core/services/runt_parser.dart, AIBotService, _decodeMap, _fallbackModels, _history (+50 more)
+Nodes (74): app_snack_bar.dart, ../../core/services/ai_bot_service.dart, ../../core/services/email_service.dart, ../../core/services/runt_parser.dart, cilindraje, clase, color, combustible (+66 more)
 
-### Community 115 - "test_pidfile.py"
-Cohesion: 0.06
-Nodes (52): main(), hold_loop_lock(), loop_lock_held(), pid_alive(), _pid_alive_windows(), Path, The heartbeat loop's PID file, and a liveness check that never kills.…, Take an exclusive lock on ``handle`` without waiting. (+44 more)
+### Community 115 - "main.py"
+Cohesion: 0.05
+Nodes (58): main(), _needs_setup(), Check if Harvey needs first-time setup., Run the heartbeat with SIGINT/SIGTERM wired to a graceful shutdown., _run_with_signals(), hold_loop_lock(), loop_lock_held(), pid_alive() (+50 more)
 
-### Community 116 - "Prospect"
-Cohesion: 0.06
-Nodes (49): Reoon email-verifier — generous free tier, good catch-all flagging. Returns…, verify_reoon(), Prospect, BaseModel, field_validator, Emails are dedup keys — normalize so 'Jane@X.com' == 'jane@x.com'., A company's published general address (info@, office@) with no named person., A contact must have a name and title — or be a company inbox with an address. (+41 more)
+### Community 116 - "test_company_inbox.py"
+Cohesion: 0.11
+Nodes (32): Reoon email-verifier — generous free tier, good catch-all flagging. Returns…, Map a provider verdict dict to our status, or None if inconclusive., _status_from_verdict(), verify_reoon(), fallback_scout(), inbox(), make_scout(), asyncio (+24 more)
 
 ### Community 117 - "send_window.py"
 Cohesion: 0.07
-Nodes (56): _ambiguous_code(), _bounds(), _clean(), _clock(), _codes(), _country(), country_code(), country_for() (+48 more)
+Nodes (55): _ambiguous_code(), _bounds(), _clean(), _clock(), _codes(), _country(), country_code(), country_for() (+47 more)
 
 ### Community 118 - "test_compliance_footer.py"
-Cohesion: 0.08
-Nodes (47): What the sender wrote, without the email they're answering. ">" lines are…, strip_quoted_reply(), _unquoted(), _approved(), _config(), _now_iso(), asyncio, parametrize (+39 more)
+Cohesion: 0.09
+Nodes (46): What the sender wrote, without the email they're answering. ">" lines are…, strip_quoted_reply(), _unquoted(), _approved(), _config(), _now_iso(), asyncio, parametrize (+38 more)
 
 ### Community 119 - "Skill Creation Process"
 Cohesion: 0.07
@@ -1883,33 +1867,33 @@ Nodes (15): Screen, MainDashboardScreen, Session, MyAutoGuideCarAppService, Scre
 Cohesion: 0.13
 Nodes (48): adr_identifier(), apply_custom_roles(), check_adr(), check_adr_lifecycle(), check_artifacts(), check_context(), check_derived_history_index(), check_log() (+40 more)
 
-### Community 122 - "driver_income_service.dart"
-Cohesion: 0.03
-Nodes (57): double get, FlutterTts, checkSpeedLimit, _humanizeInstruction, init, _instance, _isInitialized, _isMuted (+49 more)
+### Community 122 - "2. Navigation"
+Cohesion: 0.29
+Nodes (7): 2.1 Tab Bar for Top-Level Sections, 2.2 Navigation Architecture, 2.3 Large Titles in Primary Views, 2.4 Never Override Back Swipe, 2.5 Use NavigationStack for Hierarchical Content, 2.6 Preserve State Across Navigation, 2. Navigation
 
-### Community 123 - "StateManager"
-Cohesion: 0.06
-Nodes (20): Approved cold email due by ``due_before``, leaving out follow-ups whose…, The heartbeat held sending this cycle. Keeps when it started., The hold, unless Harvey hasn't seen it for ``max_age_hours`` (it stopped, or…, Emails sent today (the UTC day, or since `since`, a naive UTC ISO time); only…, Company IDs carrying ALL required signals and none excluded. Set intersection…, A killed collector can't close its own run — never trust it to., Keep every footer line Harvey has sent under a cold email, so a reply quoting…, Rollups for today / last 7 days / last 30 days (UTC). (+12 more)
+### Community 123 - "6. Error Handling"
+Cohesion: 0.33
+Nodes (6): 6.1 Define Typed Errors, 6.2 Throwing Functions, 6.3 Do-Catch Handling, 6.4 try? and try!, 6.5 Rethrows, 6. Error Handling
 
 ### Community 124 - "display-labels.mjs"
-Cohesion: 0.11
-Nodes (30): buildBudgetSummary(), buildChatPreview(), buildExactChatMessage(), buildOptions(), buildPrintCheck(), buildQuestionPayload(), buildQuestionText(), renderBudgetSummaryMarkdown() (+22 more)
+Cohesion: 0.13
+Nodes (26): buildBudgetSummary(), buildChatPreview(), buildExactChatMessage(), buildOptions(), buildPrintCheck(), buildQuestionPayload(), buildQuestionText(), renderBudgetSummaryMarkdown() (+18 more)
 
 ### Community 125 - "test_codex.py"
 Cohesion: 0.11
 Nodes (50): _alive(), _client(), _leftover_runtimes(), asyncio, parametrize, Path, skipif, Codex provider adapter: isolation, protocol, usage, failure and cleanup. The… (+42 more)
 
 ### Community 126 - "test_utf8.py"
-Cohesion: 0.08
-Nodes (41): Classify tool calls against compliance steps using LLM., ComplianceResult, Grade observation traces against compliance specs using LLM classification., Parse observation traces (JSONL) and compliance specs (YAML)., generate_report(), _overall_compliance(), Path, Generate Markdown compliance reports. (+33 more)
+Cohesion: 0.09
+Nodes (39): ComplianceResult, generate_report(), _overall_compliance(), Path, Generate Markdown compliance reports., Generate a Markdown compliance report. Args: skill_path: Path to the skill file…, _step_compliance_rate(), _steps_to_promote() (+31 more)
 
 ### Community 127 - "iOS Human Interface Guidelines Patterns"
 Cohesion: 0.07
 Nodes (26): Accessibility, Adaptive Layouts, Color System, Custom Font with Dynamic Type, Dynamic Type Support, Empty States, Error Handling UI, Error States (+18 more)
 
 ### Community 128 - "package:flutter/material.dart"
-Cohesion: 0.02
-Nodes (100): Color, ../../../core/services/voice_navigation_service.dart, ../../../core/services/waze_community_alerts_service.dart, core/theme/app_apple_theme.dart, dart:ui, ../../data/models/guide_protocol_model.dart, IconData, ios_cupertino_date_sheet.dart (+92 more)
+Cohesion: 0.01
+Nodes (175): ai_insights_panel.dart, Color, ../../../../core/logic/fuel_efficiency_logic.dart, ../../../../core/logic/vehicle_health_logic.dart, ../../domain/models/vehicle_analytics.dart, IconData, ios_cupertino_date_sheet.dart, ios_health_gauge.dart (+167 more)
 
 ### Community 130 - "What You Must Do When Invoked"
 Cohesion: 0.07
@@ -1917,11 +1901,11 @@ Nodes (26): For /graphify add and --watch, For /graphify query, For the commit h
 
 ### Community 131 - "test_local_rank.py"
 Cohesion: 0.09
-Nodes (46): _capture(), _client(), _envelope(), _in_range(), _install(), offline(), _organic(), _pack() (+38 more)
+Nodes (48): The 'Warmup service' line: TrulyInbox's view of the mailbox, or the…, _warmup_service_check(), _capture(), _client(), _envelope(), _in_range(), _install(), offline() (+40 more)
 
 ### Community 132 - "grade"
-Cohesion: 0.11
-Nodes (27): classify_events(), Classify which tool calls match which compliance steps. Returns {step_id:…, _check_temporal_order(), _demote_steps_resting_on_failures(), grade(), Grade a trace against a compliance spec using LLM classification., Check before_step/after_step constraints. Returns failure reason or None., Undo passes that rest on an `after_step` which ended up failing. A step… (+19 more)
+Cohesion: 0.10
+Nodes (30): classify_events(), Classify tool calls against compliance steps using LLM., Classify which tool calls match which compliance steps. Returns {step_id:…, _check_temporal_order(), _demote_steps_resting_on_failures(), grade(), Grade observation traces against compliance specs using LLM classification., Grade a trace against a compliance spec using LLM classification. (+22 more)
 
 ### Community 142 - "instinct-cli.py"
 Cohesion: 0.07
@@ -1996,8 +1980,8 @@ Cohesion: 0.10
 Nodes (19): Animation Group, Basic Animation, Basic UIView Animation, CAGradientLayer, CAShapeLayer, Common Shapes, Core Animation, Custom Paths (+11 more)
 
 ### Community 160 - "Swift Coding Standards"
-Cohesion: 0.04
-Nodes (45): 10.1 Common SwiftUI Property Wrappers, 10.2 Custom Property Wrappers, 10. Property Wrappers, 1.1 Safe Unwrapping with if let, 1.2 Guard for Early Exit, 1.3 Nil Coalescing for Defaults, 1.4 Optional Chaining, 1.5 Optional map/flatMap (+37 more)
+Cohesion: 0.08
+Nodes (25): 10.1 Common SwiftUI Property Wrappers, 10.2 Custom Property Wrappers, 10. Property Wrappers, 3.1 Define Capabilities Through Protocols, 3.2 Protocol Extensions for Default Behavior, 3.3 Associated Types for Flexibility, 3.4 Protocol Composition, 3. Protocol-Oriented Design (+17 more)
 
 ### Community 161 - "Rules"
 Cohesion: 0.10
@@ -2116,7 +2100,7 @@ Cohesion: 0.15
 Nodes (13): Data collection, Error states and fallbacks, Per-signal source matrix, Real JSON shapes, Table of contents, The `signals.json` shape, `vercel api /v9/projects/<id>` / `?teamId=<orgId>`, `vercel contract --format json` (+5 more)
 
 ### Community 190 - "ios-application-dev/SKILL.md"
-Cohesion: 0.17
+Cohesion: 0.18
 Nodes (7): Grid Layout, Layout System, Safe Area, Sectioned List with Headers, Spacing Guidelines, Touch Targets, UICollectionView with Diffable Data Source
 
 ### Community 191 - "Checklist"
@@ -2188,8 +2172,8 @@ Cohesion: 0.27
 Nodes (4): Install, Procedure, Requirements, vercel-optimize
 
 ### Community 208 - "test_dashboard_signals.py"
-Cohesion: 0.05
-Nodes (30): asyncio, parametrize, Dashboard API for the signal-confirmation gate, cohorts, and Today. These cover…, Past the first page used to be unreachable: 147 matches showed 50., An empty cohort must never mean 'select all' — that would silently turn a mis-…, UTF-8 assets must survive a CP1252 host without crashes or mojibake., `harvey signals --confirm free` and the dashboard's green/amber cost chip both…, Harvey proposes. Nothing is live until a human says so. (+22 more)
+Cohesion: 0.03
+Nodes (57): Did a YC-preset search find this company (its latest YC reading is a discovery…, Is the company's latest reading of ``signal_code`` a preset search's hit…, /api/conversations carries the whole exchange: the cold emails a reply answers…, _seed(), _sql(), test_a_conversation_without_emails_or_draft(), test_a_prospect_in_two_campaigns_sees_only_the_sequence_the_reply_answers(), test_an_escalated_conversation_shows_on_today_and_can_be_handed_back() (+49 more)
 
 ### Community 209 - "scoring.md"
 Cohesion: 0.20
@@ -2217,7 +2201,7 @@ Nodes (47): cmd_projects(), _cmd_projects_delete(), _cmd_projects_gc(), _cmd_pro
 
 ### Community 215 - "test_dashboard_manual_send.py"
 Cohesion: 0.11
-Nodes (40): test_campaigns_carry_the_footer_for_sending_by_hand(), _campaign(), _Cfg, client(), _Email, env(), _outbox(), _prospect() (+32 more)
+Nodes (41): test_campaigns_carry_the_footer_for_sending_by_hand(), _campaign(), _Cfg, client(), _Email, env(), _outbox(), _prospect() (+33 more)
 
 ### Community 216 - "Design Engineering"
 Cohesion: 0.22
@@ -2228,8 +2212,8 @@ Cohesion: 0.22
 Nodes (8): graphify reference: extra exports and benchmark, Step 6b - Wiki (only if --wiki flag), Step 7 - Neo4j export (only if --neo4j or --neo4j-push flag), Step 7a - FalkorDB export (only if --falkordb or --falkordb-push flag), Step 7b - SVG export (only if --svg flag), Step 7c - GraphML export (only if --graphml flag), Step 7d - MCP server (only if --mcp flag), Step 8 - Token reduction benchmark (only if total_words > 5000)
 
 ### Community 218 - "SwiftUI Design Guidelines"
-Cohesion: 0.07
-Nodes (29): 1.1 Minimum 44pt Touch Targets, 1.2 Respect Safe Areas, 1.3 Primary Actions in Thumb Zone, 1.4 Support All Screen Sizes, 1.5 8pt Grid Alignment, 1.6 Landscape Support, 1. Layout & Safe Areas, 2.1 Tab Bar for Top-Level Sections (+21 more)
+Cohesion: 0.20
+Nodes (10): Anti-Patterns, Data Display, Design Philosophy, iPad Adaptation, Navigation & Structure, Pre-Release Verification, Quick Reference, SwiftUI Design Guidelines (+2 more)
 
 ### Community 219 - "3. Reverse-Engineered Screen Specifications"
 Cohesion: 0.12
@@ -2292,24 +2276,24 @@ Cohesion: 0.25
 Nodes (8): Failure Copy, Final Customer Terms, Framework Support, Prerequisites, Recommendation Rules, Run Directory, Scanner Rules, Vercel Optimize
 
 ### Community 234 - "Writer"
-Cohesion: 0.09
-Nodes (28): Count one unusable sequence against each prospect in the batch. A prospect left…, Draft a grounded, per-prospect email 1 and stage it in the outbox. The outbox…, Fact lines when the company is a startup (YC, another accelerator, a raise it…, skills/selling_to_startups.md, for startup prospects ("" if absent)., The owner's notes from the dashboard's Feedback buttons, as prompt text (""…, One grounded draft for one person. Facts in, one email out., Ask the brain to write a 3-email sequence., Robustly coerce LLM output into a validated EmailStep list. Never raises.… (+20 more)
+Cohesion: 0.08
+Nodes (28): Brain, Count one unusable sequence against each prospect in the batch. A prospect left…, Fact lines when the company is a startup (YC, another accelerator, a raise it…, skills/selling_to_startups.md, for startup prospects ("" if absent)., The owner's notes from the dashboard's Feedback buttons, as prompt text (""…, One grounded draft for one person. Facts in, one email out., Ask the brain to write a 3-email sequence., Robustly coerce LLM output into a validated EmailStep list. Never raises.… (+20 more)
 
-### Community 235 - "package:supabase_flutter/supabase_flutter.dart"
-Cohesion: 0.03
-Nodes (68): dart:convert, ../../features/expenses/domain/models/fuel_log_model.dart, AchievementItem, AchievementsService, color, description, icon, id (+60 more)
+### Community 235 - "driver_income_service.dart"
+Cohesion: 0.01
+Nodes (141): dart:convert, ../../features/expenses/domain/models/fuel_log_model.dart, AchievementItem, AchievementsService, color, description, icon, id (+133 more)
 
 ### Community 236 - "Frontend Design"
 Cohesion: 0.29
 Nodes (6): Design principles, Frontend Design, Ground it in the subject, More on writing in design, Process: brainstorm, explore, plan, critique, build, critique again, Restraint and self-critique
 
 ### Community 237 - "Company"
-Cohesion: 0.08
-Nodes (39): Collectors — deterministic gatherers that emit observations. Each collector is…, Company, BaseModel, field_validator, Domains are dedup keys — normalize case/whitespace., chain(), config(), FakeDiscovery (+31 more)
+Cohesion: 0.06
+Nodes (55): Company, BaseModel, datetime, field_validator, Domains are dedup keys — normalize case/whitespace., Naive UTC now (consistent with DB storage; avoids deprecated utcnow)., _utcnow(), chain() (+47 more)
 
 ### Community 238 - "test_yc_startups.py"
-Cohesion: 0.08
-Nodes (37): _is_their_yc_page(), A YC page link is theirs when its name matches their domain's: a customer logo…, (batch like "W24" or "", confidence) when the page says the company itself is…, yc_backed(), _yc_batch(), _config(), fixture, parametrize (+29 more)
+Cohesion: 0.07
+Nodes (45): _is_their_yc_page(), A YC page link is theirs when its name matches their domain's: a customer logo…, (batch like "W24" or "", confidence) when the page says the company itself is…, yc_backed(), The signal vocabulary Harvey proposes, and the user confirms. Harvey never…, Register the catalog as PROPOSED signals awaiting user confirmation.…, seed_signal_catalog(), _config() (+37 more)
 
 ### Community 239 - "10. System Integration"
 Cohesion: 0.29
@@ -2319,9 +2303,9 @@ Nodes (7): 10.1 Widgets for Glanceable Data, 10.2 App Shortcuts for Key Actions,
 Cohesion: 0.04
 Nodes (45): API Authentication — Sanctum vs Passport, API Security, Attribute Casting, Authentication, Authorization, Blade Templating Security, Composer Security, CORS Configuration (+37 more)
 
-### Community 241 - "codex.py"
-Cohesion: 0.08
-Nodes (40): attest_hooks(), attest_mcp_status(), attest_thread(), build_access_snapshot(), build_thread_config(), build_thread_params(), describe_catalog(), describe_model() (+32 more)
+### Community 241 - "pick_default_model"
+Cohesion: 0.10
+Nodes (28): attest_hooks(), attest_mcp_status(), attest_thread(), describe_catalog(), describe_model(), _isolation_error(), model_tools_removable(), parse_model_catalog() (+20 more)
 
 ### Community 242 - "9. Privacy & Permissions"
 Cohesion: 0.29
@@ -2388,12 +2372,12 @@ Cohesion: 0.33
 Nodes (6): 2.1 Types: PascalCase, 2.2 Variables and Functions: camelCase, 2.3 Boolean Naming, 2.4 Function Naming, 2.5 Parameter Labels, 2. Naming Conventions
 
 ### Community 258 - "CodexError"
-Cohesion: 0.08
-Nodes (23): _AppServer, CodexError, _kill_tree(), parse_cli_version(), Exception, Run a one-shot ``codex`` command in this runtime., The model catalog this runtime will use, keyed by model slug. ``codex debug…, Kill the running process (if any) and its tree; keep the files. (+15 more)
+Cohesion: 0.09
+Nodes (21): _AppServer, CodexError, _kill_tree(), parse_cli_version(), Exception, Run a one-shot ``codex`` command in this runtime., The model catalog this runtime will use, keyed by model slug. ``codex debug…, Kill the running process (if any) and its tree; keep the files. (+13 more)
 
-### Community 259 - "background_nav_service.dart"
-Cohesion: 0.06
-Nodes (34): @pragma, dart:async, ../../features/navigation/logic/telemetry_calculator.dart, activeColor, androidWidgetName, AppWidgetLogic, backgroundCallback, healthListWidgetName (+26 more)
+### Community 259 - "voice_navigation_service.dart"
+Cohesion: 0.03
+Nodes (73): @pragma, core/logic/app_widget_logic.dart, core/providers/auth_provider.dart, core/providers/vehicle_provider.dart, core/services/auth_service.dart, core/services/background_nav_service.dart, core/services/sync_service.dart, dart:async (+65 more)
 
 ### Community 260 - "Sections"
 Cohesion: 0.33
@@ -2448,8 +2432,8 @@ Cohesion: 0.33
 Nodes (5): For /graphify explain, For /graphify path, graphify reference: query, path, explain, Step 0 — Constrained query expansion (REQUIRED before traversal), Step 1 — Traversal
 
 ### Community 273 - "GmailProvider"
-Cohesion: 0.11
-Nodes (29): _entry_id(), GmailError, GmailProvider, _load_token(), RuntimeError, Valid access token, refreshing via the stored refresh token., Every reply since the last confirmed read, or raise, so sends wait. The first…, The handler handled everything the last get_replies returned: the next read… (+21 more)
+Cohesion: 0.09
+Nodes (33): _entry_id(), GmailError, GmailProvider, _load_token(), RuntimeError, Gmail / Google Workspace mailbox provider — raw REST, no SDK weight. Setup…, Valid access token, refreshing via the stored refresh token., Every reply since the last confirmed read, or raise, so sends wait. The first… (+25 more)
 
 ### Community 274 - "Coding Standards & Best Practices"
 Cohesion: 0.05
@@ -2675,9 +2659,9 @@ Nodes (41): Argument Capture, Basic Mocking, BeforeTest / AfterTest, BehaviorSpe
 Cohesion: 0.05
 Nodes (41): 10. Vue 3.5+ New APIs, 1. Project Structure, 2. Component Architecture, 3. Composables (Reusable Logic), 4. State Management, 5. Vue Router, 6. Template Patterns, 7. Performance (+33 more)
 
-### Community 333 - "auth_service.dart"
-Cohesion: 0.05
-Nodes (37): authCallbackUrl, AuthLogicException, AuthService, clearPendingPasswordRecovery, currentUser, getFirstVehicleId, _hasPendingPasswordRecovery, initRecoveryWatcher (+29 more)
+### Community 333 - "EmailResult"
+Cohesion: 0.40
+Nodes (3): EmailResult, Outcome of an email lookup. status is the source of truth., Safe to send cold: confirmed mailbox only (risky is opt-in elsewhere).
 
 ### Community 334 - "Windows Desktop E2E Testing"
 Cohesion: 0.05
@@ -2706,10 +2690,6 @@ Nodes (4): Animation Triggers, Core Concepts, Critical Placement Rule, The `<Vie
 ### Community 342 - "How Multiple VTs Interact"
 Cohesion: 0.50
 Nodes (4): How Multiple VTs Interact, Nested VT Limitation, Two Patterns Coexist, Use `default="none"` Liberally
-
-### Community 343 - "fleet_dashboard_screen.dart"
-Cohesion: 0.05
-Nodes (40): ../data/fleet_service.dart, FleetModel, createState, FleetDashboardScreen, _FleetDashboardScreenState, _fleets, initState, _inspections (+32 more)
 
 ### Community 344 - "How Multiple VTs Interact"
 Cohesion: 0.50
@@ -2748,8 +2728,8 @@ Cohesion: 0.67
 Nodes (3): 8.1 Destructure Functions Early in Render (React Compiler), 8.2 Use .get() and .set() for Reanimated Shared Values (not .value), 8. React Compiler
 
 ### Community 481 - "test_signals_export.py"
-Cohesion: 0.09
-Nodes (37): export_prospects(), Sequencer-ready CSV download of the prospect list., export_prospects_csv(), Export prospects to CSV. Returns (row_count, csv_text). Writes to ``out_path``…, to_csv(), detect_tech(), _get_compiled(), Tech-stack detection — what tools a company's website reveals. A curated subset… (+29 more)
+Cohesion: 0.14
+Nodes (20): to_csv(), detect_tech(), _get_compiled(), Tech-stack detection — what tools a company's website reveals. A curated subset…, Return the tools detectable in a page's HTML, alphabetized., asyncio, fixture, Tests for tech detection, company signals storage, and prospect export. (+12 more)
 
 ### Community 482 - "obd_decoder.dart"
 Cohesion: 0.18
@@ -2759,9 +2739,9 @@ Nodes (10): cleanProtocolName, decodeDtcResponse, decodeFreezeFrameResponse, dec
 Cohesion: 0.06
 Nodes (28): parametrize, DISCOVER — junk filtering, entity resolution, cost discipline, adapters. The…, Management' is in managementharbor.com but says nothing about it., A TinyFish run must not mark businesses Serper ranked as 'gone'., The registry's one instance is used by runs in different loops., Someone should be able to run the whole pipeline before paying anyone., test_a_failed_query_does_not_lose_the_successful_ones(), test_brand_wins_over_generic_service_segment() (+20 more)
 
-### Community 484 - "_"
-Cohesion: 0.06
-Nodes (31): ../../../core/logic/vehicle_performance_logic.dart, int get, _, carTariffCop, ColombiaTollsService, ColombiaTollStation, corridor, _corridorTolls (+23 more)
+### Community 484 - "6. Gestures & Input"
+Cohesion: 0.40
+Nodes (5): 6.1 Use Standard Gestures, 6.2 Never Override System Gestures, 6.3 Custom Gestures Must Be Discoverable, 6.4 Support All Input Methods, 6. Gestures & Input
 
 ### Community 485 - "Quarkus Verification Loop"
 Cohesion: 0.05
@@ -2773,19 +2753,19 @@ Nodes (39): Anti-Patterns, Authoring Custom Plugins, Avoid Barrel Files, Basic C
 
 ### Community 487 - "lib/render-report.mjs"
 Cohesion: 0.08
-Nodes (56): classifyService(), computeCostCoverage(), escapeCell(), renderCostCoverageMarkdown(), SERVICE_DIMENSION, formatCandidateLabel(), deriveProjectFacts(), asArray() (+48 more)
+Nodes (59): classifyService(), computeCostCoverage(), escapeCell(), renderCostCoverageMarkdown(), SERVICE_DIMENSION, formatCandidateLabel(), formatKind(), formatRoute() (+51 more)
 
 ### Community 488 - "API Design Patterns"
 Cohesion: 0.05
 Nodes (38): API Design Checklist, API Design Patterns, Authentication and Authorization, Authorization Patterns, Collection Response (with Pagination), Common Mistakes, Cursor-Based (Scalable), Error Response (+30 more)
 
 ### Community 489 - "InstantlyClient"
-Cohesion: 0.08
-Nodes (19): InstantlyClient, Any, Response, Normalize list responses: API may return a bare list or {items: [...]}., Create a new campaign. Returns campaign data with id., Get campaign details., Update campaign sending schedule., Set the email sequence for a campaign. sequences format: [ { "subject":… (+11 more)
+Cohesion: 0.07
+Nodes (20): InstantlyClient, Any, Response, Instantly.ai API client for cold email campaigns., Normalize list responses: API may return a bare list or {items: [...]}., Create a new campaign. Returns campaign data with id., Get campaign details., Update campaign sending schedule. (+12 more)
 
 ### Community 490 - "test_dashboard_auth.py"
 Cohesion: 0.07
-Nodes (21): _free_port(), _node(), parametrize, Who may use the dashboard API (harvey/dashboard_auth.py). Everything here runs…, What a hostile page can send with fetch(..., {mode: 'no-cors'}) or a form: no…, uvicorn on a real loopback socket, started through `harvey dashboard`., test_authorised_mutations_with_a_body_must_be_json(), test_bad_fragment_is_stripped_but_not_stored() (+13 more)
+Nodes (23): _node(), parametrize, Who may use the dashboard API (harvey/dashboard_auth.py). Everything here runs…, What a hostile page can send with fetch(..., {mode: 'no-cors'}) or a form: no…, Websites and profile URLs come from scraped data; only http(s) links are…, test_authorised_mutations_with_a_body_must_be_json(), test_bad_fragment_is_stripped_but_not_stored(), test_collected_links_cannot_run_script_in_the_dashboard() (+15 more)
 
 ### Community 491 - "Generating Python Installer (Commercial-Grade)"
 Cohesion: 0.05
@@ -2796,8 +2776,8 @@ Cohesion: 0.05
 Nodes (37): 1. Simplicity and Clarity, 2. Make the Zero Value Useful, 3. Accept Interfaces, Return Structs, Anti-Patterns to Avoid, Avoid Package-Level State, Avoid String Concatenation in Loops, Avoiding Goroutine Leaks, Concurrency Patterns (+29 more)
 
 ### Community 493 - "test_microsoft.py"
-Cohesion: 0.16
-Nodes (37): GraphError, RuntimeError, Env, _handler_with_prospect(), message(), provider(), asyncio, parametrize (+29 more)
+Cohesion: 0.20
+Nodes (29): _handler_with_prospect(), message(), provider(), asyncio, parametrize, Microsoft 365 provider: token rotation, draft-then-send, threaded replies,…, End to end with the handler: a Graph outage is a failed read., test_a_bad_later_page_fails_the_whole_read() (+21 more)
 
 ### Community 494 - "Kotlin Development Patterns"
 Cohesion: 0.05
@@ -2807,9 +2787,9 @@ Nodes (37): 1. Null Safety, 2. Immutability by Default, 3. Expression Bodies and
 Cohesion: 0.15
 Nodes (21): Path, Run scenarios via claude -p and parse tool calls from stream-json output., Sanitize scenario ID and ensure path stays within sandbox base., Create sandbox directory and run setup commands., Execute a scenario and extract tool calls from stream-json output., Reject links at the base itself; trusted parent aliases remain usable. This is…, run_scenario(), _safe_sandbox_dir() (+13 more)
 
-### Community 496 - "render_horizontal_16x9.py"
-Cohesion: 0.24
-Nodes (10): create_phone_mockup(), get_font(), main(), render_frame_16x9(), fetch_motorcycles(), main(), push_to_supabase_batch(), Mapea y limpia los campos de la API para la tabla motorcycle_manuals. (+2 more)
+### Community 496 - "extract_and_seed_manuals.py"
+Cohesion: 0.43
+Nodes (6): fetch_motorcycles(), main(), push_to_supabase_batch(), Mapea y limpia los campos de la API para la tabla motorcycle_manuals., Inserta registros a Supabase usando REST con Upsert (ON CONFLICT ignore/merge)., sanitize_item()
 
 ### Community 497 - "PRP Plan"
 Cohesion: 0.05
@@ -2819,9 +2799,9 @@ Nodes (37): Ambiguity Gate, Codebase Analysis (5 Traces), Codebase Search (8 Cat
 Cohesion: 0.38
 Nodes (10): computeImpactLabel(), cwvIssue(), formatCwvIssue(), formatInteger(), joinEnglish(), parseSigNumber(), round1(), round2() (+2 more)
 
-### Community 499 - "ProfileCollector"
-Cohesion: 0.09
-Nodes (20): looks_like_challenge(), ProfileCollector, Collect every confirmed profile signal for one business., Profile many businesses, flushing observations after each one. Flush-per-item…, A bot challenge or block page — not a real page that happens to load reCAPTCHA…, Fetches a business's public pages and emits observations. Only signals the user…, Return (working base url, homepage html), or ("", "") if none work. Tries…, Return (url, html) for the first path that returns content. (+12 more)
+### Community 499 - "profile.py"
+Cohesion: 0.05
+Nodes (43): accelerators(), _alnum(), _amount(), _amount_in(), _cohort_finder(), _domain_name(), _lines(), looks_like_challenge() (+35 more)
 
 ### Community 500 - "asyncio"
 Cohesion: 0.09
@@ -2836,24 +2816,24 @@ Cohesion: 0.40
 Nodes (3): ALLOWED_MIME_TYPES, corsHeaders, requestCounts
 
 ### Community 504 - "mail_provider.py"
-Cohesion: 0.08
-Nodes (20): ABC, Gmail / Google Workspace mailbox provider — raw REST, no SDK weight. Setup…, One-time OAuth (installed-app loopback). Blocks until the browser round-trip…, run_auth_flow(), _save_token(), get_mail_provider(), looks_like_bounce(), MailProvider (+12 more)
+Cohesion: 0.09
+Nodes (17): ABC, get_mail_provider(), looks_like_bounce(), MailProvider, Mail provider abstraction — Harvey owns its sending, Instantly optional. A…, A mailbox Harvey can send from and read replies out of., Whether required credentials are present (no network)., Send one plain-text email. Reply threading when refs are given. (+9 more)
 
 ### Community 505 - "test_collectors_profile.py"
-Cohesion: 0.09
-Nodes (34): True when the text following a name reads like a job title. A name with no role…, title_looks_like_role(), The signal vocabulary Harvey proposes, and the user confirms. Harvey never…, collector(), asyncio, fixture, parametrize, Tests for the free PROFILE collector and the observation model. (+26 more)
+Cohesion: 0.10
+Nodes (33): True when the text following a name reads like a job title. A name with no role…, title_looks_like_role(), collector(), asyncio, fixture, parametrize, Tests for the free PROFILE collector and the observation model., The 220-char window used to end mid-tag: 'CEO <div class="descriptio'. (+25 more)
 
 ### Community 506 - "fleet_service.dart"
-Cohesion: 0.06
-Nodes (35): aliasConductor, aprobada, codigoInvitacion, createdAt, createFleet, _decodeInspections, FleetMemberModel, FleetService (+27 more)
+Cohesion: 0.04
+Nodes (56): aliasConductor, aprobada, codigoInvitacion, createdAt, createFleet, _decodeInspections, FleetMemberModel, FleetModel (+48 more)
 
 ### Community 507 - "Django Security Best Practices"
 Cohesion: 0.06
 Nodes (33): API Security, Authentication, Authentication for APIs, Authorization, Content Security Policy, Core Security Settings, CSRF Protection, Custom Permissions (+25 more)
 
 ### Community 508 - "test_scout_decision_maker.py"
-Cohesion: 0.13
-Nodes (33): A challenge or block page — not a real page that happens to load reCAPTCHA for…, no_network(), asyncio, fixture, parametrize, Scout end to end on a fake site: it follows the site's own menu to the owner,…, A real Scout whose network is a dict of url -> html (or a response)., site_scout() (+25 more)
+Cohesion: 0.17
+Nodes (28): no_network(), asyncio, fixture, Scout end to end on a fake site: it follows the site's own menu to the owner,…, A real Scout whose network is a dict of url -> html (or a response)., site_scout(), test_a_local_business_listing_allows_the_first_name_default(), test_a_menu_link_that_redirects_off_site_is_not_read() (+20 more)
 
 ### Community 509 - "Core Concepts"
 Cohesion: 0.50
@@ -2879,17 +2859,17 @@ Nodes (34): Assertion Macros, Async Tests, Basic Property Tests, Benchmarking wi
 Cohesion: 0.06
 Nodes (33): Activating Commands, Agent Definition Format, Agentic OS, Anti-Patterns, Architecture Overview, Auto-Reflection Pattern, Best Practices, Command Structure (+25 more)
 
-### Community 515 - "HarveyConfig"
-Cohesion: 0.10
-Nodes (29): Brain, Brain, Brain, HarveyConfig, _backup(), Path, Save ``raw`` next to ``path`` without overwriting an earlier backup., Write a trained config to ``path`` without losing the operator's settings. The… (+21 more)
-
-### Community 516 - "platform-fluid-compute.mjs"
+### Community 515 - "external-api-slow.mjs"
 Cohesion: 0.60
-Nodes (4): extractHighColdRoutes(), extractSlowHotRoutes(), gate(), metadata
+Nodes (4): extractCallCounts(), extractExternalApis(), gate(), metadata
 
-### Community 517 - "test_humanize.py"
-Cohesion: 0.12
-Nodes (30): _acceptable(), humanize(), _humanize_one(), humanizer_enabled(), load_skill(), Path, Humanizer pass — rewrites drafts with the operator's installed Humanizer skill.…, True only when the operator turned the pass on in harvey.yaml. (+22 more)
+### Community 516 - "platform-bot-protection.mjs"
+Cohesion: 0.60
+Nodes (4): computeBotShare(), gate(), metadata, totalRequestsFromSignals()
+
+### Community 517 - "writer.py"
+Cohesion: 0.07
+Nodes (44): Generate an appropriate response based on intent., Writer — crafts personalized email sequences. With a native mail provider…, Draft a grounded, per-prospect email 1 and stage it in the outbox. The outbox…, Why calls are currently being skipped ("" when they aren't)., _acceptable(), humanize(), _humanize_one(), humanizer_enabled() (+36 more)
 
 ### Community 518 - "Modern Perl Development Patterns"
 Cohesion: 0.06
@@ -2900,8 +2880,8 @@ Cohesion: 0.06
 Nodes (33): 1. IAM & Access Control, 2. Secrets Management, 3. Network Security, 4. Logging & Monitoring, 5. CI/CD Pipeline Security, 6. Cloudflare & CDN Security, 7. Backup & Disaster Recovery, Automated Backups (+25 more)
 
 ### Community 520 - "test_grader.py"
-Cohesion: 0.09
-Nodes (20): parse_spec(), parse_trace(), Path, Parse a JSONL observation trace file into sorted events., Parse a YAML compliance spec file., compliant_trace(), _mock_compliant_classification(), _mock_noncompliant_classification() (+12 more)
+Cohesion: 0.10
+Nodes (19): parse_spec(), parse_trace(), Path, Parse a JSONL observation trace file into sorted events., Parse a YAML compliance spec file., compliant_trace(), _mock_compliant_classification(), _mock_noncompliant_classification() (+11 more)
 
 ### Community 521 - "ClickHouse Analytics Patterns"
 Cohesion: 0.06
@@ -2936,8 +2916,8 @@ Cohesion: 0.06
 Nodes (31): Basic Benchmarks, Basic Fuzz Test, Benchmark with Different Sizes, Benchmarks, Best Practices, Coverage Targets, Excluding Generated Code from Coverage, Fuzz Test with Multiple Inputs (+23 more)
 
 ### Community 530 - "MicrosoftProvider"
-Cohesion: 0.11
-Nodes (18): _checked_next_link(), _load_token(), _LoopbackServer, _LoopbackServerV6, MicrosoftProvider, _pkce_pair(), AsyncClient, Microsoft 365 / Outlook mailbox provider — Microsoft Graph, no SDK. Microsoft… (+10 more)
+Cohesion: 0.12
+Nodes (18): _checked_next_link(), GraphError, _load_token(), MicrosoftProvider, AsyncClient, RuntimeError, Valid access token. Microsoft rotates the refresh token on every use, so the…, One Graph call. Raises GraphError on failure; retries once when Graph asks to… (+10 more)
 
 ### Community 531 - "test_usage.py"
 Cohesion: 0.09
@@ -2971,17 +2951,17 @@ Nodes (30): API ViewSet Testing, conftest.py, Coverage, Coverage Configuration, 
 Cohesion: 0.06
 Nodes (30): Absolute Paths, AI-Assisted and Vibe Coding, Anti-Patterns, Basic Installation, C/C++, Core Concepts, Debugging, Environment Sharing (+22 more)
 
-### Community 539 - "test_email_evidence.py"
+### Community 539 - "derive_pattern"
 Cohesion: 0.12
-Nodes (24): pattern_from_local(), The likely pattern behind one published address when nobody on the site is tied…, What a site's own published addresses say about its email format. Returns…, site_email_evidence(), PatternState, asyncio, parametrize, What a site's published addresses say about its email format, and a pattern… (+16 more)
+Nodes (28): derive_pattern(), _hunter_domain_pattern(), pattern_from_local(), The likely pattern behind one published address when nobody on the site is tied…, What a site's own published addresses say about its email format. Returns…, Hunter's free domain-search returns the org's dominant email pattern. Hunter…, Determine a domain's email pattern. Returns (pattern, source, confidence).…, site_email_evidence() (+20 more)
 
 ### Community 540 - "Cold Email Copywriting"
 Cohesion: 0.06
 Nodes (30): Adjustments by prospect, Bad personalization, Bad subjects, Banned Formatting, Banned Patterns, Campaign Variety, Cold Email Copywriting, Compliance & Deliverability (Overrides Everything Below) (+22 more)
 
 ### Community 541 - "test_gmail_history.py"
-Cohesion: 0.19
-Nodes (27): added(), FakeGmail, message(), provider(), asyncio, Gmail reads only what changed since the last check. The 7-day read (#62/#69) is…, It would be listed in every history read and fail every time., The heartbeat, end to end: cycle 1 reads the week and confirms; cycle 2 reads… (+19 more)
+Cohesion: 0.21
+Nodes (25): added(), FakeGmail, message(), provider(), asyncio, Gmail reads only what changed since the last check. The 7-day read (#62/#69) is…, It would be listed in every history read and fail every time., The full read takes the marker, then lists through Gmail search, which can lag… (+17 more)
 
 ### Community 542 - "Ktor Server Patterns"
 Cohesion: 0.06
@@ -2999,9 +2979,9 @@ Nodes (30): Anti-Patterns, Button loading state, Choosing the right advanced API
 Cohesion: 0.06
 Nodes (30): Anti-Patterns, Cache-Aside (Lazy Loading), Cache Invalidation, Cache Miss Stampede Prevention, Cluster Mode, Connection Management, Connection Pooling, Core Patterns (+22 more)
 
-### Community 546 - "runt_parser.dart"
-Cohesion: 0.06
-Nodes (30): cilindraje, clase, color, combustible, convertToIsoDate, estadoVehiculo, fromMap, gravamenes (+22 more)
+### Community 546 - "types.d.ts"
+Cohesion: 0.40
+Nodes (4): Candidate, CandidateScope, GateMetadata, Signals
 
 ### Community 547 - "Bengali (Bangla) NLP Patterns"
 Cohesion: 0.07
@@ -3032,20 +3012,20 @@ Cohesion: 0.07
 Nodes (28): Bulk Operations, Caching Strategies, Custom Actions, Custom Middleware, Database Indexing, Django Development Patterns, Django REST Framework Patterns, Low-Level Caching (+20 more)
 
 ### Community 554 - "public_http_client"
-Cohesion: 0.15
-Nodes (26): public_http_client(), AsyncClient, A client whose every connection, redirect and TLS identity is checked., asyncio, fixture, parametrize, Public website requests must never connect to local/network metadata services., Replace only the socket transport; leave the SSRF policy in place. (+18 more)
+Cohesion: 0.07
+Nodes (41): _public_address(), public_http_client(), PublicHTTPTransport, AsyncClient, Request, Response, HTTP for untrusted public websites, with a boundary around the local network.…, A client whose every connection, redirect and TLS identity is checked. (+33 more)
 
 ### Community 555 - "Checklist"
 Cohesion: 0.07
 Nodes (27): 1. Reconfirm The Release Surface, 2. Choose The Patch Version And Confirm It Is Unused, 3. Prepare The Patch-Release PR, 4. Wait For Exact Main To Turn Green Again, 5. Create And Push The Signed Tag, 6. Watch The Release Workflow, 7. Perform Mandatory Public Readback And Canaries, 8. Verify Announcement Delivery (+19 more)
 
-### Community 556 - "._contacts_from_company"
+### Community 556 - "scout.py"
 Cohesion: 0.09
-Nodes (15): Find an email and return (address, honest_status). Status is one of verified /…, Team-page scrape → ICP-matched, email-resolved, deduped prospects., Record LIKELY_OWNER for a company — only when the user confirmed that signal.…, True only when the company is on file and has no prospects yet., The company's own published inbox, when its site names nobody. Small trade…, Stable identity key so we never emit the same person twice., Check if a job title matches the ICP target titles. Word-based (see…, Does the ICP target owners (Owner, Founder, President, CEO...)? (+7 more)
+Nodes (31): Scout — DIY prospecting without expensive tools. Architecture: Python does ALL…, Collectors — deterministic gatherers that emit observations. Each collector is…, _clean_domain(), detect_catch_all(), get_mx_host(), _hunter_api_key(), hunter_domain_people(), _hunter_monthly_cap() (+23 more)
 
-### Community 557 - "_utcnow"
-Cohesion: 0.07
-Nodes (15): datetime, Take an approved item for sending: approved → sending, atomically. False when…, Items claimed long ago and never finished (Harvey stopped mid-send). Whether…, Rewrite a draft's subject and body — only while it awaits review. Atomic on…, Undo a cancel made with `reason`: those items go back for review. Always to…, Naive UTC now (matches how timestamps are stored in the DB)., Reject an item still waiting to go out. Mail already on its way or sent is…, Approve one pending item, or ALL pending when item_id is None. A human's… (+7 more)
+### Community 557 - "8. Platform-Specific Concerns"
+Cohesion: 0.67
+Nodes (3): 8. Platform-Specific Concerns, iOS/Android differences:, Responsive design:
 
 ### Community 558 - "register"
 Cohesion: 0.15
@@ -3155,17 +3135,17 @@ Nodes (25): Anti-Patterns, Best Practices, Breaking schema changes require multi
 Cohesion: 0.08
 Nodes (25): Assertions, Best Practices, Camel Route Testing, Coverage with JaCoCo, Event-Driven Testing, Integration Tests with Real Database, Key Testing Patterns, Maven Configuration (Complete) (+17 more)
 
-### Community 585 - "pico_y_placa_service.dart"
-Cohesion: 0.08
-Nodes (25): appliesToVehicleType, _checkCityDayRestriction, cityName, _colombiaHolidays, detail, detectAndEvaluate, detectedBy, evaluateForDate (+17 more)
+### Community 585 - "test_real_server_started_like_the_cli"
+Cohesion: 0.67
+Nodes (3): _free_port(), uvicorn on a real loopback socket, started through `harvey dashboard`., test_real_server_started_like_the_cli()
 
 ### Community 586 - "_load_instincts_from_dir"
 Cohesion: 0.08
 Nodes (25): _find_cross_project_instincts(), _load_instincts_from_dir(), Find instincts that appear in multiple projects (promotion candidates). Returns…, Show instincts that could be promoted from project to global., Load instincts from a single directory., _show_promotion_candidates(), Single project should return nothing (need 2+)., Same instinct ID in 2 projects should be found. (+17 more)
 
 ### Community 587 - "LinkedInAutomation"
-Cohesion: 0.15
-Nodes (10): LinkedInAutomation, Scroll the page in a few small increments like a human reading., Wait for network idle without crashing on busy pages., Launch browser and set up context., Save cookies and close browser., Search LinkedIn for people matching criteria. Returns list of dicts with: name,…, Extract person info from a LinkedIn search result card., Scrape a LinkedIn profile page for detailed info. (+2 more)
+Cohesion: 0.14
+Nodes (11): LinkedInAutomation, LinkedIn browser automation via Playwright. Safety-first: humanlike randomized…, Scroll the page in a few small increments like a human reading., Wait for network idle without crashing on busy pages., Launch browser and set up context., Save cookies and close browser., Search LinkedIn for people matching criteria. Returns list of dicts with: name,…, Extract person info from a LinkedIn search result card. (+3 more)
 
 ### Community 588 - "Jira Integration Skill"
 Cohesion: 0.08
@@ -3223,9 +3203,9 @@ Nodes (24): Accessibility Patterns, Animation Patterns, Async Data Fetching Hook
 Cohesion: 0.08
 Nodes (23): After Setup — Ongoing Help, Architecture, Common Issues, Conversation Stages, Explaining Harvey to Users, Harvey — Autonomous AI Sales Agent, How Harvey Works (Technical Reference), Key Commands (+15 more)
 
-### Community 602 - ".run"
-Cohesion: 0.11
-Nodes (19): bucket_applies(), _classify_turn_error(), _iso_from_unix(), mark_exhausted(), normalize_usage(), parse_rate_limits(), The final answer; unphased text only when Codex marked none., One isolated turn. ``skip_if`` (returns a reason or "") is checked once this… (+11 more)
+### Community 602 - "codex.py"
+Cohesion: 0.08
+Nodes (33): bucket_applies(), build_access_snapshot(), build_thread_config(), build_thread_params(), _classify_turn_error(), _iso_from_unix(), _jwt_expiry(), mark_exhausted() (+25 more)
 
 ### Community 603 - "test_codex_platform.py"
 Cohesion: 0.12
@@ -3256,8 +3236,8 @@ Cohesion: 0.09
 Nodes (22): Anti-Patterns, ARIA Attributes, aria-describedby, aria-expanded and aria-controls, aria-label vs aria-labelledby, aria-live for Dynamic Content, Checklist, Complete Accessible Form (+14 more)
 
 ### Community 610 - "dashboard_auth.py"
-Cohesion: 0.13
-Nodes (20): bearer_ok(), _check_open_file(), DashboardGuard, _ExtraLinkError, _is_json(), is_loopback(), is_public_path(), parse_host() (+12 more)
+Cohesion: 0.11
+Nodes (25): bearer_ok(), _check_open_file(), DashboardGuard, _ExtraLinkError, _is_json(), is_loopback(), is_public_path(), parse_host() (+17 more)
 
 ### Community 611 - "DIY Prospecting Tactics"
 Cohesion: 0.09
@@ -3327,21 +3307,17 @@ Nodes (22): _assign_unique_slugs(), _cluster_by_keyword_overlap(), cmd_evolve(),
 Cohesion: 0.09
 Nodes (21): Alternatives to GoogleTest, Basic Unit Test (gtest), Best Practices, C++ Testing (Agent Skill), CMake/CTest Quickstart, Code Examples, Common Pitfalls, Core Concepts (+13 more)
 
-### Community 628 - "decide_next_action"
-Cohesion: 0.21
-Nodes (21): decide_next_action(), _new_counts(), (all 'new' prospects, the ones the Writer can draft for)., Why Harvey paused prospecting for the day, or ""., Decide what Harvey should do next based on current state. Uses deterministic…, unusable_backlog_notice(), add(), age_all() (+13 more)
+### Community 628 - "heartbeat"
+Cohesion: 0.10
+Nodes (35): decide_next_action(), heartbeat(), in_quiet_hours(), _interruptible_sleep(), _new_counts(), Brain, (all 'new' prospects, the ones the Writer can draft for)., Why Harvey paused prospecting for the day, or "". (+27 more)
 
 ### Community 629 - "Harvey"
 Cohesion: 0.09
 Nodes (22): Approval or autopilot, Changelog, Commands, Configuration, Harvey, How the data is stored, Legal and deliverability, License (+14 more)
 
-### Community 630 - "client"
-Cohesion: 0.13
-Nodes (19): /api/conversations carries the whole exchange: the cold emails a reply answers…, _seed(), _sql(), test_a_conversation_without_emails_or_draft(), test_a_prospect_in_two_campaigns_sees_only_the_sequence_the_reply_answers(), test_an_escalated_conversation_shows_on_today_and_can_be_handed_back(), test_conversation_status_rejects_bad_input(), test_conversations_include_the_emails_they_answer_and_a_waiting_draft() (+11 more)
-
 ### Community 631 - "timedelta"
-Cohesion: 0.23
-Nodes (21): _now(), asyncio, parametrize, A follow-up never goes out before, or too soon after, the email it follows.…, _sent(), _sequence(), test_a_follow_up_goes_once_its_gap_has_passed(), test_a_follow_up_to_an_email_that_never_went_out_is_cancelled() (+13 more)
+Cohesion: 0.22
+Nodes (22): _now(), asyncio, parametrize, A follow-up never goes out before, or too soon after, the email it follows.…, _sent(), _sequence(), test_a_follow_up_goes_once_its_gap_has_passed(), test_a_follow_up_to_an_email_that_never_went_out_is_cancelled() (+14 more)
 
 ### Community 632 - "Intent-Driven Development"
 Cohesion: 0.09
@@ -3356,8 +3332,8 @@ Cohesion: 0.09
 Nodes (21): Anti-Patterns, Best Practices, Commands, Open-Source Pipeline Skill, /opensource fork PROJECT, /opensource list, /opensource package PROJECT, /opensource status PROJECT (+13 more)
 
 ### Community 635 - "legal_extras_sheet.dart"
-Cohesion: 0.10
-Nodes (21): build, createState, _DocRowTile, _extintorVence, _fmt, icon, _impuestoVence, initState (+13 more)
+Cohesion: 0.04
+Nodes (56): ../../../../core/services/fuel_prices_service.dart, ../../core/services/notification_service.dart, build, ChangePasswordSheet, _ChangePasswordSheetState, _confirmCtrl, createState, dispose (+48 more)
 
 ### Community 636 - "Java Build Error Resolver"
 Cohesion: 0.10
@@ -3466,10 +3442,6 @@ Nodes (19): Authentication, Core Operations, Error Handling, Get User by Usernam
 ### Community 662 - "Plan - Multi-Model Collaborative Planning"
 Cohesion: 0.10
 Nodes (19): 1.1 Prompt Enhancement (MUST execute first), 1.2 Context Retrieval, 1.3 Completeness Check, 1.4 Requirement Alignment, 2.1 Distribute Inputs, 2.2 Cross-Validation, 2.3 (Optional but Recommended) Dual-Model Plan Draft, 2.4 Generate Implementation Plan (Claude Final Version) (+11 more)
-
-### Community 663 - "fuel_prices_sheet.dart"
-Cohesion: 0.11
-Nodes (19): ../../../../core/services/fuel_prices_service.dart, build, createState, currentCity, currentLat, currentLng, dispose, FuelPricesSheet (+11 more)
 
 ### Community 664 - "HarmonyOS / ArkTS Patterns"
 Cohesion: 0.11
@@ -3580,8 +3552,8 @@ Cohesion: 0.15
 Nodes (15): External integrations: Instantly, LinkedIn, email discovery, calendar.…, client(), env(), fixture, _no_key(), fixture, parametrize, The dashboard's warmup setup step: get TrulyInbox, connect it, or say you use… (+7 more)
 
 ### Community 691 - "test_sending_held.py"
-Cohesion: 0.18
-Nodes (17): Note why sending was held this cycle (Today and `harvey status` show it), or…, record_send_phase(), asyncio, parametrize, When Harvey holds sending because replies couldn't be read, you see it. Sending…, test_a_hold_keeps_its_start_and_clears_when_sending_runs(), test_a_hold_nobody_has_seen_for_half_a_day_is_not_shown(), test_a_new_hold_after_a_stale_one_starts_now() (+9 more)
+Cohesion: 0.14
+Nodes (20): Note why sending was held this cycle (Today and `harvey status` show it), or…, record_send_phase(), asyncio, fixture, parametrize, When Harvey holds sending because replies couldn't be read, you see it. Sending…, state(), test_a_hold_keeps_its_start_and_clears_when_sending_runs() (+12 more)
 
 ### Community 692 - "Offer Strategy & Closing Mechanics"
 Cohesion: 0.11
@@ -3652,24 +3624,16 @@ Cohesion: 0.12
 Nodes (16): API Error Handler (Next.js / Express), Core Principles, Custom Exception Hierarchy, Error Handling Checklist, Error Handling Patterns, FastAPI Global Exception Handler, Go, Python (+8 more)
 
 ### Community 709 - "Analyst"
-Cohesion: 0.15
-Nodes (9): Analyst, Analyst — tracks performance and identifies what's working., Analyzes campaign performance, reply rates, and ICP segment conversion. Runs…, Generate analytics report from current pipeline data., Count prospects by status., Get stats for each campaign., Count replies by intent classification., Count conversations by sales stage. (+1 more)
-
-### Community 710 - "export.py"
-Cohesion: 0.15
-Nodes (16): ConfigFileNotFoundError, do_not_contact_from_file(), _find_config_file(), Config file is missing. Subclasses FileNotFoundError for backward compatibility…, Just ``compliance.do_not_contact`` from a config file, validated. Raises on a…, Search for Harvey's config. ``harvey.local.yaml`` wins when present. It is…, _check_harvey_pid(), get_harvey_status() (+8 more)
-
-### Community 711 - "_norm"
-Cohesion: 0.12
-Nodes (8): _norm(), Queue one outgoing email. Returns its id, or None when the (campaign, prospect,…, Normalize an identity key (email/domain) for dedup: strip + lowercase., Insert a company, or return the id of the one already recorded. Identity is the…, Insert a prospect. Duplicates (same email or LinkedIn URL) are not re-inserted;…, Look up a prospect by email address (indexed, case-insensitive)., Set a prospect's email + honesty status (verified/risky/guess/invalid)., Upsert what we've learned about a domain's email conventions. Only overwrites…
+Cohesion: 0.18
+Nodes (8): Analyst, Analyzes campaign performance, reply rates, and ICP segment conversion. Runs…, Generate analytics report from current pipeline data., Count prospects by status., Get stats for each campaign., Count replies by intent classification., Count conversations by sales stage., Derive actionable insights from the data. Every insight names the metric, the…
 
 ### Community 712 - "LinkedIn Outreach Skills"
 Cohesion: 0.12
 Nodes (16): After 2 Messages with No Reply, Bad Connection Notes (never do these), Connection Request Strategy, Content for Engagement, Day 0: Connection Accepted, Day 1-2: First Message, Day 4-5: Second Message (if NO reply), Day 4-5: Second Message (if they replied) (+8 more)
 
 ### Community 713 - "test_writer_feedback.py"
-Cohesion: 0.24
-Nodes (12): config(), prospect(), asyncio, fixture, The dashboard's Feedback buttons reach the Writer. Campaign feedback is…, RecordingBrain, state(), test_no_feedback_adds_nothing() (+4 more)
+Cohesion: 0.23
+Nodes (13): test_the_writers_first_emails_are_marked_too(), config(), prospect(), asyncio, fixture, The dashboard's Feedback buttons reach the Writer. Campaign feedback is…, RecordingBrain, state() (+5 more)
 
 ### Community 714 - "LinkedIn Outreach Skills"
 Cohesion: 0.12
@@ -3786,10 +3750,6 @@ Nodes (14): Strict prompt for counterparty-visible channels, Communication auton
 ### Community 742 - "Documentation Governance Router"
 Cohesion: 0.12
 Nodes (14): Audit Contract, Documentation Artifact-Role Contract, Mapping File, Progressive Adoption, Role Registry, Boundaries, Documentation Governance Router, Examples (+6 more)
-
-### Community 743 - "_colleagues"
-Cohesion: 0.12
-Nodes (9): _colleagues(), _company_answered(), _email_domain(), SQL: someone at prospect ``p``'s company has replied., Someone replied: mark their company as answered and cancel the sequence emails…, The name of someone at this prospect's company who has replied, or None. A cold…, New prospects the Writer can draft for (a deliverable email)., New prospects found in the last ``hours`` that the Writer can't use. (+1 more)
 
 ### Community 744 - "Objection Handling Skills"
 Cohesion: 0.12
@@ -3932,8 +3892,8 @@ Cohesion: 0.13
 Nodes (14): 1. Extract the topic, 2. Build a bounded project-context summary, 3. Launch four personas in parallel, 4. Present all four responses, 5. Offer follow-up, Anti-Patterns, Dev Team, Persistence Rule (+6 more)
 
 ### Community 779 - "load_or_create_token"
-Cohesion: 0.17
-Nodes (13): load_or_create_token(), _publish_token(), Path, Write the token where nobody else can read it, then publish it under its final…, Wait at most 50 short intervals for publication-related read failures.…, The token for this process: loaded (or created) once, then cached., _read_token_settled(), TokenStore (+5 more)
+Cohesion: 0.25
+Nodes (8): load_or_create_token(), _publish_token(), Write the token where nobody else can read it, then publish it under its final…, test_token_is_stable_and_unique_per_install(), test_token_open_denied_fails_closed_with_bounded_retry(), test_windows_transient_token_open_recovers_without_replacing(), test_windows_unrelated_open_error_is_not_retried(), test_windows_validation_errors_are_not_retried()
 
 ### Community 780 - "test_email_wiring.py"
 Cohesion: 0.19
@@ -4100,8 +4060,8 @@ Cohesion: 0.29
 Nodes (13): _closed_port(), _hook(), _hooks_ran(), _instruction(), _leaks(), fixture, Path, Opt-in: the installed Claude CLI, driven by Brain, against a localhost stand-in… (+5 more)
 
 ### Community 821 - "test_codex_soak.py"
-Cohesion: 0.25
-Nodes (13): _alive(), _native_identity(), asyncio, fixture, Path, Deterministic soak and fault injection through the real Brain and Codex adapter…, Six independent clients, five calls each, all at once., Cancel calls at many different points; nothing may leak. (+5 more)
+Cohesion: 0.20
+Nodes (16): _jwt(), _rfc3339(), _alive(), _native_identity(), asyncio, fixture, Path, Deterministic soak and fault injection through the real Brain and Codex adapter… (+8 more)
 
 ### Community 822 - "How It Works"
 Cohesion: 0.14
@@ -4256,16 +4216,12 @@ Cohesion: 0.15
 Nodes (12): 1. Start from the freshest billing evidence, 2. Separate customer incidents from product truth, 3. Inspect code-backed billing behavior, 4. End with a decision and product gap, Finance Billing Ops, Guardrails, Output Format, Pitfalls (+4 more)
 
 ### Community 860 - "Flutter/Dart Code Review Best Practices"
-Cohesion: 0.15
-Nodes (12): 11. Navigation and Routing, 14. Dependency Injection, 1. General Project Health, 2. Dart Language Pitfalls, 8. Platform-Specific Concerns, Flutter/Dart Code Review Best Practices, General principles (apply to any routing solution):, iOS/Android differences: (+4 more)
+Cohesion: 0.20
+Nodes (9): 11. Navigation and Routing, 14. Dependency Injection, 1. General Project Health, 2. Dart Language Pitfalls, Flutter/Dart Code Review Best Practices, General principles (apply to any routing solution):, Principles (apply to any DI approach):, Sources (+1 more)
 
 ### Community 861 - "Growth Log Skill"
 Cohesion: 0.15
 Nodes (12): Anti-Patterns, Entry Template, Entry Types, Growth Log Skill, If You Use Delivery Gate, Quality Checklist, Rule 1: Failures > Achievements, Rule 2: The Bole Principle (伯乐原则) (+4 more)
-
-### Community 862 - "startups.py"
-Cohesion: 0.26
-Nodes (12): _as_date(), _funding_fact(), funding_recency(), parse_funding(), date, What Harvey knows about a prospect's company as a startup. Three profile…, funding_text, read back into its parts (any may be "")., The earliest day a stated date could mean: "2025" is 1 January, so an imprecise… (+4 more)
 
 ### Community 863 - "Account Navigation: Working Multiple Contacts at One Company"
 Cohesion: 0.15
@@ -4491,10 +4447,6 @@ Nodes (11): Anti-Patterns, App Factory and Lifespan, Best Practices, Configurati
 Cohesion: 0.20
 Nodes (9): clear_cache(), Harvey — an autonomous sales agent that runs on your Claude subscription., _no_installed_humanizer(), _private_dashboard_token(), fixture, Shared test setup. Brain's Claude path checks the installed CLI's ``--help``…, Never create or read the checkout's real data/dashboard-token., Tests never pick up the operator's real ~/.claude Humanizer skill. (+1 more)
 
-### Community 919 - ".get_observations"
-Cohesion: 0.17
-Nodes (5): The YC batch the company says it's in ("" when it doesn't say which), or None…, Did a YC-preset search find this company (its latest YC reading is a discovery…, Is the company's latest reading of ``signal_code`` a preset search's hit…, The accelerator(s) the company says it went through ("Techstars 2024; Antler",…, The latest raise the company announced on its own site, as {"round", "amount",…
-
 ### Community 920 - "Lead Qualification Skills"
 Cohesion: 0.17
 Nodes (11): Authority, BANT Framework (Initial Qualification), Budget, Disqualification Signals, Enrichment Priorities, ICP Scoring System, Lead Qualification Skills, MEDDIC (For Complex Deals — Future Use) (+3 more)
@@ -4672,7 +4624,7 @@ Cohesion: 0.18
 Nodes (11): Adding SFX elements, Asset paths, Audio-reactive visuals, Audio reference, Available tracks, Beat and cue sources, In a composition, Moment → sound heuristics (+3 more)
 
 ### Community 964 - "Step 4: Validate, render, and deliver"
-Cohesion: 0.18
+Cohesion: 0.17
 Nodes (11): Bake the poster as frame 0, Example: Taxi for Taxis, Final output structure, Pick the poster frame, Preview, Render, Share copy by tone, Step 4: Validate, render, and deliver (+3 more)
 
 ### Community 965 - "Raw"
@@ -4715,9 +4667,9 @@ Nodes (11): [0.1.0], [0.2.0] — 2026-09-13, [0.3.0] — 2026-10-13, Added, Adde
 Cohesion: 0.18
 Nodes (11): 1. Register an app in Entra ID, 2. Configure Harvey, 3. Sign in once, Deliverability notes, For developers, How it behaves, If you see "Need admin approval", Sending from a Microsoft 365 mailbox (+3 more)
 
-### Community 975 - "test_gmail_send_outcomes.py"
-Cohesion: 0.40
-Nodes (10): asyncio, parametrize, Gmail's send result must preserve the outbox's uncertainty boundary., test_metadata_exception_cannot_undo_confirmed_send(), test_metadata_is_optional_after_confirmed_send(), test_no_token_does_not_attempt_send(), test_sender_outbox_and_dashboard_outcome(), test_transport_read_failure_then_recovery_sends_once() (+2 more)
+### Community 975 - "Harness"
+Cohesion: 0.13
+Nodes (18): Harness, harvey(), fixture, Run one heartbeat (one Harvey process) for ``n`` cycles. ``between[k]`` runs…, The operator fixes Codex; the paused Brain re-checks next cycle., One disposable Harvey install wired to fixtures., The heartbeat, end to end: cycle 1 reads the week and confirms; cycle 2 reads…, test_an_unsubscribe_seen_only_in_history_stops_the_follow_up() (+10 more)
 
 ### Community 976 - "harvey/SKILL.md"
 Cohesion: 0.18
@@ -5268,7 +5220,7 @@ Cohesion: 0.25
 Nodes (7): Angular Signals Overview, Async Operations in Reactive Contexts, Computed Signals (`computed`), Exposing as Readonly, Reactive Contexts, Untracked Reads (`untracked`), Writable Signals (`signal`)
 
 ### Community 1114 - "Step 1: Inspect the project"
-Cohesion: 0.25
+Cohesion: 0.17
 Nodes (7): Color extraction, Font extraction, Rule: nothing secret leaves this step, Step 1: Inspect the project, The 9-question rubric, What to look for, What to skip
 
 ### Community 1115 - "Tone reference"
@@ -5527,17 +5479,9 @@ Nodes (6): Animation Patterns Reference, Background Effects, Effect-to-Feeling G
 Cohesion: 0.33
 Nodes (7): attest_effective_config(), _find_custom_endpoint(), Check config/read output; return inherited MCP server names., The config path of any URL other than the default ChatGPT endpoint. Built-in…, _good_effective_config(), test_attest_effective_config_rejects_custom_routes(), test_attest_effective_config_requires_every_lockdown_setting()
 
-### Community 1179 - "test_docker_config.py"
-Cohesion: 0.38
-Nodes (6): dashboard(), Compose must preserve atomic saves without exposing the dashboard., service(), test_compose_mounts_directory_for_atomic_saves(), test_compose_preserves_loopback_and_uses_dashboard(), test_setup_and_atomic_training_saves_survive_reloading()
-
 ### Community 1180 - "Skills"
 Cohesion: 0.29
 Nodes (6): Adding or Editing Skills, Auto-Generated Skills, Built-in Skills, How Skills Work, Skill → Agent Mapping, Skills
-
-### Community 1181 - "test_dashboard_pipeline.py"
-Cohesion: 0.43
-Nodes (6): /api/stats pipeline: one funnel stage per contact. Prospect status stops at…, _sql(), test_a_paused_brain_is_on_today_not_hidden(), test_a_run_that_went_quiet_is_not_shown_as_running(), test_discover_tab_knows_how_many_sites_are_unread(), test_pipeline_buckets_each_contact_once()
 
 ### Community 1182 - "test_scout_profile_search_gate.py"
 Cohesion: 0.43
@@ -6091,10 +6035,6 @@ Nodes (3): package:my_auto_guide/features/navigation/logic/telemetry_calculator.
 Cohesion: 0.67
 Nodes (3): The skills library, What ships, Which agent gets which
 
-### Community 1332 - "state"
-Cohesion: 0.67
-Nodes (3): fixture, StateManager backed by a temp SQLite DB., state()
-
 ### Community 1333 - "对话语气指南"
 Cohesion: 0.67
 Nodes (3): 原则, 各步骤的语气参考（不要照抄，每次变化）, 对话语气指南
@@ -6120,18 +6060,18 @@ Cohesion: 0.67
 Nodes (3): Testing Exception Attributes, Testing Exceptions, Testing Expected Exceptions
 
 ## Knowledge Gaps
-- **11394 isolated node(s):** `brag`, `resolved`, `contextDirPath`, `projects`, `resolved` (+11389 more)
+- **11423 isolated node(s):** `brag`, `resolved`, `contextDirPath`, `projects`, `resolved` (+11418 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **184 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `StateManager` connect `StateManager` to `dashboard.py`, `HarveyConfig`, `test_local_rank.py`, `test_email_wiring.py`, `Trainer`, `test_outbox_review.py`, `test_usage.py`, `test_trulyinbox.py`, `.get_observations`, `CodexClient`, `config.py`, `state.py`, `test_dashboard_pipeline.py`, `test_dashboard_live_status.py`, `test_gmail_history.py`, `test_ats_hiring.py`, `main.py`, `test_accelerators_funding.py`, `Scout`, `test_precleared_hold.py`, `_utcnow`, `test_send_window.py`, `Handler`, `test_dashboard_trulyinbox.py`, `test_sending_held.py`, `test_claude_cli_isolation.py`, `test_codex_soak.py`, `test_dashboard_opt_out.py`, `state`, `email_finder.py`, `test_precleared.py`, `FakeProvider`, `._connect`, `Analyst`, `deliverability.py`, `export.py`, `_norm`, `test_brain_provider.py`, `test_writer_feedback.py`, `load_config`, `test_dashboard_signals.py`, `test_gmail_send_outcomes.py`, `cli.py`, `Brain`, `test_dashboard_manual_send.py`, `test_codex_platform.py`, `test_prompt_injection.py`, `test_signals_export.py`, `test_discover.py`, `_colleagues`, `Writer`, `setup.py`, `fixture`, `Company`, `test_microsoft.py`, `test_yc_startups.py`, `test_codex_e2e.py`, `make_sender`, `decide_next_action`, `Prospect`, `cmd_discover`, `client`, `test_collectors_profile.py`, `SetupWizard`?**
+- **Why does `StateManager` connect `StateManager` to `dashboard.py`, `test_local_rank.py`, `writer.py`, `test_email_wiring.py`, `Trainer`, `test_outbox_review.py`, `test_usage.py`, `test_trulyinbox.py`, `CodexClient`, `config.py`, `Prospect`, `test_gmail_history.py`, `test_dashboard_live_status.py`, `test_ats_hiring.py`, `brain.py`, `test_accelerators_funding.py`, `Scout`, `test_precleared_hold.py`, `test_export_suppression.py`, `scout.py`, `test_send_window.py`, `Handler`, `test_dashboard_trulyinbox.py`, `test_sending_held.py`, `test_claude_cli_isolation.py`, `test_codex_soak.py`, `test_dashboard_opt_out.py`, `test_email_finder.py`, `test_precleared.py`, `seed_prospect`, `Analyst`, `deliverability.py`, `test_brain_provider.py`, `test_writer_feedback.py`, `load_config`, `test_dashboard_signals.py`, `Harness`, `cli.py`, `Brain`, `test_dashboard_manual_send.py`, `test_codex_platform.py`, `test_prompt_injection.py`, `test_signals_export.py`, `test_discover.py`, `Writer`, `setup.py`, `fixture`, `Company`, `test_microsoft.py`, `test_yc_startups.py`, `test_codex_e2e.py`, `FakeProvider`, `main.py`, `heartbeat`, `cmd_discover`, `test_collectors_profile.py`, `SetupWizard`?**
   _High betweenness centrality (0.014) - this node is a cross-community bridge._
-- **Why does `ConfigFileNotFoundError` connect `export.py` to `dashboard.py`, `main.py`, `test_grader.py`, `load_config`, `config.py`?**
+- **Why does `ConfigFileNotFoundError` connect `load_config` to `test_grader.py`, `config.py`, `main.py`, `dashboard.py`?**
   _High betweenness centrality (0.005) - this node is a cross-community bridge._
-- **Why does `Brain` connect `Brain` to `CodexError`, `Trainer`, `test_usage.py`, `CodexClient`, `config.py`, `state.py`, `main.py`, `test_accelerators_funding.py`, `Scout`, `Handler`, `test_claude_cli_isolation.py`, `test_codex_soak.py`, `test_brain_provider.py`, `test_windows_support.py`, `cli.py`, `test_codex_platform.py`, `Writer`, `setup.py`, `test_yc_startups.py`, `test_codex_e2e.py`, `decide_next_action`, `StateManager`, `SetupWizard`?**
+- **Why does `Brain` connect `Brain` to `CodexError`, `writer.py`, `Trainer`, `test_usage.py`, `CodexClient`, `config.py`, `brain.py`, `test_accelerators_funding.py`, `Scout`, `scout.py`, `Handler`, `test_claude_cli_isolation.py`, `test_codex_soak.py`, `StateManager`, `test_brain_provider.py`, `test_windows_support.py`, `cli.py`, `test_codex_platform.py`, `Writer`, `setup.py`, `test_yc_startups.py`, `test_codex_e2e.py`, `main.py`, `heartbeat`, `SetupWizard`?**
   _High betweenness centrality (0.004) - this node is a cross-community bridge._
 - **Are the 120 inferred relationships involving `StateManager` (e.g. with `Analyst` and `Handler`) actually correct?**
   _`StateManager` has 120 INFERRED edges - model-reasoned connections that need verification._
@@ -6140,4 +6080,4 @@ _Questions this graph is uniquely positioned to answer:_
 - **Are the 56 inferred relationships involving `Prospect` (e.g. with `Scout` and `StateManager`) actually correct?**
   _`Prospect` has 56 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `brag`, `resolved`, `contextDirPath` to the rest of the system?**
-  _11394 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _11423 weakly-connected nodes found - possible documentation gaps or missing edges._

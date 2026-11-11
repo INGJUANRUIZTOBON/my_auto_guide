@@ -56,6 +56,7 @@ class _CarRentalLoginScreenState extends State<CarRentalLoginScreen> {
   bool canUseBiometrics = false;
   bool _navigatedByAuth = false;
   bool _inPasswordRecovery = false;
+  bool _checkingAutoLogin = true;
   StreamSubscription<AuthState>? _authSub;
 
   @override
@@ -101,16 +102,23 @@ class _CarRentalLoginScreenState extends State<CarRentalLoginScreen> {
   }
 
   Future<void> _initSession() async {
-    final update = await _updateService.checkForUpdate();
-    if (update != null && mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => AppUpdateLockScreen(updateInfo: update)),
-      );
-      return;
+    _checkingAutoLogin = _auth.currentUser != null;
+    try {
+      final update = await _updateService.checkForUpdate();
+      if (update != null && mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => AppUpdateLockScreen(updateInfo: update)),
+        );
+        return;
+      }
+      await _checkBiometrics();
+      await _bootstrapSession();
+    } finally {
+      if (mounted && !_navigatedByAuth) {
+        setState(() => _checkingAutoLogin = false);
+      }
     }
-    await _checkBiometrics();
-    await _bootstrapSession();
   }
 
   Future<void> _checkBiometrics() async {
@@ -310,6 +318,22 @@ class _CarRentalLoginScreenState extends State<CarRentalLoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_checkingAutoLogin) {
+      return const Scaffold(
+        backgroundColor: Color(0xFF06080C),
+        body: Center(
+          child: SizedBox(
+            width: 34,
+            height: 34,
+            child: CircularProgressIndicator(
+              strokeWidth: 2.2,
+              color: Color(0xFF00E5FF),
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       body: Stack(
         children: [
