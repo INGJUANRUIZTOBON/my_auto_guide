@@ -432,12 +432,13 @@ class _ScannerDashboardScreenState extends State<ScannerDashboardScreen> with Si
                         const SizedBox(width: 8),
                         Text(
                           provider.protocolOverride == null
-                              ? 'Protocolo: Automático (Recomendado)'
+                              ? 'Protocolo: Automático (${provider.recommendedProtocolName})'
                               : 'Protocolo Forzado: ${provider.protocolOverride}',
                           style: GoogleFonts.outfit(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
                             color: AppAppleTheme.electricCyan,
+                            decoration: TextDecoration.none,
                           ),
                         ),
                       ],
@@ -1365,9 +1366,11 @@ class _ScannerDashboardScreenState extends State<ScannerDashboardScreen> with Si
 
       showCupertinoModalPopup(
         context: context,
-        builder: (_) => ClipRRect(
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
-          child: BackdropFilter(
+        builder: (_) => Material(
+          type: MaterialType.transparency,
+          child: ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+            child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
             child: Container(
               height: MediaQuery.of(context).size.height * 0.72,
@@ -1569,18 +1572,20 @@ class _ScannerDashboardScreenState extends State<ScannerDashboardScreen> with Si
   void _showAirbagDiagnosisGuide(BuildContext context, String vehicleName) {
     showCupertinoModalPopup(
       context: context,
-      builder: (_) => ClipRRect(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
-          child: Container(
-            height: MediaQuery.of(context).size.height * 0.82,
-            padding: const EdgeInsets.all(22),
-            decoration: BoxDecoration(
-              color: AppAppleTheme.midnightSurface.withValues(alpha: 0.95),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
-            ),
+      builder: (_) => Material(
+        type: MaterialType.transparency,
+        child: ClipRRect(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
+            child: Container(
+              height: MediaQuery.of(context).size.height * 0.82,
+              padding: const EdgeInsets.all(22),
+              decoration: BoxDecoration(
+                color: AppAppleTheme.midnightSurface.withValues(alpha: 0.95),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+              ),
             child: SafeArea(
               top: false,
               child: Column(
@@ -1615,6 +1620,7 @@ class _ScannerDashboardScreenState extends State<ScannerDashboardScreen> with Si
                             fontSize: 17,
                             fontWeight: FontWeight.w700,
                             color: Colors.white,
+                            decoration: TextDecoration.none,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -1687,6 +1693,7 @@ class _ScannerDashboardScreenState extends State<ScannerDashboardScreen> with Si
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
                                   color: const Color(0xFFC084FC),
+                                  decoration: TextDecoration.none,
                                 ),
                               ),
                             ],
@@ -1704,6 +1711,7 @@ class _ScannerDashboardScreenState extends State<ScannerDashboardScreen> with Si
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                             color: Colors.white,
+                            decoration: TextDecoration.none,
                           ),
                         ),
                       ),
@@ -1715,6 +1723,7 @@ class _ScannerDashboardScreenState extends State<ScannerDashboardScreen> with Si
           ),
         ),
       ),
+    ), // Material
     );
   }
 
@@ -1735,6 +1744,7 @@ class _ScannerDashboardScreenState extends State<ScannerDashboardScreen> with Si
               fontSize: 13,
               fontWeight: FontWeight.w700,
               color: const Color(0xFFFCD34D),
+              decoration: TextDecoration.none,
             ),
           ),
           const SizedBox(height: 6),
@@ -1744,6 +1754,7 @@ class _ScannerDashboardScreenState extends State<ScannerDashboardScreen> with Si
               fontSize: 12,
               color: Colors.white.withValues(alpha: 0.85),
               height: 1.45,
+              decoration: TextDecoration.none,
             ),
           ),
         ],
@@ -1753,129 +1764,199 @@ class _ScannerDashboardScreenState extends State<ScannerDashboardScreen> with Si
 
   /// Modal interactiva para seleccionar o forzar cualquiera de los 10 protocolos OBD universales
   void _showProtocolSelectorSheet(BuildContext context, ScannerProvider provider) {
+    final recommendedCode = provider.recommendedProtocolCode;
     final protocols = [
-      {'name': 'Automático (Recomendado)', 'cmd': null, 'desc': 'Escaneo inteligente multi-bus de 10 protocolos'},
-      {'name': 'ISO 14230-4 KWP (Fast Init)', 'cmd': 'ATSP5', 'desc': 'Nissan Navara, Renault Duster, Hyundai, Pickups Diésel'},
-      {'name': 'ISO 15765-4 CAN (11-bit, 500k)', 'cmd': 'ATSP6', 'desc': 'Toyota, Chevrolet, Ford, Mazda, VW modernos'},
-      {'name': 'ISO 15765-4 CAN (11-bit, 250k)', 'cmd': 'ATSP8', 'desc': 'Pickups diésel pesadas y Ford Transit'},
-      {'name': 'ISO 14230-4 KWP (5-baud init)', 'cmd': 'ATSP4', 'desc': 'Vehículos asiáticos y europeos KWP lento'},
-      {'name': 'ISO 9141-2', 'cmd': 'ATSP3', 'desc': 'Asiáticos y europeos clásicos pre-2005'},
-      {'name': 'ISO 15765-4 CAN (29-bit, 500k)', 'cmd': 'ATSP7', 'desc': 'Comerciales europeos y Honda CAN 29-bit'},
-      {'name': 'SAE J1850 PWM', 'cmd': 'ATSP1', 'desc': 'Ford clásico pre-2008 (41.6k)'},
-      {'name': 'SAE J1850 VPW', 'cmd': 'ATSP2', 'desc': 'General Motors y Chrysler clásico pre-2008 (10.4k)'},
+      {
+        'name': 'Automático (Recomendado)',
+        'cmd': null,
+        'desc': 'Escaneo inteligente multi-bus (Prioriza ${provider.recommendedProtocolName})',
+      },
+      {
+        'name': 'ISO 15765-4 CAN (11-bit, 500k)',
+        'cmd': 'ATSP6',
+        'desc': 'Toyota, Chevrolet, Ford, Mazda, VW modernos (Estándar global)',
+      },
+      {
+        'name': 'ISO 14230-4 KWP (Fast Init)',
+        'cmd': 'ATSP5',
+        'desc': 'Nissan Navara, Frontier, Renault Duster, Hyundai, Pickups Diésel',
+      },
+      {
+        'name': 'ISO 15765-4 CAN (11-bit, 250k)',
+        'cmd': 'ATSP8',
+        'desc': 'Pickups diésel pesadas y Ford Transit',
+      },
+      {
+        'name': 'ISO 14230-4 KWP (5-baud init)',
+        'cmd': 'ATSP4',
+        'desc': 'Vehículos asiáticos y europeos KWP lento',
+      },
+      {
+        'name': 'ISO 9141-2',
+        'cmd': 'ATSP3',
+        'desc': 'Asiáticos y europeos clásicos pre-2005',
+      },
+      {
+        'name': 'ISO 15765-4 CAN (29-bit, 500k)',
+        'cmd': 'ATSP7',
+        'desc': 'Comerciales europeos y Honda CAN 29-bit',
+      },
+      {
+        'name': 'SAE J1850 PWM',
+        'cmd': 'ATSP1',
+        'desc': 'Ford clásico pre-2008 (41.6k)',
+      },
+      {
+        'name': 'SAE J1850 VPW',
+        'cmd': 'ATSP2',
+        'desc': 'General Motors y Chrysler clásico pre-2008 (10.4k)',
+      },
     ];
 
     showCupertinoModalPopup(
       context: context,
-      builder: (_) => ClipRRect(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
-          child: Container(
-            height: MediaQuery.of(context).size.height * 0.72,
-            padding: const EdgeInsets.all(22),
-            decoration: BoxDecoration(
-              color: AppAppleTheme.midnightSurface.withValues(alpha: 0.95),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
-            ),
-            child: SafeArea(
-              top: false,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 38,
-                      height: 5,
-                      decoration: BoxDecoration(
-                        color: Colors.white24,
-                        borderRadius: BorderRadius.circular(2.5),
+      builder: (_) => Material(
+        type: MaterialType.transparency,
+        child: ClipRRect(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
+            child: Container(
+              height: MediaQuery.of(context).size.height * 0.75,
+              padding: const EdgeInsets.all(22),
+              decoration: BoxDecoration(
+                color: AppAppleTheme.midnightSurface.withValues(alpha: 0.95),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+              ),
+              child: SafeArea(
+                top: false,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 38,
+                        height: 5,
+                        decoration: BoxDecoration(
+                          color: Colors.white24,
+                          borderRadius: BorderRadius.circular(2.5),
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Protocolo de Comunicación OBD2',
-                    style: GoogleFonts.outfit(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
+                    const SizedBox(height: 16),
+                    Text(
+                      'Protocolo de Comunicación OBD2',
+                      style: GoogleFonts.outfit(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                        decoration: TextDecoration.none,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Fuerza un protocolo específico si tu vehículo no conecta en automático.',
-                    style: GoogleFonts.outfit(
-                      fontSize: 12,
-                      color: Colors.white60,
+                    const SizedBox(height: 4),
+                    Text(
+                      'Optimizado automáticamente para ${provider.vehicleDisplayName}',
+                      style: GoogleFonts.outfit(
+                        fontSize: 12,
+                        color: AppAppleTheme.electricCyan,
+                        fontWeight: FontWeight.w500,
+                        decoration: TextDecoration.none,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 14),
-                  Expanded(
-                    child: ListView.separated(
-                      physics: const BouncingScrollPhysics(),
-                      itemCount: protocols.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 8),
-                      itemBuilder: (ctx, i) {
-                        final p = protocols[i];
-                        final isSelected = provider.protocolOverride == p['cmd'];
-                        return GestureDetector(
-                          onTap: () {
-                            HapticFeedback.lightImpact();
-                            provider.setProtocolOverride(p['cmd']);
-                            Navigator.pop(ctx);
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? AppAppleTheme.electricBlue.withValues(alpha: 0.20)
-                                  : Colors.white.withValues(alpha: 0.04),
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(
+                    const SizedBox(height: 14),
+                    Expanded(
+                      child: ListView.separated(
+                        physics: const BouncingScrollPhysics(),
+                        itemCount: protocols.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 8),
+                        itemBuilder: (ctx, i) {
+                          final p = protocols[i];
+                          final isSelected = provider.protocolOverride == p['cmd'];
+                          final isAutoOptimal = p['cmd'] == recommendedCode;
+                          return GestureDetector(
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              provider.setProtocolOverride(p['cmd']);
+                              Navigator.pop(ctx);
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              decoration: BoxDecoration(
                                 color: isSelected
-                                    ? AppAppleTheme.electricCyan
-                                    : Colors.white.withValues(alpha: 0.08),
-                                width: isSelected ? 1.5 : 1,
+                                    ? AppAppleTheme.electricBlue.withValues(alpha: 0.20)
+                                    : Colors.white.withValues(alpha: 0.04),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: isSelected
+                                      ? AppAppleTheme.electricCyan
+                                      : Colors.white.withValues(alpha: 0.08),
+                                  width: isSelected ? 1.5 : 1,
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Text(
+                                              p['name']!,
+                                              style: GoogleFonts.outfit(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w600,
+                                                color: Colors.white,
+                                                decoration: TextDecoration.none,
+                                              ),
+                                            ),
+                                            if (isAutoOptimal && p['cmd'] != null) ...[
+                                              const SizedBox(width: 6),
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                decoration: BoxDecoration(
+                                                  color: AppAppleTheme.electricCyan.withValues(alpha: 0.18),
+                                                  borderRadius: BorderRadius.circular(6),
+                                                  border: Border.all(color: AppAppleTheme.electricCyan.withValues(alpha: 0.4)),
+                                                ),
+                                                child: Text(
+                                                  '★ Óptimo Marca',
+                                                  style: GoogleFonts.outfit(
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.w700,
+                                                    color: AppAppleTheme.electricCyan,
+                                                    decoration: TextDecoration.none,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          p['desc']!,
+                                          style: GoogleFonts.outfit(
+                                            fontSize: 11,
+                                            color: Colors.white54,
+                                            decoration: TextDecoration.none,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  if (isSelected)
+                                    const Icon(CupertinoIcons.checkmark_circle_fill,
+                                        color: AppAppleTheme.electricCyan, size: 20),
+                                ],
                               ),
                             ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        p['name']!,
-                                        style: GoogleFonts.outfit(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        p['desc']!,
-                                        style: GoogleFonts.outfit(
-                                          fontSize: 11,
-                                          color: Colors.white54,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                if (isSelected)
-                                  const Icon(CupertinoIcons.checkmark_circle_fill,
-                                      color: AppAppleTheme.electricCyan, size: 20),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

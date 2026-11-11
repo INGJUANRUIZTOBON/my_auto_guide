@@ -46,6 +46,47 @@ class ScannerProvider extends ChangeNotifier {
   String? _protocolOverride;
   String? get protocolOverride => _protocolOverride;
 
+  // Protocolo óptimo detectado automáticamente según la marca del vehículo
+  String _recommendedProtocolCode = 'ATSP6';
+  String get recommendedProtocolCode => _recommendedProtocolCode;
+
+  String get recommendedProtocolName {
+    switch (_recommendedProtocolCode) {
+      case 'ATSP5':
+        return 'ISO 14230-4 KWP Fast';
+      case 'ATSP8':
+        return 'CAN 11-bit 250k';
+      case 'ATSP7':
+        return 'CAN 29-bit 500k';
+      case 'ATSP2':
+        return 'SAE J1850 VPW';
+      case 'ATSP1':
+        return 'SAE J1850 PWM';
+      case 'ATSP6':
+      default:
+        return 'CAN 11-bit 500k';
+    }
+  }
+
+  /// Detecta automáticamente el protocolo óptimo según la marca o nombre del vehículo
+  static String detectRecommendedProtocol(String? vehicleName) {
+    if (vehicleName == null || vehicleName.trim().isEmpty) return 'ATSP6';
+    final v = vehicleName.toUpperCase();
+    if (v.contains('NISSAN') || v.contains('RENAULT') || v.contains('DACIA')) {
+      return 'ATSP5'; // KWP2000 Rápido común en Nissan Frontier/Navara, Renault Duster
+    }
+    if (v.contains('TRANSIT') || v.contains('HILUX CARGA') || v.contains('CAMION')) {
+      return 'ATSP8'; // CAN 250k
+    }
+    if (v.contains('CHEVROLET CLASICO') || v.contains('CHRYSLER') || v.contains('DODGE')) {
+      return 'ATSP2'; // General Motors / Chrysler clásico
+    }
+    if (v.contains('FORD CLASICO')) {
+      return 'ATSP1';
+    }
+    return 'ATSP6'; // CAN 11-bit 500k estándar automotriz para Toyota, Mazda, Chevrolet, etc.
+  }
+
   // Voltaje de la batería del vehículo (Leído directo del pin 16 vía ATRV)
   double? _batteryVoltage;
   double? get batteryVoltage => _batteryVoltage;
@@ -74,6 +115,7 @@ class ScannerProvider extends ChangeNotifier {
   ScannerProvider({String? initialVehicleName}) {
     if (initialVehicleName != null && initialVehicleName.trim().isNotEmpty) {
       _vehicleDisplayName = initialVehicleName.trim();
+      _recommendedProtocolCode = detectRecommendedProtocol(_vehicleDisplayName);
     }
     _initListeners();
   }
@@ -81,6 +123,7 @@ class ScannerProvider extends ChangeNotifier {
   void setInitialVehicleName(String? name) {
     if (name != null && name.trim().isNotEmpty && _vehicleIdentity == null) {
       _vehicleDisplayName = name.trim();
+      _recommendedProtocolCode = detectRecommendedProtocol(_vehicleDisplayName);
       notifyListeners();
     }
   }
@@ -223,7 +266,24 @@ class ScannerProvider extends ChangeNotifier {
       }
     }
 
-    // 5. Negociación Automática (ATSP0) con timeout suficiente para escaneo multi-bus
+    // 5. Negociación Automática Inteligente: Primero intentar el protocolo óptimo detectado para la marca
+    if (!ecuConnected && _protocolOverride == null) {
+      try {
+        debugPrint("[SCANNER_PROVIDER] Probando protocolo preferente para $_vehicleDisplayName ($_recommendedProtocolCode)");
+        await _btService.sendCommand(_recommendedProtocolCode, timeout: const Duration(seconds: 2));
+        final autoBrandRes = await _btService.sendCommand("0100", timeout: const Duration(seconds: 4));
+        if (ObdDecoder.isEcuResponding(autoBrandRes)) {
+          ecuConnected = true;
+          _detectedProtocol = recommendedProtocolName;
+          _parseSupportedPids(autoBrandRes);
+          debugPrint("[SCANNER_PROVIDER] ¡Conectado al protocolo preferente de marca ($_recommendedProtocolCode)!");
+        }
+      } catch (e) {
+        debugPrint("[SCANNER_PROVIDER] Protocolo preferente de marca no respondió de inmediato: $e");
+      }
+    }
+
+    // 6. Negociación Automática (ATSP0) con timeout suficiente para escaneo multi-bus
     if (!ecuConnected) {
       try {
         await _btService.sendCommand("ATSP0", timeout: const Duration(seconds: 2));
