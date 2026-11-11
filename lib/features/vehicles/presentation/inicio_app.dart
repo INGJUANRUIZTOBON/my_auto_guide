@@ -86,6 +86,7 @@ import '../../../core/services/vehicle_catalog_service.dart';
 import '../../../core/services/odometer_history_service.dart';
 import '../../../core/services/custom_maintenance_service.dart';
 import '../../../core/services/maintenance_config_service.dart';
+import '../../../shared/widgets/runt_driver_license_webview.dart';
 import 'widgets/insurance_picker_sheet.dart';
 import 'widgets/pico_y_placa_card.dart';
 import 'widgets/custom_maintenances_card.dart';
@@ -631,19 +632,13 @@ class _InicioAppState extends State<InicioApp> {
       cycleKms: isCar ? 5000 : 3000,
       currentKms: currentKms,
     );
-    _pctSoat = VehicleHealthLogic.calculateHybridPercentage(
-      lastDate: _lastSoat,
-      lastKms: 0,
+    _pctSoat = VehicleHealthLogic.calculateDocumentPercentage(
+      date: _lastSoat,
       cycleDays: 365,
-      cycleKms: 1,
-      currentKms: 0,
     );
-    _pctTecno = VehicleHealthLogic.calculateHybridPercentage(
-      lastDate: _lastTecno,
-      lastKms: 0,
+    _pctTecno = VehicleHealthLogic.calculateDocumentPercentage(
+      date: _lastTecno,
       cycleDays: 365,
-      cycleKms: 1,
-      currentKms: 0,
     );
   }
 
@@ -1237,7 +1232,7 @@ class _InicioAppState extends State<InicioApp> {
 
     void checkDoc(String name, DateTime? lastDate) {
       if (lastDate == null) return;
-      final expiration = lastDate.add(const Duration(days: 365));
+      final expiration = VehicleHealthLogic.resolveDocumentExpiration(lastDate);
       final daysLeft = expiration.difference(now).inDays;
 
       if (daysLeft <= 30) {
@@ -2286,12 +2281,9 @@ class _InicioAppState extends State<InicioApp> {
               if (mounted) {
                 setState(() {
                   _lastSoat = ds;
-                  _pctSoat = VehicleHealthLogic.calculateHybridPercentage(
-                    lastDate: ds,
-                    lastKms: 0,
+                  _pctSoat = VehicleHealthLogic.calculateDocumentPercentage(
+                    date: ds,
                     cycleDays: 365,
-                    cycleKms: 1, // Irrelevante ya que kms=0
-                    currentKms: 0,
                   );
                 });
               }
@@ -2302,12 +2294,9 @@ class _InicioAppState extends State<InicioApp> {
               if (mounted) {
                 setState(() {
                   _lastTecno = dt;
-                  _pctTecno = VehicleHealthLogic.calculateHybridPercentage(
-                    lastDate: dt,
-                    lastKms: 0,
+                  _pctTecno = VehicleHealthLogic.calculateDocumentPercentage(
+                    date: dt,
                     cycleDays: 365,
-                    cycleKms: 1,
-                    currentKms: 0,
                   );
                 });
               }
@@ -2731,6 +2720,20 @@ class _InicioAppState extends State<InicioApp> {
                             context,
                             vehiculoId: widget.vehiculoId,
                             vehicleData: v,
+                          ),
+                          brandTheme: bTheme),
+                      const SizedBox(height: 12),
+                      GradientButton(
+                          icon: Icons.assignment_ind_rounded,
+                          text: 'Mi Licencia RUNT (Categorías y Vigencia)',
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => RuntDriverLicenseWebViewScreen(
+                                cedula: (v['cedula'] ?? '').toString(),
+                                vehiculoId: widget.vehiculoId,
+                              ),
+                            ),
                           ),
                           brandTheme: bTheme),
                       const SizedBox(height: 12),

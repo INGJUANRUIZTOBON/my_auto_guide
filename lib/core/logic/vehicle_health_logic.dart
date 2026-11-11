@@ -49,6 +49,30 @@ class VehicleHealthLogic {
         .clamp(0.0, 1.0);
   }
 
+  /// Calcula la salud restante de un documento anual (SOAT / Tecnomecánica).
+  /// Tolera tanto fecha de **inicio de vigencia** (`date <= now`) como fecha futura de vencimiento (`date > now`),
+  /// evitando falsos 100% cuando queda un vencimiento guardado.
+  static double calculateDocumentPercentage({
+    required DateTime? date,
+    int cycleDays = 365,
+  }) {
+    if (date == null) return 0.0;
+    final now = DateTime.now();
+    if (date.isAfter(now)) {
+      final remainingDays = date.difference(now).inDays;
+      return (remainingDays / cycleDays).clamp(0.0, 1.0);
+    }
+    final elapsedDays = now.difference(date).inDays;
+    return (1.0 - (elapsedDays / cycleDays)).clamp(0.0, 1.0);
+  }
+
+  /// Resuelve la fecha real de vencimiento a partir de `date` (inicio de vigencia o fecha futura ya cargada).
+  static DateTime resolveDocumentExpiration(DateTime date) {
+    final now = DateTime.now();
+    if (date.isAfter(now)) return date;
+    return DateTime(date.year + 1, date.month, date.day);
+  }
+
   /// Calcula los días restantes para mantenimiento según la regla automotriz del menor:
   /// Días = min(Días restantes por calendario, Días restantes por kilometraje según promedio diario)
   static int calculateProjectedRemainingDays({

@@ -21,12 +21,14 @@ class RuntVehicleProfile {
   final String soatAseguradora;
   final String soatPoliza;
   final String soatExpedicion;
+  final String soatInicioVigencia;
   final String soatVencimiento;
 
   final String tecnoEstado;
   final String tecnoCertificado;
   final String tecnoCda;
   final String tecnoExpedicion;
+  final String tecnoInicioVigencia;
   final String tecnoVencimiento;
 
   final DateTime? updatedAt;
@@ -50,11 +52,13 @@ class RuntVehicleProfile {
     this.soatAseguradora = '',
     this.soatPoliza = '',
     this.soatExpedicion = '',
+    this.soatInicioVigencia = '',
     this.soatVencimiento = '',
     this.tecnoEstado = '',
     this.tecnoCertificado = '',
     this.tecnoCda = '',
     this.tecnoExpedicion = '',
+    this.tecnoInicioVigencia = '',
     this.tecnoVencimiento = '',
     this.updatedAt,
   });
@@ -90,11 +94,13 @@ class RuntVehicleProfile {
         'soat_aseguradora': soatAseguradora,
         'soat_poliza': soatPoliza,
         'soat_expedicion': soatExpedicion,
+        'soat_inicio_vigencia': soatInicioVigencia,
         'soat_vencimiento': soatVencimiento,
         'tecno_estado': tecnoEstado,
         'tecno_certificado': tecnoCertificado,
         'tecno_cda': tecnoCda,
         'tecno_expedicion': tecnoExpedicion,
+        'tecno_inicio_vigencia': tecnoInicioVigencia,
         'tecno_vencimiento': tecnoVencimiento,
         'updated_at': (updatedAt ?? DateTime.now()).toIso8601String(),
       };
@@ -120,11 +126,13 @@ class RuntVehicleProfile {
       soatAseguradora: clean('soat_aseguradora'),
       soatPoliza: clean('soat_poliza'),
       soatExpedicion: clean('soat_expedicion'),
+      soatInicioVigencia: clean('soat_inicio_vigencia'),
       soatVencimiento: clean('soat_vencimiento'),
       tecnoEstado: clean('tecno_estado'),
       tecnoCertificado: clean('tecno_certificado'),
       tecnoCda: clean('tecno_cda'),
       tecnoExpedicion: clean('tecno_expedicion'),
+      tecnoInicioVigencia: clean('tecno_inicio_vigencia'),
       tecnoVencimiento: clean('tecno_vencimiento'),
       updatedAt: map['updated_at'] != null
           ? DateTime.tryParse(map['updated_at'].toString())
@@ -180,11 +188,13 @@ class RuntVehicleProfile {
       soatAseguradora: pick(soatAseguradora, fallback.soatAseguradora),
       soatPoliza: pick(soatPoliza, fallback.soatPoliza),
       soatExpedicion: pick(soatExpedicion, fallback.soatExpedicion),
+      soatInicioVigencia: pick(soatInicioVigencia, fallback.soatInicioVigencia),
       soatVencimiento: pick(soatVencimiento, fallback.soatVencimiento),
       tecnoEstado: pick(tecnoEstado, fallback.tecnoEstado),
       tecnoCertificado: pick(tecnoCertificado, fallback.tecnoCertificado),
       tecnoCda: pick(tecnoCda, fallback.tecnoCda),
       tecnoExpedicion: pick(tecnoExpedicion, fallback.tecnoExpedicion),
+      tecnoInicioVigencia: pick(tecnoInicioVigencia, fallback.tecnoInicioVigencia),
       tecnoVencimiento: pick(tecnoVencimiento, fallback.tecnoVencimiento),
       updatedAt: updatedAt ?? fallback.updatedAt,
     );
@@ -230,11 +240,13 @@ class RuntVehicleProfile {
         soatAseguradora = '',
         soatPoliza = '',
         soatExpedicion = '',
+        soatInicioVigencia = '',
         soatVencimiento = '',
         tecnoEstado = '',
         tecnoCertificado = '',
         tecnoCda = '',
         tecnoExpedicion = '',
+        tecnoInicioVigencia = '',
         tecnoVencimiento = '';
 
     String section = 'GENERAL';
@@ -251,6 +263,9 @@ class RuntVehicleProfile {
           soatAseguradora = v;
         } else if ((k.contains('POLIZA') || k.contains('NO. POLIZA')) && soatPoliza.isEmpty) {
           soatPoliza = v;
+        } else if ((k.contains('INICIO DE VIGENCIA') || k.contains('INICIO VIGENCIA') || k.contains('DESDE')) &&
+            soatInicioVigencia.isEmpty) {
+          soatInicioVigencia = v;
         } else if (k.contains('EXPEDICION') && soatExpedicion.isEmpty) {
           soatExpedicion = v;
         } else if ((k.contains('FIN DE VIGENCIA') || k.contains('FIN VIGENCIA') || k.contains('VENCIMIENTO') || k.contains('HASTA')) &&
@@ -267,9 +282,12 @@ class RuntVehicleProfile {
           tecnoCertificado = v;
         } else if ((k.contains('CDA') || k.contains('ORGANISMO') || k.contains('CENTRO DE DIAGNOSTICO')) && tecnoCda.isEmpty) {
           tecnoCda = v;
+        } else if ((k.contains('INICIO') || k.contains('DESDE')) && tecnoInicioVigencia.isEmpty) {
+          tecnoInicioVigencia = v;
         } else if (k.contains('EXPEDICION') && tecnoExpedicion.isEmpty) {
           tecnoExpedicion = v;
-        } else if ((k.contains('VIGENCIA') || k.contains('VENCIMIENTO') || k.contains('HASTA')) && tecnoVencimiento.isEmpty) {
+        } else if ((k.contains('FIN DE VIGENCIA') || k.contains('FIN VIGENCIA') || k.contains('VIGENTE HASTA') || k.contains('VENCIMIENTO') || k.contains('HASTA') || k.contains('VIGENCIA')) &&
+            tecnoVencimiento.isEmpty) {
           tecnoVencimiento = v;
         }
         return;
@@ -352,13 +370,37 @@ class RuntVehicleProfile {
       soatAseguradora: soatAseguradora,
       soatPoliza: soatPoliza,
       soatExpedicion: soatExpedicion,
+      soatInicioVigencia: soatInicioVigencia,
       soatVencimiento: soatVencimiento,
       tecnoEstado: tecnoEstado,
       tecnoCertificado: tecnoCertificado,
       tecnoCda: tecnoCda,
       tecnoExpedicion: tecnoExpedicion,
+      tecnoInicioVigencia: tecnoInicioVigencia,
       tecnoVencimiento: tecnoVencimiento,
     );
+  }
+
+  /// Resuelve la fecha ISO (`YYYY-MM-DD`) de **inicio de vigencia** para mantener consistencia
+  /// con los cálculos de vida útil anual en Mantenimientos (`last_soat` / `last_tecno`).
+  /// Prioriza `inicioVigencia` -> `expedicion` -> (`vencimiento` - 1 año).
+  static String? resolveStartIsoDate({
+    required String inicio,
+    required String expedicion,
+    required String vencimiento,
+  }) {
+    final directInicio = convertToIsoDate(inicio);
+    if (directInicio != null) return directInicio;
+
+    final directExp = convertToIsoDate(expedicion);
+    if (directExp != null) return directExp;
+
+    final expIso = convertToIsoDate(vencimiento);
+    if (expIso == null) return null;
+    final expDate = DateTime.tryParse(expIso);
+    if (expDate == null) return null;
+    final startDate = DateTime(expDate.year - 1, expDate.month, expDate.day);
+    return '${startDate.year}-${startDate.month.toString().padLeft(2, '0')}-${startDate.day.toString().padLeft(2, '0')}';
   }
 
   /// Convierte fechas DD/MM/AAAA o YYYY-MM-DD a ISO `YYYY-MM-DD` para Supabase.

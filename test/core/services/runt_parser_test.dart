@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:my_auto_guide/core/logic/vehicle_health_logic.dart';
 import 'package:my_auto_guide/core/services/runt_parser.dart';
 
 void main() {
@@ -67,6 +68,35 @@ void main() {
       expect(decoded.marca, 'BAJAJ');
       expect(decoded.linea, 'PULSAR NS 200 FI');
       expect(decoded.clase, 'MOTOCICLETA');
+    });
+
+    test('resolveStartIsoDate prefers inicio de vigencia over fin de vigencia', () {
+      expect(
+        RuntVehicleProfile.resolveStartIsoDate(
+          inicio: '15/10/2026',
+          expedicion: '10/10/2026',
+          vencimiento: '15/10/2027',
+        ),
+        '2026-10-15',
+      );
+      expect(
+        RuntVehicleProfile.resolveStartIsoDate(
+          inicio: '',
+          expedicion: '',
+          vencimiento: '12/06/2027',
+        ),
+        '2026-06-12',
+      );
+    });
+
+    test('calculateDocumentPercentage calculates proportional remaining life for both past start dates and future expiry dates', () {
+      final halfYearAgo = DateTime.now().subtract(const Duration(days: 182));
+      final pctFromStart = VehicleHealthLogic.calculateDocumentPercentage(date: halfYearAgo);
+      expect(pctFromStart, closeTo(0.50, 0.03));
+
+      final halfYearAhead = DateTime.now().add(const Duration(days: 182));
+      final pctFromFuture = VehicleHealthLogic.calculateDocumentPercentage(date: halfYearAhead);
+      expect(pctFromFuture, closeTo(0.50, 0.03));
     });
   });
 }

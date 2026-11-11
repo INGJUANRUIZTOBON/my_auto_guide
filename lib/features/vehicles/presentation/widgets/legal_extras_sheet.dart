@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../../core/services/driver_license_parser.dart';
 import '../../../../core/services/notification_service.dart';
 import '../../../../shared/widgets/app_snack_bar.dart';
+import '../../../../shared/widgets/runt_driver_license_webview.dart';
 
 /// Modal para gestionar documentos adicionales en Colombia:
 /// Licencia de Conducción, Impuesto Vehicular y Extintor / Kit de Carretera.
@@ -41,6 +43,7 @@ class _LegalExtrasSheetState extends State<LegalExtrasSheet> {
   DateTime? _licenciaVence;
   DateTime? _impuestoVence;
   DateTime? _extintorVence;
+  RuntDriverProfile? _driverProfile;
   bool _saving = false;
 
   @override
@@ -57,13 +60,39 @@ class _LegalExtrasSheetState extends State<LegalExtrasSheet> {
 
     final licStr = remoteLic ?? prefs.getString('extra_lic_${widget.vehiculoId}');
     final impStr = remoteImp ?? prefs.getString('extra_imp_${widget.vehiculoId}');
-    final extStr = remoteExt ?? prefs.getString('extra_ext_${widget.vehiculoId}');
+    final extStr = extStrOrNull(remoteExt ?? prefs.getString('extra_ext_${widget.vehiculoId}'));
+    final rawDriver = prefs.getString('runt_driver_license_profile_${widget.vehiculoId}') ??
+        prefs.getString('runt_driver_license_profile_global');
 
     if (mounted) {
       setState(() {
         _licenciaVence = licStr != null ? DateTime.tryParse(licStr) : null;
         _impuestoVence = impStr != null ? DateTime.tryParse(impStr) : null;
         _extintorVence = extStr != null ? DateTime.tryParse(extStr) : null;
+        if (rawDriver != null && rawDriver.isNotEmpty) {
+          _driverProfile = RuntDriverProfile.tryDecodeWebViewResult(rawDriver);
+        }
+      });
+    }
+  }
+
+  String? extStrOrNull(String? val) => (val == null || val.isEmpty) ? null : val;
+
+  Future<void> _consultarLicenciaEnRunt() async {
+    final cedula = (widget.vehicleData['cedula'] ?? '').toString().trim();
+    final res = await Navigator.push<RuntDriverProfile>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => RuntDriverLicenseWebViewScreen(
+          cedula: cedula,
+          vehiculoId: widget.vehiculoId,
+        ),
+      ),
+    );
+    if (res != null && mounted) {
+      setState(() {
+        _driverProfile = res;
+        _licenciaVence = res.earliestExpiration ?? _licenciaVence;
       });
     }
   }
@@ -163,9 +192,10 @@ class _LegalExtrasSheetState extends State<LegalExtrasSheet> {
       ),
       child: SafeArea(
         top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Center(
               child: Container(
@@ -201,6 +231,74 @@ class _LegalExtrasSheetState extends State<LegalExtrasSheet> {
               value: _fmt(_licenciaVence),
               onTap: () => _pickDate(_licenciaVence, (d) => _licenciaVence = d),
             ),
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              onPressed: _consultarLicenciaEnRunt,
+              icon: const Icon(Icons.verified_user_rounded, size: 18),
+              label: Text(
+                _driverProfile != null && _driverProfile!.licencias.isNotEmpty
+                    ? 'Actualizar Mis Licencias en RUNT'
+                    : 'Verificar Categorías y Vigencia en RUNT',
+              ),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: const Color(0xFF38BDF8),
+                side: BorderSide(color: const Color(0xFF38BDF8).withValues(alpha: 0.4)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(vertical: 11),
+              ),
+            ),
+            if (_driverProfile != null && _driverProfile!.licencias.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1E293B) : Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.35),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Licencias RUNT (${_driverProfile!.vigentes.length} vigentes de ${_driverProfile!.licencias.length})',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        color: isDark ? Colors.white : const Color(0xFF0F172A),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: _driverProfile!.licencias.map((lic) {
+                        final ok = lic.isVigente;
+                        final c = ok ? const Color(0xFF10B981) : Colors.redAccent;
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: c.withValues(alpha: 0.14),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: c.withValues(alpha: 0.45)),
+                          ),
+                          child: Text(
+                            'Cat. ${lic.categoria} (${lic.inferredServicio}) • ${ok ? "Vigente" : (lic.estado.isNotEmpty ? lic.estado : "Vencida")}'
+                            '${lic.fechaVencimiento.isNotEmpty ? " • Vence ${lic.fechaVencimiento}" : ""}',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: isDark ? Colors.white : const Color(0xFF0F172A),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             const SizedBox(height: 10),
             _DocRowTile(
               icon: Icons.receipt_long_rounded,
@@ -234,6 +332,7 @@ class _LegalExtrasSheetState extends State<LegalExtrasSheet> {
               ),
             ),
           ],
+        ),
         ),
       ),
     );

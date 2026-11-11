@@ -131,20 +131,14 @@ class _ParametrizacionMantenimientosScreenState
         currentKms: widget.currentKms,
       );
 
-  double get _pctSoat => VehicleHealthLogic.calculateHybridPercentage(
-        lastDate: _soat,
-        lastKms: 0,
+  double get _pctSoat => VehicleHealthLogic.calculateDocumentPercentage(
+        date: _soat,
         cycleDays: 365,
-        cycleKms: 1,
-        currentKms: 0,
       );
 
-  double get _pctTecno => VehicleHealthLogic.calculateHybridPercentage(
-        lastDate: _tecno,
-        lastKms: 0,
+  double get _pctTecno => VehicleHealthLogic.calculateDocumentPercentage(
+        date: _tecno,
         cycleDays: 365,
-        cycleKms: 1,
-        currentKms: 0,
       );
 
   double get _averageHealth {
@@ -419,7 +413,7 @@ class _ParametrizacionMantenimientosScreenState
 
               IosMaintenanceCard(
                 title: 'Seguro Obligatorio (SOAT)',
-                subtitle: 'Vigencia anual obligatoria por ley',
+                subtitle: 'Fecha de inicio de vigencia (anual)',
                 icon: Icons.health_and_safety_outlined,
                 date: _soat,
                 onDateChanged: (d) => setState(() => _soat = d),
@@ -432,7 +426,7 @@ class _ParametrizacionMantenimientosScreenState
 
               IosMaintenanceCard(
                 title: 'Revisión Técnico-Mecánica',
-                subtitle: 'Certificación anual de estado técnico',
+                subtitle: 'Fecha de inicio de vigencia / expedición',
                 icon: Icons.car_crash_outlined,
                 date: _tecno,
                 onDateChanged: (d) => setState(() => _tecno = d),

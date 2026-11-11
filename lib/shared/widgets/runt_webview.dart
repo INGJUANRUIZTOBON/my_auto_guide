@@ -176,9 +176,9 @@ class _RuntWebViewScreenState extends State<RuntWebViewScreen> {
             vin: '', numero_motor: '', numero_chasis: '', gravamenes: '',
             organismo_transito: '',
             soat_estado: '', soat_aseguradora: '', soat_poliza: '',
-            soat_expedicion: '', soat_vencimiento: '',
+            soat_expedicion: '', soat_inicio_vigencia: '', soat_vencimiento: '',
             tecno_estado: '', tecno_certificado: '', tecno_cda: '',
-            tecno_expedicion: '', tecno_vencimiento: '',
+            tecno_expedicion: '', tecno_inicio_vigencia: '', tecno_vencimiento: '',
             raw_text: ''
           };
 
@@ -256,14 +256,16 @@ class _RuntWebViewScreenState extends State<RuntWebViewScreen> {
                   if (h.includes('POLIZA') && !out.soat_poliza) out.soat_poliza = val;
                   if ((h.includes('ASEGURADORA') || h.includes('ENTIDAD')) && !out.soat_aseguradora) out.soat_aseguradora = val;
                   if (h.includes('ESTADO') && !out.soat_estado) out.soat_estado = val;
-                  if (h.includes('EXPEDICION') && !out.soat_expedicion) out.soat_expedicion = val;
-                  if ((h.includes('VENCIMIENTO') || h.includes('FIN VIGENCIA') || h.includes('FIN DE VIGENCIA') || h.includes('HASTA')) && !out.soat_vencimiento) out.soat_vencimiento = val;
+                  if ((h.includes('INICIO') || h.includes('DESDE')) && !out.soat_inicio_vigencia) out.soat_inicio_vigencia = val;
+                  else if (h.includes('EXPEDICION') && !out.soat_expedicion) out.soat_expedicion = val;
+                  else if ((h.includes('FIN VIGENCIA') || h.includes('FIN DE VIGENCIA') || h.includes('VENCIMIENTO') || h.includes('HASTA')) && !out.soat_vencimiento) out.soat_vencimiento = val;
                 });
                 if (!out.soat_vencimiento) {
                   for (const r of rows) {
                     const rTxt = upper(r.innerText);
                     const dates = rTxt.match(/\b(\d{2}[\/\-]\d{2}[\/\-]\d{4}|\d{4}[\/\-]\d{2}[\/\-]\d{2})\b/g);
-                    if (dates && dates.length > 0 && (rTxt.includes('VENCIMIENTO') || rTxt.includes('FIN') || rTxt.includes('HASTA') || rTxt.includes('VIGENTE'))) {
+                    if (dates && dates.length > 0 && (rTxt.includes('FIN') || rTxt.includes('VENCIMIENTO') || rTxt.includes('HASTA') || rTxt.includes('VIGENTE'))) {
+                      if (!out.soat_inicio_vigencia && dates.length >= 2) out.soat_inicio_vigencia = dates[0];
                       out.soat_vencimiento = dates[dates.length - 1];
                       break;
                     }
@@ -279,14 +281,16 @@ class _RuntWebViewScreenState extends State<RuntWebViewScreen> {
                   if ((h.includes('CERTIFICADO') || h.includes('NUMERO')) && !out.tecno_certificado) out.tecno_certificado = val;
                   if ((h.includes('CDA') || h.includes('CENTRO')) && !out.tecno_cda) out.tecno_cda = val;
                   if (h.includes('ESTADO') && !out.tecno_estado) out.tecno_estado = val;
-                  if (h.includes('EXPEDICION') && !out.tecno_expedicion) out.tecno_expedicion = val;
-                  if ((h.includes('VIGENCIA') || h.includes('VENCIMIENTO') || h.includes('HASTA')) && !out.tecno_vencimiento) out.tecno_vencimiento = val;
+                  if ((h.includes('INICIO') || h.includes('DESDE')) && !out.tecno_inicio_vigencia) out.tecno_inicio_vigencia = val;
+                  else if (h.includes('EXPEDICION') && !out.tecno_expedicion) out.tecno_expedicion = val;
+                  else if ((h.includes('FIN DE VIGENCIA') || h.includes('FIN VIGENCIA') || h.includes('VIGENTE') || h.includes('VIGENCIA') || h.includes('VENCIMIENTO') || h.includes('HASTA')) && !out.tecno_vencimiento) out.tecno_vencimiento = val;
                 });
                 if (!out.tecno_vencimiento) {
                   for (const r of rows) {
                     const rTxt = upper(r.innerText);
                     const dates = rTxt.match(/\b(\d{2}[\/\-]\d{2}[\/\-]\d{4}|\d{4}[\/\-]\d{2}[\/\-]\d{2})\b/g);
                     if (dates && dates.length > 0 && (rTxt.includes('VENCIMIENTO') || rTxt.includes('HASTA') || rTxt.includes('VIGENTE'))) {
+                      if (!out.tecno_inicio_vigencia && dates.length >= 2) out.tecno_inicio_vigencia = dates[0];
                       out.tecno_vencimiento = dates[dates.length - 1];
                       break;
                     }
@@ -346,8 +350,18 @@ class _RuntWebViewScreenState extends State<RuntWebViewScreen> {
       return;
     }
 
-    final soatIso = RuntVehicleProfile.convertToIsoDate(profile.soatVencimiento);
-    final tecnoIso = RuntVehicleProfile.convertToIsoDate(profile.tecnoVencimiento);
+    // Guardamos en last_soat / last_tecno la fecha de INICIO DE VIGENCIA / expedición
+    // (o fin de vigencia - 1 año si RUNT no mostró fecha de inicio) para cálculos precisos.
+    final soatIso = RuntVehicleProfile.resolveStartIsoDate(
+      inicio: profile.soatInicioVigencia,
+      expedicion: profile.soatExpedicion,
+      vencimiento: profile.soatVencimiento,
+    );
+    final tecnoIso = RuntVehicleProfile.resolveStartIsoDate(
+      inicio: profile.tecnoInicioVigencia,
+      expedicion: profile.tecnoExpedicion,
+      vencimiento: profile.tecnoVencimiento,
+    );
 
     final baseUpdate = <String, dynamic>{};
     if (soatIso != null) baseUpdate['last_soat'] = soatIso;
