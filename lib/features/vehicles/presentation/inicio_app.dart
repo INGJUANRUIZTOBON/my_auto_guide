@@ -80,6 +80,7 @@ import 'package:share_plus/share_plus.dart';
 import 'Agregar_vehiculo.dart';
 import 'Agregar_carro.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/services/vehicle_catalog_service.dart';
 import '../../../core/services/odometer_history_service.dart';
 import 'widgets/insurance_picker_sheet.dart';
 import '../../obd_scanner/presentation/screens/scanner_dashboard_screen.dart';
@@ -1839,6 +1840,21 @@ class _InicioAppState extends State<InicioApp> {
     if (mounted) setState(() {});
   }
 
+  /// Determina si el vehículo actual es un carro para habilitar herramientas exclusivas como el Scanner OBD2.
+  bool _isCarForScanner(Map<String, dynamic> vehicle) {
+    final imagePath = (vehicle['image_path'] as String? ?? '').toLowerCase();
+    if (imagePath.contains('motos/')) return false;
+    if (imagePath.contains('carros/')) return true;
+
+    final marca = (vehicle['marca'] as String? ?? '').trim().toUpperCase();
+    final apodo = (vehicle['apodo'] as String? ?? '').trim().toUpperCase();
+    if (marca.contains('CARRO') || apodo.contains('CARRO')) return true;
+
+    final catalog = VehicleCatalogService();
+    if (catalog.getMotoCatalog().containsKey(marca)) return false;
+    return catalog.getCarCatalog().containsKey(marca);
+  }
+
   @override
   Widget build(BuildContext context) {
     if (!_notificacionesProcesadas &&
@@ -2353,22 +2369,22 @@ class _InicioAppState extends State<InicioApp> {
                     children: [
                       SectionTitle(text: 'Herramientas y Servicios'),
                       const SizedBox(height: 12),
-                      GradientButton(
-                          icon: Icons.settings_bluetooth_rounded,
-                          text: 'Diagnóstico OBD2 (Scanner)',
-                          onTap: () {
-                            final marca = _cachedVehicleData?['marca']?.toString() ?? '';
-                            final modelo = _cachedVehicleData?['modelo']?.toString() ?? '';
-                            final full = '$marca $modelo'.trim();
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (_) => ScannerDashboardScreen(
-                                      initialVehicleName: full.isNotEmpty ? full : null,
-                                    )));
-                          },
-                          brandTheme: bTheme),
-                      const SizedBox(height: 12),
+                      if (_isCarForScanner(v)) ...[
+                        GradientButton(
+                            icon: Icons.settings_bluetooth_rounded,
+                            text: 'Diagnóstico OBD2 (Scanner)',
+                            onTap: () {
+                              final full = '$marca $modelo'.trim();
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) => ScannerDashboardScreen(
+                                        initialVehicleName: full.isNotEmpty ? full : null,
+                                      )));
+                            },
+                            brandTheme: bTheme),
+                        const SizedBox(height: 12),
+                      ],
                       GradientButton(
                           icon: Icons.map_rounded,
                           text: 'Navegación GPS',

@@ -19,7 +19,9 @@ class BluetoothDeviceListWidget extends StatelessWidget {
       value: provider,
       child: Consumer<ScannerProvider>(
         builder: (context, scanProvider, _) {
-          return ClipRRect(
+          return Material(
+            type: MaterialType.transparency,
+            child: ClipRRect(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
@@ -264,7 +266,8 @@ class BluetoothDeviceListWidget extends StatelessWidget {
                 ),
               ),
             ),
-          );
+          ),
+        );
         },
       ),
     );

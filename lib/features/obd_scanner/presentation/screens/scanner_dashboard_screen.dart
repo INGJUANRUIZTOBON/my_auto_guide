@@ -430,15 +430,19 @@ class _ScannerDashboardScreenState extends State<ScannerDashboardScreen> with Si
                       children: [
                         const Icon(CupertinoIcons.slider_horizontal_3, size: 14, color: AppAppleTheme.electricCyan),
                         const SizedBox(width: 8),
-                        Text(
-                          provider.protocolOverride == null
-                              ? 'Protocolo: Automático (${provider.recommendedProtocolName})'
-                              : 'Protocolo Forzado: ${provider.protocolOverride}',
-                          style: GoogleFonts.outfit(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: AppAppleTheme.electricCyan,
-                            decoration: TextDecoration.none,
+                        Flexible(
+                          child: Text(
+                            provider.protocolOverride == null
+                                ? 'Protocolo: Automático (${provider.recommendedProtocolName})'
+                                : 'Protocolo Forzado: ${provider.protocolOverride}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.outfit(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: AppAppleTheme.electricCyan,
+                              decoration: TextDecoration.none,
+                            ),
                           ),
                         ),
                       ],
@@ -1415,6 +1419,7 @@ class _ScannerDashboardScreenState extends State<ScannerDashboardScreen> with Si
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
                             color: Colors.white,
+                            decoration: TextDecoration.none,
                           ),
                         ),
                       ],
@@ -1436,6 +1441,7 @@ class _ScannerDashboardScreenState extends State<ScannerDashboardScreen> with Si
                               fontSize: 14,
                               color: Colors.white.withValues(alpha: 0.9),
                               height: 1.5,
+                              decoration: TextDecoration.none,
                             ),
                           ),
                         ),
@@ -1452,6 +1458,7 @@ class _ScannerDashboardScreenState extends State<ScannerDashboardScreen> with Si
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
+                          decoration: TextDecoration.none,
                         ),
                       ),
                     ),
@@ -1461,6 +1468,7 @@ class _ScannerDashboardScreenState extends State<ScannerDashboardScreen> with Si
             ),
           ),
         ),
+      ),
       );
     }
   }
@@ -1902,13 +1910,17 @@ class _ScannerDashboardScreenState extends State<ScannerDashboardScreen> with Si
                                       children: [
                                         Row(
                                           children: [
-                                            Text(
-                                              p['name']!,
-                                              style: GoogleFonts.outfit(
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w600,
-                                                color: Colors.white,
-                                                decoration: TextDecoration.none,
+                                            Flexible(
+                                              child: Text(
+                                                p['name']!,
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: GoogleFonts.outfit(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: Colors.white,
+                                                  decoration: TextDecoration.none,
+                                                ),
                                               ),
                                             ),
                                             if (isAutoOptimal && p['cmd'] != null) ...[
