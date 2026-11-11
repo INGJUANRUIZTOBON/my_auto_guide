@@ -91,4 +91,36 @@ void main() {
       expect(points.last, next);
     });
   });
+
+  group('TelemetryCalculator background persistence & filtering', () {
+    test('encodes and decodes route points cleanly', () {
+      const p1 = LatLng(4.609712, -74.081749);
+      const p2 = LatLng(4.610512, -74.082101);
+      final raw = TelemetryCalculator.encodeRoutePoints(const [p1, p2]);
+      final decoded = TelemetryCalculator.decodeRoutePoints(raw);
+      expect(decoded.length, 2);
+      expect(decoded.first.latitude, closeTo(p1.latitude, 0.00001));
+      expect(decoded.last.longitude, closeTo(p2.longitude, 0.00001));
+    });
+
+    test('filters low accuracy samples once tracking is active', () {
+      const next = LatLng(4.6105, -74.0821);
+      expect(
+        TelemetryCalculator.isValidGpsSample(
+          accuracyMeters: 85.0,
+          previousPoint: origin,
+          nextPoint: next,
+        ),
+        isFalse,
+      );
+      expect(
+        TelemetryCalculator.isValidGpsSample(
+          accuracyMeters: 12.0,
+          previousPoint: origin,
+          nextPoint: next,
+        ),
+        isTrue,
+      );
+    });
+  });
 }

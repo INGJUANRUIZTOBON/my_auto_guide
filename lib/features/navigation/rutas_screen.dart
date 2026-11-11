@@ -19,10 +19,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/services/supabase_service.dart';
 import '../../../core/services/sync_service.dart';
+import '../../../core/services/background_nav_service.dart';
 import '../../../core/services/navigation_service.dart';
 import '../../../core/services/voice_navigation_service.dart';
 import '../../../core/services/secure_storage_service.dart'; // VULN-01: almacenamiento cifrado
 import 'domain/models/navigation_telemetry.dart';
+import 'logic/map_tile_config.dart';
 import 'logic/telemetry_calculator.dart';
 import 'presentation/controllers/navigation_controller.dart';
 import 'presentation/widgets/navigation_widgets.dart';
@@ -48,7 +50,8 @@ class RutasScreen extends StatefulWidget {
   State<RutasScreen> createState() => _RutasScreenState();
 }
 
-class _RutasScreenState extends State<RutasScreen> with TickerProviderStateMixin {
+class _RutasScreenState extends State<RutasScreen>
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   final SupabaseClient supabase = SupabaseService().client;
   final MapController _mapCtrl = MapController();
   final TextEditingController _searchCtrl = TextEditingController();
@@ -56,6 +59,9 @@ class _RutasScreenState extends State<RutasScreen> with TickerProviderStateMixin
 
   late NavigationController _controller;
   bool _isLoadingRoute = false;
+  bool _isStartingNav = false;
+  bool _autoFollow = true;
+  MapStyle? _mapStyle;
   String? _vehicleImagePath;
   String _vehiclePlate = '';
   
@@ -67,6 +73,7 @@ class _RutasScreenState extends State<RutasScreen> with TickerProviderStateMixin
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _controller = NavigationController(
       vehicleId: widget.vehiculoId,
       vehicleModel: 'Vehículo',
@@ -86,6 +93,19 @@ class _RutasScreenState extends State<RutasScreen> with TickerProviderStateMixin
     }
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(() async {
+        await _controller.syncFromBackgroundStorage();
+        final pos = _controller.telemetry.currentPos;
+        if (mounted && _autoFollow && pos != null) {
+          _mapCtrl.move(pos, _mapCtrl.camera.zoom);
+        }
+      }());
+    }
+  }
+
   bool _isFinalizing = false;
 
   void _onControllerStateUpdate() {
@@ -93,6 +113,11 @@ class _RutasScreenState extends State<RutasScreen> with TickerProviderStateMixin
       // Si la navegación finalizó automáticamente por arribo al destino (< 40m)
       if (_controller.state == NavigationState.completed && !_isFinalizing) {
         _finalizarRuta();
+      } else if (_autoFollow &&
+          (_controller.state == NavigationState.navigating ||
+              _controller.state == NavigationState.freeTracking) &&
+          _controller.telemetry.currentPos != null) {
+        _mapCtrl.move(_controller.telemetry.currentPos!, _mapCtrl.camera.zoom);
       }
       setState(() {});
     }
@@ -100,6 +125,7 @@ class _RutasScreenState extends State<RutasScreen> with TickerProviderStateMixin
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _searchDebounce?.cancel();
     CameraRadarService().stopRadar();
     _controller.removeListener(_onControllerStateUpdate);
@@ -384,45 +410,137 @@ class _RutasScreenState extends State<RutasScreen> with TickerProviderStateMixin
   }
 
   // ─── CONTROL DE NAVEGACIÓN ──────────────────────────────
-  
-  void _iniciarNav({bool isFree = false}) async {
-    _searchFocusNode.unfocus();
-    FocusScope.of(context).unfocus();
 
-    if (await Permission.locationAlways.isDenied) await Permission.locationAlways.request();
-
-    // Solicitar exención de ahorro de batería para evitar que Android suspenda el tracking
-    if (await Permission.ignoreBatteryOptimizations.isDenied) {
-      await Permission.ignoreBatteryOptimizations.request();
+  Future<bool> _ensureBackgroundLocationPermissions() async {
+    final gpsEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!gpsEnabled) {
+      if (mounted) {
+        AppSnackBar.show(
+          context,
+          'Activa el GPS de tu teléfono para grabar la ruta con precisión.',
+          action: SnackBarAction(
+            label: 'Ajustes',
+            onPressed: () => Geolocator.openLocationSettings(),
+          ),
+        );
+      }
+      return false;
     }
 
-    final service = FlutterBackgroundService();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('active_nav_vehicle_id', widget.vehiculoId);
-    await prefs.setBool('is_navigating', true);
-    // VULN-01: Credenciales guardadas en almacenamiento cifrado (no SharedPreferences)
-    await SecureStorageService().saveSupabaseCredentials(
-      url: dotenv.get('SUPABASE_URL'),
-      anonKey: dotenv.get('SUPABASE_ANON_KEY'),
-    );
-    
-    if (!(await service.isRunning())) {
-      await service.startService();
-      await Future.delayed(const Duration(milliseconds: 800));
+    var whenInUse = await Permission.locationWhenInUse.status;
+    if (!whenInUse.isGranted) {
+      whenInUse = await Permission.locationWhenInUse.request();
+      if (!whenInUse.isGranted) {
+        if (mounted) {
+          AppSnackBar.show(
+            context,
+            'Permiso de ubicación necesario para trazar tu recorrido.',
+            action: SnackBarAction(
+              label: 'Ajustes',
+              onPressed: () => openAppSettings(),
+            ),
+          );
+        }
+        return false;
+      }
     }
-    
-    _controller.startNavigation(isFree: isFree);
 
-    // Centrar mapa en la ubicación del usuario
-    final curPos = _controller.telemetry.currentPos;
-    if (curPos != null) {
-      _mapCtrl.move(curPos, 16.5);
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+      if (await Permission.notification.isDenied) {
+        await Permission.notification.request();
+      }
+
+      var alwaysStatus = await Permission.locationAlways.status;
+      if (!alwaysStatus.isGranted && mounted) {
+        final proceed = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('GPS con pantalla suspendida'),
+            content: const Text(
+              'Para seguir grabando toda tu ruta curva a curva cuando apagues la pantalla:\n\n'
+              '1) En Ubicación selecciona "Permitir todo el tiempo".\n'
+              '2) Permite desactivar la restricción de batería para My Auto Guide.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Continuar sin esto'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Configurar ahora'),
+              ),
+            ],
+          ),
+        );
+
+        if (proceed == true) {
+          alwaysStatus = await Permission.locationAlways.request();
+          if (!alwaysStatus.isGranted && alwaysStatus.isPermanentlyDenied) {
+            await openAppSettings();
+          }
+        }
+      }
+
+      if (await Permission.ignoreBatteryOptimizations.isDenied) {
+        await Permission.ignoreBatteryOptimizations.request();
+      }
+    }
+
+    return true;
+  }
+
+  Future<void> _iniciarNav({bool isFree = false}) async {
+    if (_isStartingNav) return;
+    _isStartingNav = true;
+    try {
+      _searchFocusNode.unfocus();
+      FocusScope.of(context).unfocus();
+
+      final canStart = await _ensureBackgroundLocationPermissions();
+      if (!canStart || !mounted) return;
+
+      // Evitar listeners duplicados mientras corre el servicio en segundo plano
+      await _idlePositionSubscription?.cancel();
+      _idlePositionSubscription = null;
+
+      await BackgroundNavService.resetRouteStorage(
+        initialPoint: _controller.telemetry.currentPos,
+      );
+
+      final service = FlutterBackgroundService();
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('active_nav_vehicle_id', widget.vehiculoId);
+      await prefs.setBool('is_navigating', true);
+      // VULN-01: Credenciales guardadas en almacenamiento cifrado (no SharedPreferences)
+      await SecureStorageService().saveSupabaseCredentials(
+        url: dotenv.get('SUPABASE_URL'),
+        anonKey: dotenv.get('SUPABASE_ANON_KEY'),
+      );
+
+      if (!(await service.isRunning())) {
+        await service.startService();
+        await Future.delayed(const Duration(milliseconds: 600));
+      }
+
+      _autoFollow = true;
+      _controller.startNavigation(isFree: isFree);
+
+      final curPos = _controller.telemetry.currentPos;
+      if (curPos != null) {
+        _mapCtrl.move(curPos, 16.5);
+      }
+    } finally {
+      _isStartingNav = false;
     }
   }
 
   Future<void> _finalizarRuta({bool skipSummaryModal = false}) async {
     if (_isFinalizing) return;
     _isFinalizing = true;
+
+    // Recuperar cualquier tramo grabado en segundo plano antes de cerrar
+    await _controller.syncFromBackgroundStorage();
 
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -537,10 +655,12 @@ class _RutasScreenState extends State<RutasScreen> with TickerProviderStateMixin
     }
 
     _controller.clearRouteAndReset();
+    _iniciarSeguimientoIdle();
     _isFinalizing = false;
   }
 
   void _recenterMap() {
+    setState(() => _autoFollow = true);
     final curPos = _controller.telemetry.currentPos;
     if (curPos != null) {
       _mapCtrl.move(curPos, 16.5);
@@ -705,6 +825,33 @@ class _RutasScreenState extends State<RutasScreen> with TickerProviderStateMixin
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    Builder(
+                      builder: (ctx) {
+                        final isDark = Theme.of(ctx).brightness == Brightness.dark;
+                        final currentStyle =
+                            _mapStyle ?? (isDark ? MapStyle.dark : MapStyle.street);
+                        return FloatingActionButton.small(
+                          heroTag: 'btn_map_style',
+                          tooltip: 'Vista: ${currentStyle.label}',
+                          backgroundColor: const Color(0xFF1C1C1E).withOpacity(0.9),
+                          onPressed: () {
+                            final nextStyle = currentStyle.next;
+                            setState(() => _mapStyle = nextStyle);
+                            AppSnackBar.show(
+                              context,
+                              'Mapa: ${nextStyle.label}',
+                              duration: const Duration(seconds: 2),
+                            );
+                          },
+                          child: Icon(
+                            currentStyle.icon,
+                            color: const Color(0xFF38BDF8),
+                            size: 20,
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 10),
                     FloatingActionButton.small(
                       heroTag: 'btn_voice_nav',
                       backgroundColor: const Color(0xFF1C1C1E).withOpacity(0.9),
@@ -729,7 +876,11 @@ class _RutasScreenState extends State<RutasScreen> with TickerProviderStateMixin
                       heroTag: 'btn_recenter_map',
                       backgroundColor: const Color(0xFF1C1C1E).withOpacity(0.9),
                       onPressed: _recenterMap,
-                      child: const Icon(Icons.my_location_rounded, color: Color(0xFF00FF87), size: 20),
+                      child: Icon(
+                        Icons.my_location_rounded,
+                        color: _autoFollow ? const Color(0xFF00FF87) : Colors.white70,
+                        size: 20,
+                      ),
                     ),
                     const SizedBox(height: 10),
                     FloatingActionButton(
@@ -762,58 +913,26 @@ class _RutasScreenState extends State<RutasScreen> with TickerProviderStateMixin
     );
   }
 
-  String _getMapTileUrl(bool isDark) {
-    final stadiaKey = dotenv.isInitialized ? dotenv.get('STADIA_API_KEY', fallback: '') : '';
-    final cartoKey = dotenv.isInitialized ? dotenv.get('CARTO_API_KEY', fallback: '') : '';
-
-    if (stadiaKey.trim().isNotEmpty && !stadiaKey.contains('your_')) {
-      return isDark
-          ? 'https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}@2x.png?api_key=${stadiaKey.trim()}'
-          : 'https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}@2x.png?api_key=${stadiaKey.trim()}';
-    }
-
-    if (cartoKey.trim().isNotEmpty && !cartoKey.contains('your_')) {
-      return isDark
-          ? 'https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png?api_key=${cartoKey.trim()}'
-          : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png?api_key=${cartoKey.trim()}';
-    }
-
-    // OpenStreetMap estándar 100% libre de marcas de agua "API KEY REQUIRED"
-    return 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
-  }
-
   Widget _buildMap(NavigationTelemetry t) {
     final centerPos = t.currentPos ?? const LatLng(4.6097, -74.0817);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final hasDedicatedKey = (dotenv.isInitialized && (dotenv.get('STADIA_API_KEY', fallback: '').isNotEmpty || dotenv.get('CARTO_API_KEY', fallback: '').isNotEmpty));
+    final activeStyle = _mapStyle ?? (isDark ? MapStyle.dark : MapStyle.street);
 
     return FlutterMap(
       mapController: _mapCtrl,
       options: MapOptions(
         initialCenter: centerPos,
         initialZoom: 15,
+        onPositionChanged: (camera, hasGesture) {
+          if (hasGesture && _autoFollow) {
+            setState(() => _autoFollow = false);
+          }
+        },
         onTap: (tapPosition, point) => _onMapTappedOrLongPressed(point),
         onLongPress: (tapPosition, point) => _onMapTappedOrLongPressed(point),
       ),
       children: [
-        TileLayer(
-          urlTemplate: _getMapTileUrl(isDark),
-          userAgentPackageName: 'com.myautoguide.app',
-          maxZoom: 19,
-          keepBuffer: 5,
-          panBuffer: 2,
-          tileBuilder: (isDark && !hasDedicatedKey)
-              ? (context, tileWidget, tile) => ColorFiltered(
-                    colorFilter: const ColorFilter.matrix(<double>[
-                      -0.82, 0.0, 0.0, 0.0, 240.0,
-                      0.0, -0.82, 0.0, 0.0, 240.0,
-                      0.0, 0.0, -0.82, 0.0, 240.0,
-                      0.0, 0.0, 0.0, 1.0, 0.0,
-                    ]),
-                    child: tileWidget,
-                  )
-              : null,
-        ),
+        MapTileConfig.buildTileLayer(style: activeStyle),
         if (_controller.routePoints.isNotEmpty)
           PolylineLayer(polylines: [
             Polyline(

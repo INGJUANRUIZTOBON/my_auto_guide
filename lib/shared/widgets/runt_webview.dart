@@ -1,11 +1,13 @@
 // =============================================================================
-// runt_webview.dart — CONSULTA Y EXTRACCIÓN AUTOMÁTICA RUNT COLOMBIA
+// runt_webview.dart — CONSULTA Y EXTRACCIÓN COMPLETA RUNT COLOMBIA
 // =============================================================================
 
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../core/services/runt_parser.dart';
 import '../../../shared/widgets/app_snack_bar.dart';
 
 class RuntWebViewScreen extends StatefulWidget {
@@ -27,12 +29,9 @@ class RuntWebViewScreen extends StatefulWidget {
 class _RuntWebViewScreenState extends State<RuntWebViewScreen> {
   late final WebViewController _controller;
   bool _loading = true;
+  bool _extracting = false;
 
-  String fechaSoatExpedicion = "";
-  String fechaSoatVencimiento = "";
-  String fechaTecnoExpedicion = "";
-  String fechaTecnoVencimiento = "";
-  
+  RuntVehicleProfile? _extractedProfile;
   String? _cachedSoat;
   String? _cachedTecno;
   String? _cachedDate;
@@ -51,7 +50,7 @@ class _RuntWebViewScreenState extends State<RuntWebViewScreen> {
       ..setNavigationDelegate(
         NavigationDelegate(
           onWebResourceError: (error) {
-            debugPrint("RUNT WebView error: ${error.description}");
+            debugPrint('RUNT WebView error: ${error.description}');
             if (mounted && _hasOfflineCache) {
               setState(() => _loading = false);
             }
@@ -59,7 +58,7 @@ class _RuntWebViewScreenState extends State<RuntWebViewScreen> {
           onPageFinished: (url) async {
             if (mounted) setState(() => _loading = false);
 
-            // Autocompletar placa y cédula de forma resiliente
+            // Autocompletar placa y cédula sin tocar el CAPTCHA oficial
             await _controller.runJavaScript('''
               function fillInputs() {
                 const placaSelectors = ['#txtPlaca', '#placa', 'input[name="placa"]', 'input[placeholder*="Placa"]', 'input[ng-model*="placa"]'];
@@ -98,96 +97,195 @@ class _RuntWebViewScreenState extends State<RuntWebViewScreen> {
       );
   }
 
-  String parseJsResult(Object? result) {
-    if (result == null) return "";
-    return result.toString().replaceAll('"', '').trim();
-  }
+  /// Expande paneles de RUNT ya consultados y extrae SOAT, RTM y ficha técnica completa.
+  Future<void> consultarFichaCompleta() async {
+    if (_extracting) return;
+    setState(() {
+      _extracting = true;
+      _loading = true;
+    });
 
-  Future<String> getTextFromJs(String js) async {
-    for (int i = 0; i < 5; i++) {
-      try {
-        final result = await _controller.runJavaScriptReturningResult(js);
-        final text = parseJsResult(result);
-        if (text.isNotEmpty) return text;
-      } catch (e) {
-        debugPrint("Error ejecutando JS RUNT: $e");
+    try {
+      // 1. Expandir acordeones/paneles colapsados del resultado ya cargado en DOM
+      await _controller.runJavaScript('''
+        (function() {
+          const triggers = document.querySelectorAll(
+            '[data-toggle="collapse"], .panel-heading a, .accordion-button, mat-expansion-panel-header'
+          );
+          triggers.forEach(function(el) {
+            const txt = (el.innerText || '').toUpperCase();
+            if (
+              txt.includes('SOAT') ||
+              txt.includes('REVISI') ||
+              txt.includes('TÉCNIC') ||
+              txt.includes('TECNIC') ||
+              txt.includes('DATOS') ||
+              txt.includes('INFORMACI') ||
+              txt.includes('LIMITA') ||
+              txt.includes('GRAV') ||
+              txt.includes('PÓLIZA') ||
+              txt.includes('POLIZA')
+            ) {
+              const expanded = el.getAttribute('aria-expanded');
+              if (expanded !== 'true') {
+                try { el.click(); } catch (_) {}
+              }
+            }
+          });
+        })();
+      ''');
+
+      await Future.delayed(const Duration(milliseconds: 550));
+
+      // 2. Extraer campos de formularios y tablas en una sola lectura JSON
+      const scraperJs = r'''
+        (function() {
+          function norm(s) {
+            return (s || '').replace(/\s+/g, ' ').trim();
+          }
+          function upper(s) {
+            return norm(s).toUpperCase()
+              .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+          }
+
+          const out = {
+            marca: '', linea: '', modelo_ano: '', color: '', clase: '',
+            servicio: '', estado_vehiculo: '', cilindraje: '', combustible: '',
+            vin: '', numero_motor: '', numero_chasis: '', gravamenes: '',
+            organismo_transito: '',
+            soat_estado: '', soat_aseguradora: '', soat_poliza: '',
+            soat_expedicion: '', soat_vencimiento: '',
+            tecno_estado: '', tecno_certificado: '', tecno_cda: '',
+            tecno_expedicion: '', tecno_vencimiento: ''
+          };
+
+          function assignPair(rawLabel, rawVal) {
+            const k = upper(rawLabel);
+            const v = norm(rawVal);
+            if (!k || !v || v.length > 140) return;
+
+            if (!out.marca && (k === 'MARCA' || k.startsWith('MARCA:'))) out.marca = v;
+            else if (!out.linea && (k.includes('LINEA') || k === 'LINEA')) out.linea = v;
+            else if (!out.modelo_ano && (k === 'MODELO' || k.startsWith('MODELO:'))) out.modelo_ano = v;
+            else if (!out.color && k.includes('COLOR')) out.color = v;
+            else if (!out.clase && k.includes('CLASE DE VEHICULO')) out.clase = v;
+            else if (!out.servicio && k.includes('TIPO DE SERVICIO')) out.servicio = v;
+            else if (!out.estado_vehiculo && k.includes('ESTADO DEL VEHICULO')) out.estado_vehiculo = v;
+            else if (!out.cilindraje && k.includes('CILINDRA')) out.cilindraje = v;
+            else if (!out.combustible && k.includes('COMBUSTIBLE')) out.combustible = v;
+            else if (!out.vin && k.includes('VIN')) out.vin = v;
+            else if (!out.numero_motor && k.includes('NUMERO DE MOTOR')) out.numero_motor = v;
+            else if (!out.numero_chasis && (k.includes('NUMERO DE CHASIS') || k.includes('CHASIS'))) out.numero_chasis = v;
+            else if (!out.gravamenes && (k.includes('GRAVAMENES') || k.includes('PRENDAS') || k.includes('LIMITACIONES'))) out.gravamenes = v;
+            else if (!out.organismo_transito && k.includes('ORGANISMO DE TRANSITO')) out.organismo_transito = v;
+          }
+
+          // Pares label/valor en bloques Bootstrap/Angular
+          const labels = document.querySelectorAll('label, .control-label, th, strong');
+          labels.forEach(function(lbl) {
+            const container = lbl.closest('.form-group, .row, tr, div');
+            if (!container) return;
+            const nextEl = lbl.nextElementSibling;
+            if (nextEl && !nextEl.querySelector('table')) {
+              const input = nextEl.querySelector('input, select') || nextEl;
+              const val = input.value !== undefined && input.value !== '' ? input.value : nextEl.innerText;
+              assignPair(lbl.innerText, val);
+            }
+          });
+
+          // Tablas SOAT, Tecnomecanica y Ficha General
+          const tables = [...document.querySelectorAll('table')];
+          for (const t of tables) {
+            const tableText = upper(t.innerText);
+            const rows = [...t.querySelectorAll('tr')];
+
+            // Caso 1: tabla clave-valor de 2 columnas
+            for (const r of rows) {
+              const cells = [...r.querySelectorAll('th, td')];
+              if (cells.length === 2) {
+                assignPair(cells[0].innerText, cells[1].innerText);
+              }
+            }
+
+            // Caso 2: tabla con encabezados (SOAT / RTM)
+            const headers = [...t.querySelectorAll('thead th, tr:first-child th')].map(h => upper(h.innerText));
+            const bodyRows = [...t.querySelectorAll('tbody tr')];
+            const firstRow = bodyRows.length > 0 ? bodyRows[0] : (rows.length > 1 ? rows[1] : null);
+
+            if ((tableText.includes('SOAT') || tableText.includes('POLIZA')) && firstRow) {
+              const cols = [...firstRow.querySelectorAll('td')].map(c => norm(c.innerText));
+              headers.forEach((h, idx) => {
+                const val = cols[idx] || '';
+                if (!val) return;
+                if (h.includes('POLIZA') && !out.soat_poliza) out.soat_poliza = val;
+                if ((h.includes('ASEGURADORA') || h.includes('ENTIDAD')) && !out.soat_aseguradora) out.soat_aseguradora = val;
+                if (h.includes('ESTADO') && !out.soat_estado) out.soat_estado = val;
+                if (h.includes('EXPEDICION') && !out.soat_expedicion) out.soat_expedicion = val;
+                if ((h.includes('VENCIMIENTO') || h.includes('FIN VIGENCIA') || h.includes('HASTA')) && !out.soat_vencimiento) out.soat_vencimiento = val;
+              });
+              if (!out.soat_vencimiento) {
+                for (const r of rows) {
+                  const rTxt = upper(r.innerText);
+                  const dates = rTxt.match(/\b(\d{2}[\/\-]\d{2}[\/\-]\d{4})\b/g);
+                  if (dates && dates.length > 0 && (rTxt.includes('VENCIMIENTO') || rTxt.includes('HASTA') || rTxt.includes('VIGENTE'))) {
+                    out.soat_vencimiento = dates[dates.length - 1];
+                    break;
+                  }
+                }
+              }
+            }
+
+            if ((tableText.includes('RTM') || tableText.includes('TECNICO') || tableText.includes('REVISION')) && firstRow) {
+              const cols = [...firstRow.querySelectorAll('td')].map(c => norm(c.innerText));
+              headers.forEach((h, idx) => {
+                const val = cols[idx] || '';
+                if (!val) return;
+                if ((h.includes('CERTIFICADO') || h.includes('NUMERO')) && !out.tecno_certificado) out.tecno_certificado = val;
+                if (h.includes('CDA') && !out.tecno_cda) out.tecno_cda = val;
+                if (h.includes('ESTADO') && !out.tecno_estado) out.tecno_estado = val;
+                if (h.includes('EXPEDICION') && !out.tecno_expedicion) out.tecno_expedicion = val;
+                if ((h.includes('VIGENCIA') || h.includes('VENCIMIENTO') || h.includes('HASTA')) && !out.tecno_vencimiento) out.tecno_vencimiento = val;
+              });
+              if (!out.tecno_vencimiento) {
+                for (const r of rows) {
+                  const rTxt = upper(r.innerText);
+                  const dates = rTxt.match(/\b(\d{2}[\/\-]\d{2}[\/\-]\d{4})\b/g);
+                  if (dates && dates.length > 0 && (rTxt.includes('VENCIMIENTO') || rTxt.includes('HASTA') || rTxt.includes('VIGENTE'))) {
+                    out.tecno_vencimiento = dates[dates.length - 1];
+                    break;
+                  }
+                }
+              }
+            }
+          }
+
+          return JSON.stringify(out);
+        })();
+      ''';
+
+      final rawResult = await _controller.runJavaScriptReturningResult(scraperJs);
+      final profile = RuntVehicleProfile.tryDecodeWebViewResult(rawResult);
+
+      if (mounted) {
+        setState(() {
+          _extractedProfile = profile;
+          _loading = false;
+        });
       }
-      await Future.delayed(const Duration(seconds: 1));
+
+      await _guardarFicha(profile);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _extracting = false;
+          _loading = false;
+        });
+      }
     }
-    return "";
   }
 
-  String? _convertToIsoDate(String rawDate) {
-    if (rawDate.trim().isEmpty) return null;
-    final match = RegExp(r'(\d{1,2})[/\-](\d{1,2})[/\-](\d{4})').firstMatch(rawDate);
-    if (match != null) {
-      final day = match.group(1)!.padLeft(2, '0');
-      final month = match.group(2)!.padLeft(2, '0');
-      final year = match.group(3)!;
-      return '$year-$month-$day';
-    }
-    final isoMatch = RegExp(r'(\d{4})[/\-](\d{1,2})[/\-](\d{1,2})').firstMatch(rawDate);
-    if (isoMatch != null) {
-      final year = isoMatch.group(1)!;
-      final month = isoMatch.group(2)!.padLeft(2, '0');
-      final day = isoMatch.group(3)!.padLeft(2, '0');
-      return '$year-$month-$day';
-    }
-    return null;
-  }
-
-  Future<void> consultarFechas() async {
-    setState(() => _loading = true);
-    debugPrint("🔍 Extrayendo fechas RUNT...");
-
-    // Buscar fechas del SOAT en el DOM
-    fechaSoatVencimiento = await getTextFromJs('''
-      (function() {
-        const tables = [...document.querySelectorAll('table')];
-        for (const t of tables) {
-          const txt = (t.innerText || '').toUpperCase();
-          if (txt.includes('SOAT') || txt.includes('PÓLIZA')) {
-            const rows = [...t.querySelectorAll('tr')];
-            for (const r of rows) {
-              const rTxt = (r.innerText || '').toUpperCase();
-              const dates = rTxt.match(/\\b(\\d{2}[\\/\\-]\\d{2}[\\/\\-]\\d{4})\\b/g);
-              if (dates && dates.length > 0 && (rTxt.includes('VENCIMIENTO') || rTxt.includes('HASTA'))) {
-                return dates[0];
-              }
-            }
-          }
-        }
-        return "";
-      })();
-    ''');
-
-    fechaTecnoVencimiento = await getTextFromJs('''
-      (function() {
-        const tables = [...document.querySelectorAll('table')];
-        for (const t of tables) {
-          const txt = (t.innerText || '').toUpperCase();
-          if (txt.includes('RTM') || txt.includes('TÉCNICO') || txt.includes('REVISIÓN')) {
-            const rows = [...t.querySelectorAll('tr')];
-            for (const r of rows) {
-              const rTxt = (r.innerText || '').toUpperCase();
-              const dates = rTxt.match(/\\b(\\d{2}[\\/\\-]\\d{2}[\\/\\-]\\d{4})\\b/g);
-              if (dates && dates.length > 0 && (rTxt.includes('VENCIMIENTO') || rTxt.includes('HASTA'))) {
-                return dates[0];
-              }
-            }
-          }
-        }
-        return "";
-      })();
-    ''');
-
-    setState(() => _loading = false);
-
-    await guardarFechas();
-  }
-
-  /// Actualizar en Supabase en la tabla `vehiculos`
-  Future<void> guardarFechas() async {
+  /// Guarda fechas y ficha completa RUNT en Supabase y caché local Offline.
+  Future<void> _guardarFicha(RuntVehicleProfile? profile) async {
     final supabase = Supabase.instance.client;
     final userId = supabase.auth.currentUser?.id;
     if (userId == null) {
@@ -195,56 +293,85 @@ class _RuntWebViewScreenState extends State<RuntWebViewScreen> {
       return;
     }
 
-    final String? soatIso = _convertToIsoDate(fechaSoatVencimiento);
-    final String? tecnoIso = _convertToIsoDate(fechaTecnoVencimiento);
-
-    final Map<String, dynamic> updateData = {};
-    if (soatIso != null) updateData['last_soat'] = soatIso;
-    if (tecnoIso != null) updateData['last_tecno'] = tecnoIso;
-    if (widget.placa.isNotEmpty) updateData['placa'] = widget.placa;
-    if (widget.cedula.isNotEmpty) updateData['cedula'] = widget.cedula;
-
-    if (updateData.isEmpty) {
+    if (profile == null || !profile.hasAnyData) {
       if (mounted) {
         AppSnackBar.show(
           context,
-          'Completa la consulta en el RUNT y asegúrate que la tabla con fechas esté desplegada.',
+          'Completa primero la consulta en el RUNT (CAPTCHA y botón Consultar) y vuelve a intentar.',
           backgroundColor: Colors.orange,
         );
       }
       return;
     }
 
+    final soatIso = RuntVehicleProfile.convertToIsoDate(profile.soatVencimiento);
+    final tecnoIso = RuntVehicleProfile.convertToIsoDate(profile.tecnoVencimiento);
+
+    final baseUpdate = <String, dynamic>{};
+    if (soatIso != null) baseUpdate['last_soat'] = soatIso;
+    if (tecnoIso != null) baseUpdate['last_tecno'] = tecnoIso;
+    if (widget.placa.isNotEmpty) baseUpdate['placa'] = widget.placa;
+    if (widget.cedula.isNotEmpty) baseUpdate['cedula'] = widget.cedula;
+
+    final fullUpdate = <String, dynamic>{
+      ...baseUpdate,
+      'runt_data': profile.toJson(),
+      'runt_last_check': DateTime.now().toIso8601String(),
+    };
+
     try {
-      await supabase
-          .from('vehiculos')
-          .update(updateData)
-          .eq('id', widget.vehiculoId)
-          .eq('user_id', userId);
+      try {
+        await supabase
+            .from('vehiculos')
+            .update(fullUpdate)
+            .eq('id', widget.vehiculoId)
+            .eq('user_id', userId);
+      } on PostgrestException catch (e) {
+        // Fallback automático si el usuario aún no agregó la columna JSONB runt_data
+        debugPrint('Aviso RUNT fallback a columnas base: ${e.message}');
+        if (baseUpdate.isNotEmpty) {
+          await supabase
+              .from('vehiculos')
+              .update(baseUpdate)
+              .eq('id', widget.vehiculoId)
+              .eq('user_id', userId);
+        }
+      }
 
-      debugPrint("✅ Fechas RUNT actualizadas en Supabase: $updateData");
-
-      // Guardar también en caché local SharedPreferences para disponibilidad Offline
+      // Caché Offline completa en SharedPreferences
       final prefs = await SharedPreferences.getInstance();
-      if (fechaSoatVencimiento.isNotEmpty) {
-        await prefs.setString('runt_cached_soat_${widget.vehiculoId}', fechaSoatVencimiento);
+      await prefs.setString(
+        'runt_full_data_${widget.vehiculoId}',
+        jsonEncode(profile.toJson()),
+      );
+      if (profile.soatVencimiento.isNotEmpty) {
+        await prefs.setString(
+          'runt_cached_soat_${widget.vehiculoId}',
+          profile.soatVencimiento,
+        );
       }
-      if (fechaTecnoVencimiento.isNotEmpty) {
-        await prefs.setString('runt_cached_tecno_${widget.vehiculoId}', fechaTecnoVencimiento);
+      if (profile.tecnoVencimiento.isNotEmpty) {
+        await prefs.setString(
+          'runt_cached_tecno_${widget.vehiculoId}',
+          profile.tecnoVencimiento,
+        );
       }
-      await prefs.setString('runt_cached_date_${widget.vehiculoId}', DateTime.now().toIso8601String());
+      await prefs.setString(
+        'runt_cached_date_${widget.vehiculoId}',
+        DateTime.now().toIso8601String(),
+      );
 
       if (mounted) {
         AppSnackBar.show(
           context,
-          '✅ Fechas guardadas y actualizadas en tu vehículo',
-          backgroundColor: Colors.green,
+          'Ficha completa del RUNT guardada en tu vehículo',
+          backgroundColor: const Color(0xFF059669),
         );
-        Navigator.pop(context, true); // Retorna true para refrescar la vista de Inicio
+        Navigator.pop(context, true);
       }
     } catch (e) {
-      debugPrint("❌ Error actualizando fechas en Supabase: $e");
-      if (mounted) AppSnackBar.show(context, 'Error actualizando fechas: $e');
+      debugPrint('Error actualizando ficha RUNT en Supabase: $e');
+      if (mounted) AppSnackBar.show(context, 'Error guardando ficha RUNT: $e');
     }
   }
 
@@ -254,23 +381,28 @@ class _RuntWebViewScreenState extends State<RuntWebViewScreen> {
       final soat = prefs.getString('runt_cached_soat_${widget.vehiculoId}');
       final tecno = prefs.getString('runt_cached_tecno_${widget.vehiculoId}');
       final date = prefs.getString('runt_cached_date_${widget.vehiculoId}');
-      if (soat != null || tecno != null) {
+      final fullRaw = prefs.getString('runt_full_data_${widget.vehiculoId}');
+      if (soat != null || tecno != null || fullRaw != null) {
         if (mounted) {
           setState(() {
             _cachedSoat = soat;
             _cachedTecno = tecno;
             _cachedDate = date;
+            if (fullRaw != null) {
+              _extractedProfile = RuntVehicleProfile.tryDecodeWebViewResult(fullRaw);
+            }
             _hasOfflineCache = true;
           });
         }
       }
     } catch (e) {
-      debugPrint("Error leyendo caché RUNT local: $e");
+      debugPrint('Error leyendo caché RUNT local: $e');
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final p = _extractedProfile;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Consulta RUNT Oficial'),
@@ -284,7 +416,8 @@ class _RuntWebViewScreenState extends State<RuntWebViewScreen> {
       body: Stack(
         children: [
           WebViewWidget(controller: _controller),
-          if (_loading && !_hasOfflineCache) const Center(child: CircularProgressIndicator()),
+          if (_loading && !_hasOfflineCache)
+            const Center(child: CircularProgressIndicator()),
           if (_hasOfflineCache)
             Positioned(
               top: 10,
@@ -300,12 +433,18 @@ class _RuntWebViewScreenState extends State<RuntWebViewScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   child: Row(
                     children: [
-                      const Icon(Icons.offline_bolt_rounded, color: Color(0xFF38BDF8), size: 22),
+                      const Icon(Icons.offline_bolt_rounded,
+                          color: Color(0xFF38BDF8), size: 22),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                          'Caché Local RUNT: SOAT ${_cachedSoat ?? "Al día"} • Tecno ${_cachedTecno ?? "Al día"}',
-                          style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700),
+                          'Último RUNT${_cachedDate != null ? " (${_cachedDate!.split("T").first})" : ""}: '
+                          'SOAT ${_cachedSoat ?? "N/D"} • Tecno ${_cachedTecno ?? "N/D"}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
                     ],
@@ -315,37 +454,78 @@ class _RuntWebViewScreenState extends State<RuntWebViewScreen> {
             ),
           Positioned(
             bottom: 20,
-            left: 20,
-            right: 20,
+            left: 16,
+            right: 16,
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    backgroundColor: const Color(0xFF2563EB),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 14,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
-                  onPressed: consultarFechas,
-                  icon: const Icon(Icons.download_done_rounded),
-                  label: const Text("Extraer y Guardar Fechas SOAT y Tecno"),
+                  onPressed: _extracting ? null : consultarFichaCompleta,
+                  icon: _extracting
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Icon(Icons.download_done_rounded),
+                  label: Text(
+                    _extracting
+                        ? 'Extrayendo ficha completa...'
+                        : 'Extraer y Guardar Toda la Ficha RUNT',
+                  ),
                 ),
-                const SizedBox(height: 10),
-                if (fechaSoatVencimiento.isNotEmpty || fechaTecnoVencimiento.isNotEmpty)
+                if (p != null && p.hasAnyData) ...[
+                  const SizedBox(height: 10),
                   Card(
-                    color: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    color: const Color(0xFF0F172A),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: BorderSide(
+                        color: const Color(0xFF38BDF8).withValues(alpha: 0.35),
+                      ),
+                    ),
                     child: Padding(
                       padding: const EdgeInsets.all(12),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          if (fechaSoatVencimiento.isNotEmpty)
-                            Text("SOAT vence: $fechaSoatVencimiento", style: const TextStyle(fontWeight: FontWeight.bold)),
-                          if (fechaTecnoVencimiento.isNotEmpty)
-                            Text("Tecnomecánica vence: $fechaTecnoVencimiento", style: const TextStyle(fontWeight: FontWeight.bold)),
+                          if (p.marca.isNotEmpty || p.linea.isNotEmpty)
+                            Text(
+                              '${p.marca} ${p.linea} ${p.modeloAno}'.trim(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          if (p.soatVencimiento.isNotEmpty)
+                            Text(
+                              'SOAT vence: ${p.soatVencimiento}${p.soatAseguradora.isNotEmpty ? " (${p.soatAseguradora})" : ""}',
+                              style: const TextStyle(color: Colors.white70, fontSize: 12),
+                            ),
+                          if (p.tecnoVencimiento.isNotEmpty)
+                            Text(
+                              'Tecnomecánica vence: ${p.tecnoVencimiento}',
+                              style: const TextStyle(color: Colors.white70, fontSize: 12),
+                            ),
                         ],
                       ),
                     ),
                   ),
+                ],
               ],
             ),
           ),

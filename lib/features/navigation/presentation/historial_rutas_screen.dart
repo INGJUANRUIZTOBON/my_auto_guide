@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../logic/map_tile_config.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/services/sync_service.dart';
 import '../../../core/logic/performance_guard.dart';
@@ -635,25 +635,8 @@ class _RouteCard extends StatelessWidget {
     return [];
   }
 
-  String _getMapTileUrl(bool isDark) {
-    final stadiaKey = dotenv.isInitialized ? dotenv.get('STADIA_API_KEY', fallback: '') : '';
-    final cartoKey = dotenv.isInitialized ? dotenv.get('CARTO_API_KEY', fallback: '') : '';
-
-    if (stadiaKey.trim().isNotEmpty && !stadiaKey.contains('your_')) {
-      return isDark
-          ? 'https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}@2x.png?api_key=${stadiaKey.trim()}'
-          : 'https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}@2x.png?api_key=${stadiaKey.trim()}';
-    }
-
-    if (cartoKey.trim().isNotEmpty && !cartoKey.contains('your_')) {
-      return isDark
-          ? 'https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png?api_key=${cartoKey.trim()}'
-          : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png?api_key=${cartoKey.trim()}';
-    }
-
-    // OpenStreetMap estándar 100% libre de marcas de agua "API KEY REQUIRED"
-    return 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
-  }
+  String _getMapTileUrl(bool isDark) =>
+      MapTileConfig.urlFor(isDark ? MapStyle.dark : MapStyle.street);
 
   void _openDetailMap(BuildContext context, List<LatLng> points) {
     showModalBottomSheet(
@@ -802,23 +785,9 @@ class _RouteCard extends StatelessWidget {
                             ),
                           ),
                           children: [
-                            TileLayer(
-                              urlTemplate: _getMapTileUrl(isDark),
-                              userAgentPackageName: 'com.myautoguide.app',
-                              maxZoom: 19,
+                            MapTileConfig.buildTileLayer(
+                              style: isDark ? MapStyle.dark : MapStyle.street,
                               keepBuffer: 4,
-                              panBuffer: 2,
-                              tileBuilder: (isDark && (dotenv.isInitialized ? dotenv.get('STADIA_API_KEY', fallback: '') : '').isEmpty && (dotenv.isInitialized ? dotenv.get('CARTO_API_KEY', fallback: '') : '').isEmpty)
-                                  ? (context, tileWidget, tile) => ColorFiltered(
-                                        colorFilter: const ColorFilter.matrix(<double>[
-                                          -0.82, 0.0, 0.0, 0.0, 240.0,
-                                          0.0, -0.82, 0.0, 0.0, 240.0,
-                                          0.0, 0.0, -0.82, 0.0, 240.0,
-                                          0.0, 0.0, 0.0, 1.0, 0.0,
-                                        ]),
-                                        child: tileWidget,
-                                      )
-                                  : null,
                             ),
                             PolylineLayer(polylines: [
                               Polyline(
@@ -990,23 +959,9 @@ class _RouteDetailMapModal extends StatelessWidget {
                     : null,
               ),
               children: [
-                TileLayer(
-                  urlTemplate: mapTileUrl,
-                  userAgentPackageName: 'com.myautoguide.app',
-                  maxZoom: 19,
+                MapTileConfig.buildTileLayer(
+                  style: isDark ? MapStyle.dark : MapStyle.street,
                   keepBuffer: 4,
-                  panBuffer: 2,
-                  tileBuilder: (isDark && (dotenv.isInitialized ? dotenv.get('STADIA_API_KEY', fallback: '') : '').isEmpty && (dotenv.isInitialized ? dotenv.get('CARTO_API_KEY', fallback: '') : '').isEmpty)
-                      ? (context, tileWidget, tile) => ColorFiltered(
-                            colorFilter: const ColorFilter.matrix(<double>[
-                              -0.82, 0.0, 0.0, 0.0, 240.0,
-                              0.0, -0.82, 0.0, 0.0, 240.0,
-                              0.0, 0.0, -0.82, 0.0, 240.0,
-                              0.0, 0.0, 0.0, 1.0, 0.0,
-                            ]),
-                            child: tileWidget,
-                          )
-                      : null,
                 ),
                 if (points.isNotEmpty)
                   PolylineLayer(polylines: [

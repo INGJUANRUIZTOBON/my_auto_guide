@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../core/logic/vehicle_performance_logic.dart';
@@ -90,5 +91,67 @@ class TelemetryCalculator {
       }
     }
     return updated;
+  }
+
+  /// Valida si una muestra GPS es apta para trazar ruta (descarta saltos por baja señal).
+  static bool isValidGpsSample({
+    required double accuracyMeters,
+    LatLng? previousPoint,
+    required LatLng nextPoint,
+  }) {
+    if (previousPoint != null && accuracyMeters > 35.0) {
+      return false;
+    }
+    if (previousPoint != null) {
+      final jumpMeters = Geolocator.distanceBetween(
+        previousPoint.latitude,
+        previousPoint.longitude,
+        nextPoint.latitude,
+        nextPoint.longitude,
+      );
+      if (jumpMeters > 300.0 && accuracyMeters > 20.0) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /// Serializa una polilínea compacta `[ [lat, lng], ... ]` para persistencia rápida en segundo plano.
+  static String encodeRoutePoints(List<LatLng> points) {
+    final compact = points
+        .map((p) => [
+              double.parse(p.latitude.toStringAsFixed(6)),
+              double.parse(p.longitude.toStringAsFixed(6)),
+            ])
+        .toList(growable: false);
+    return jsonEncode(compact);
+  }
+
+  /// Decodifica puntos persistidos desde `SharedPreferences` en formato compacto o lista de mapas.
+  static List<LatLng> decodeRoutePoints(String? rawJson) {
+    if (rawJson == null || rawJson.trim().isEmpty) return [];
+    try {
+      final decoded = jsonDecode(rawJson);
+      if (decoded is! List) return [];
+      final points = <LatLng>[];
+      for (final item in decoded) {
+        if (item is List && item.length >= 2) {
+          final lat = (item[0] as num?)?.toDouble();
+          final lng = (item[1] as num?)?.toDouble();
+          if (lat != null && lng != null && lat != 0.0 && lng != 0.0) {
+            points.add(LatLng(lat, lng));
+          }
+        } else if (item is Map) {
+          final lat = (item['lat'] as num?)?.toDouble();
+          final lng = (item['lng'] as num?)?.toDouble();
+          if (lat != null && lng != null && lat != 0.0 && lng != 0.0) {
+            points.add(LatLng(lat, lng));
+          }
+        }
+      }
+      return points;
+    } catch (_) {
+      return [];
+    }
   }
 }

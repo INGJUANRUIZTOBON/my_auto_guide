@@ -2,8 +2,10 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../domain/models/navigation_telemetry.dart';
 import '../../logic/telemetry_calculator.dart';
+import 'package:my_auto_guide/core/services/background_nav_service.dart';
 import 'package:my_auto_guide/core/services/navigation_service.dart';
 import 'package:my_auto_guide/core/services/voice_navigation_service.dart';
 
@@ -262,16 +264,73 @@ class NavigationController extends ChangeNotifier {
   void _connectToBackgroundService() {
     final service = FlutterBackgroundService();
     _serviceSubscription?.cancel();
-    _serviceSubscription = service.on('update').listen((event) {
+    _serviceSubscription = service.on('update').listen((event) async {
       final double lat = (event?['lat'] as num?)?.toDouble() ?? 0.0;
       final double lng = (event?['lng'] as num?)?.toDouble() ?? 0.0;
       final double speedMs = (event?['speed'] as num?)?.toDouble() ?? 0.0;
       final double bgDistanceKm = (event?['distance'] as num?)?.toDouble() ?? 0.0;
-      
+      final int bgPointsCount = (event?['pointsCount'] as num?)?.toInt() ?? 0;
+
+      // Si el servicio en segundo plano acumuló puntos mientras la UI estaba suspendida,
+      // rehidratamos toda la polilínea completa antes de procesar el tick actual.
+      if (bgPointsCount > _telemetry.travelledPoints.length + 1) {
+        await syncFromBackgroundStorage();
+      }
+
       if (lat != 0.0 && lng != 0.0) {
         updateCurrentPosition(LatLng(lat, lng), speedMs: speedMs, bgDistanceKm: bgDistanceKm);
       }
     });
+  }
+
+  /// Recupera toda la polilínea, distancia y velocidad máxima guardadas en disco
+  /// por el servicio en segundo plano mientras la pantalla estuvo suspendida.
+  Future<void> syncFromBackgroundStorage() async {
+    if (_state != NavigationState.navigating && _state != NavigationState.freeTracking) {
+      return;
+    }
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.reload();
+
+      final bgPoints = TelemetryCalculator.decodeRoutePoints(
+        prefs.getString(BackgroundNavService.prefRoutePointsKey),
+      );
+      final bgDist = prefs.getDouble(BackgroundNavService.prefTotalDistanceKey) ?? _telemetry.distanceKm;
+      final bgMaxSpeed = prefs.getDouble(BackgroundNavService.prefMaxSpeedKey) ?? _telemetry.maxSpeedKmH;
+      final startMs = prefs.getInt(BackgroundNavService.prefStartTimeKey);
+
+      final effectivePoints =
+          bgPoints.length >= _telemetry.travelledPoints.length ? bgPoints : _telemetry.travelledPoints;
+      final effectivePos = effectivePoints.isNotEmpty ? effectivePoints.last : _telemetry.currentPos;
+      final effectiveStartTime = startMs != null
+          ? DateTime.fromMillisecondsSinceEpoch(startMs)
+          : _telemetry.startTime;
+
+      double effectiveAvg = _telemetry.averageSpeedKmH;
+      if (effectiveStartTime != null && bgDist > 0.005) {
+        final durationSec = DateTime.now().difference(effectiveStartTime).inSeconds;
+        if (durationSec > 3) {
+          effectiveAvg = TelemetryCalculator.calculateKinematicAverageSpeed(
+            distanceKm: bgDist,
+            durationSeconds: durationSec,
+            fallbackSpeedKmH: effectiveAvg,
+          );
+        }
+      }
+
+      _telemetry = _telemetry.copyWith(
+        currentPos: effectivePos,
+        travelledPoints: effectivePoints,
+        distanceKm: bgDist > _telemetry.distanceKm ? bgDist : _telemetry.distanceKm,
+        maxSpeedKmH: bgMaxSpeed > _telemetry.maxSpeedKmH ? bgMaxSpeed : _telemetry.maxSpeedKmH,
+        averageSpeedKmH: effectiveAvg,
+        startTime: effectiveStartTime,
+      );
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) debugPrint('[NAV_CTRL] Error sincronizando ruta desde background: $e');
+    }
   }
 
   @override

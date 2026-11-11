@@ -92,6 +92,8 @@ CREATE TABLE IF NOT EXISTS public.vehiculos (
     simit_status TEXT DEFAULT NULL,
     simit_fines_data JSONB DEFAULT NULL,
     simit_last_check TIMESTAMPTZ DEFAULT NULL,
+    runt_data JSONB DEFAULT NULL,
+    runt_last_check TIMESTAMPTZ DEFAULT NULL,
     has_360_view BOOLEAN DEFAULT FALSE,
     images_360_urls JSONB DEFAULT NULL,
     created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
