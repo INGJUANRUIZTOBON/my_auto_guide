@@ -16,6 +16,9 @@ class AuthService {
   factory AuthService() => _instance;
   AuthService._internal();
 
+  /// URI de retorno registrado en AndroidManifest.xml para volver a la app tras confirmar email u OAuth.
+  static const String authCallbackUrl = 'io.supabase.myautoguide://login-callback';
+
   final SupabaseClient _supabase = SupabaseService().client;
 
   /// Retorna el usuario actual si hay sesión; de otra forma, null
@@ -62,12 +65,13 @@ class AuthService {
     }
   }
 
-  /// Reenvía confirmación de email (OtpType.signup)
+  /// Reenvía confirmación de email (OtpType.signup) con redirección de retorno a la app
   Future<void> resendConfirmationEmail(String email) async {
     try {
       await _supabase.auth.resend(
         type: OtpType.signup,
         email: email.trim(),
+        emailRedirectTo: kIsWeb ? null : authCallbackUrl,
       );
     } on AuthException catch (e) {
       throw AuthLogicException(e.message);
@@ -82,7 +86,10 @@ class AuthService {
       throw AuthLogicException('Ingresa tu e-mail para recuperar la contraseña.');
     }
     try {
-      await _supabase.auth.resetPasswordForEmail(email.trim());
+      await _supabase.auth.resetPasswordForEmail(
+        email.trim(),
+        redirectTo: kIsWeb ? null : authCallbackUrl,
+      );
     } on AuthException catch (e) {
       throw AuthLogicException(e.message);
     } catch (e) {

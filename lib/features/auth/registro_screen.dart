@@ -18,10 +18,14 @@
 // =============================================================================
 
 import 'dart:async';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/logic/performance_guard.dart';
+import '../../core/services/auth_service.dart';
 import '../../shared/widgets/app_snack_bar.dart';
+import '../vehicles/presentation/Agregar_vehiculo.dart';
+import '../vehicles/presentation/inicio_app.dart';
 
 class RegistroScreen extends StatefulWidget {
   const RegistroScreen({super.key});
@@ -46,6 +50,44 @@ class _RegistroScreenState extends State<RegistroScreen> {
   int secondsLeft = 60;
   bool canSwitchEmail = false;
   Timer? _timer;
+  StreamSubscription<AuthState>? _authSub;
+  bool _navigatedAfterConfirm = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _authSub = supabase.auth.onAuthStateChange.listen((data) {
+      if (data.event == AuthChangeEvent.signedIn &&
+          data.session != null &&
+          mounted &&
+          !_navigatedAfterConfirm) {
+        _completeEmailVerification();
+      }
+    });
+  }
+
+  Future<void> _completeEmailVerification() async {
+    if (_navigatedAfterConfirm || !mounted) return;
+    _navigatedAfterConfirm = true;
+    _timer?.cancel();
+    setState(() {
+      waitingForConfirm = false;
+      canSwitchEmail = false;
+    });
+    AppSnackBar.show(
+      context,
+      '¡Correo verificado! Bienvenido a My Auto Guide.',
+    );
+    final vehiculoId = await AuthService().getFirstVehicleId();
+    if (!mounted) return;
+    final Widget destination = vehiculoId != null
+        ? InicioApp(vehiculoId: vehiculoId)
+        : const AgregarVehiculoScreen();
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => destination),
+      (route) => false,
+    );
+  }
 
   Future<void> signUp() async {
     final nombre = nombreController.text.trim();
@@ -79,16 +121,17 @@ class _RegistroScreenState extends State<RegistroScreen> {
     setState(() => isLoading = true);
 
     try {
-      // 1) Crear cuenta (con confirmación de email activada no hay sesión hasta confirmar)
+      // 1) Crear cuenta (con redirección deep link de retorno a la app)
+      final redirectUrl = kIsWeb ? null : AuthService.authCallbackUrl;
       await supabase.auth.signUp(
         email: emailController.text.trim(),
         password: password,
         data: {'name': nombre},
+        emailRedirectTo: redirectUrl,
       );
       if (!mounted) return;
 
       // 2) Aviso con opción de reenviar
-      if (!mounted) return;
       AppSnackBar.show(
         context,
         'Registro enviado. Revisa tu correo y confirma la cuenta para continuar.',
@@ -100,6 +143,7 @@ class _RegistroScreenState extends State<RegistroScreen> {
               await supabase.auth.resend(
                 type: OtpType.signup,
                 email: emailController.text.trim(),
+                emailRedirectTo: redirectUrl,
               );
               if (!mounted) return;
               AppSnackBar.show(context, 'Correo reenviado. Revisa tu bandeja.');
@@ -118,12 +162,13 @@ class _RegistroScreenState extends State<RegistroScreen> {
       );
     } on AuthException catch (e) {
       // Manejo “correo ya registrado”: ofrecer reenviar
-      final msg = (e.message ?? '').toLowerCase();
+      final msg = e.message.toLowerCase();
       if (msg.contains('already') || msg.contains('exists')) {
         try {
           await supabase.auth.resend(
             type: OtpType.signup,
             email: emailController.text.trim(),
+            emailRedirectTo: kIsWeb ? null : AuthService.authCallbackUrl,
           );
           if (!mounted) return;
           AppSnackBar.show(
@@ -222,6 +267,7 @@ class _RegistroScreenState extends State<RegistroScreen> {
 
   @override
   void dispose() {
+    _authSub?.cancel();
     _timer?.cancel();
     nombreController.dispose();
     emailController.dispose();
@@ -320,23 +366,20 @@ class _RegistroScreenState extends State<RegistroScreen> {
                                     await supabase.auth.resend(
                                       type: OtpType.signup,
                                       email: emailController.text.trim(),
+                                      emailRedirectTo: kIsWeb
+                                          ? null
+                                          : AuthService.authCallbackUrl,
                                     );
                                     if (!mounted) return;
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                          'Correo reenviado. Revisa tu bandeja.',
-                                        ),
-                                      ),
+                                    AppSnackBar.show(
+                                      context,
+                                      'Correo reenviado. Revisa tu bandeja.',
                                     );
                                   } on AuthException catch (e) {
                                     if (!mounted) return;
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          'Error al reenviar: ${e.message}',
-                                        ),
-                                      ),
+                                    AppSnackBar.show(
+                                      context,
+                                      'Error al reenviar: ${e.message}',
                                     );
                                   }
                                 },

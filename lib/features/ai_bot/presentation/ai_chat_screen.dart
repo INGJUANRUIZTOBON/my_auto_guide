@@ -1,6 +1,21 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../core/services/ai_bot_service.dart';
+import '../../../shared/widgets/app_snack_bar.dart';
+
+class _ChatMessage {
+  final bool isBot;
+  final String text;
+  final Uint8List? imageBytes;
+
+  const _ChatMessage({
+    required this.isBot,
+    required this.text,
+    this.imageBytes,
+  });
+}
 
 class AIChatScreen extends StatefulWidget {
   const AIChatScreen({super.key});
@@ -12,34 +27,139 @@ class AIChatScreen extends StatefulWidget {
 class _AIChatScreenState extends State<AIChatScreen> {
   final TextEditingController _msgCtrl = TextEditingController();
   final ScrollController _scrollCtrl = ScrollController();
-  final List<Map<String, String>> _messages = [
-    {
-      'role': 'bot',
-      'text': '¡Hola! Soy **Master Mechanic**, tu asistente experto de My Auto Guide. ¿En qué puedo ayudarte con tu vehículo hoy?'
-    }
-  ];
-  bool _isTyping = false;
+  final ImagePicker _picker = ImagePicker();
 
-  void _sendMessage() async {
+  final List<_ChatMessage> _messages = [
+    const _ChatMessage(
+      isBot: true,
+      text:
+          '¡Hola! Soy **Master Mechanic**, tu asistente experto de My Auto Guide. '
+          'Escríbeme tu duda o envíame una **foto de una pieza, testigo del tablero o fuga** para analizarla.',
+    ),
+  ];
+
+  bool _isTyping = false;
+  Uint8List? _pendingImageBytes;
+  String _pendingMimeType = 'image/jpeg';
+
+  @override
+  void dispose() {
+    _msgCtrl.dispose();
+    _scrollCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    if (_isTyping) return;
+    try {
+      final XFile? file = await _picker.pickImage(
+        source: source,
+        maxWidth: 1280,
+        maxHeight: 1280,
+        imageQuality: 80,
+      );
+      if (file == null) return;
+
+      final bytes = await file.readAsBytes();
+      if (bytes.isEmpty) return;
+
+      final lower = file.path.toLowerCase();
+      final mime = lower.endsWith('.png')
+          ? 'image/png'
+          : lower.endsWith('.webp')
+              ? 'image/webp'
+              : 'image/jpeg';
+
+      if (!mounted) return;
+      setState(() {
+        _pendingImageBytes = bytes;
+        _pendingMimeType = mime;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      AppSnackBar.show(
+        context,
+        'No se pudo acceder a la ${source == ImageSource.camera ? "cámara" : "galería"}. Verifica los permisos.',
+      );
+    }
+  }
+
+  void _showImageSourceSheet() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: isDark ? const Color(0xFF0F172A) : Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt_rounded, color: Color(0xFF38BDF8)),
+                title: const Text('Tomar foto ahora'),
+                subtitle: const Text('Captura un testigo, pieza o fuga con tu cámara'),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _pickImage(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library_rounded, color: Color(0xFF38BDF8)),
+                title: const Text('Elegir imagen de la galería'),
+                subtitle: const Text('Sube una fotografía guardada en tu teléfono'),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _pickImage(ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _sendMessage() async {
     final text = _msgCtrl.text.trim();
-    if (text.isEmpty || _isTyping) return;
+    final imageBytes = _pendingImageBytes;
+    final mimeType = _pendingMimeType;
+
+    if ((text.isEmpty && imageBytes == null) || _isTyping) return;
+
+    final displayText = text.isNotEmpty
+        ? text
+        : '¿Qué observas en esta imagen? Analiza el estado o posible falla.';
 
     setState(() {
-      _messages.add({'role': 'user', 'text': text});
+      _messages.add(
+        _ChatMessage(
+          isBot: false,
+          text: displayText,
+          imageBytes: imageBytes,
+        ),
+      );
       _msgCtrl.clear();
+      _pendingImageBytes = null;
       _isTyping = true;
     });
     _scrollToBottom();
 
-    final response = await AIBotService().sendMessage(text);
+    final response = await AIBotService().sendMessage(
+      text,
+      imageBytes: imageBytes,
+      mimeType: mimeType,
+    );
 
-    if (mounted) {
-      setState(() {
-        _messages.add({'role': 'bot', 'text': response});
-        _isTyping = false;
-      });
-      _scrollToBottom();
-    }
+    if (!mounted) return;
+    setState(() {
+      _messages.add(_ChatMessage(isBot: true, text: response));
+      _isTyping = false;
+    });
+    _scrollToBottom();
   }
 
   void _scrollToBottom() {
@@ -54,60 +174,85 @@ class _AIChatScreenState extends State<AIChatScreen> {
     });
   }
 
+  void _openImagePreview(Uint8List bytes) {
+    showDialog<void>(
+      context: context,
+      builder: (_) => Dialog(
+        backgroundColor: Colors.black,
+        insetPadding: const EdgeInsets.all(16),
+        child: Stack(
+          children: [
+            InteractiveViewer(
+              child: Center(child: Image.memory(bytes, fit: BoxFit.contain)),
+            ),
+            Positioned(
+              top: 8,
+              right: 8,
+              child: IconButton(
+                icon: const Icon(Icons.close, color: Colors.white),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Master Mechanic IA'),
+        title: const Text('Master Mechanic IA', style: TextStyle(color: Colors.white)),
+        iconTheme: const IconThemeData(color: Colors.white),
         centerTitle: true,
         elevation: 0,
         backgroundColor: Colors.transparent,
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: isDark 
-                ? [Colors.blueGrey.shade900, Colors.black] 
-                : [Colors.blue.shade800, Colors.blue.shade600],
+              colors: isDark
+                  ? [const Color(0xFF0F172A), const Color(0xFF080C14)]
+                  : [Colors.blue.shade800, Colors.blue.shade600],
             ),
           ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh, color: Colors.white),
+            tooltip: 'Reiniciar chat',
             onPressed: () {
               AIBotService().resetChat();
               setState(() {
-                _messages.clear();
-                _messages.add({
-                  'role': 'bot',
-                  'text': 'Conversación reiniciada. ¿Tienes alguna otra duda técnica?'
-                });
+                _pendingImageBytes = null;
+                _messages
+                  ..clear()
+                  ..add(
+                    const _ChatMessage(
+                      isBot: true,
+                      text: 'Conversación reiniciada. ¿Tienes alguna otra duda o foto para revisar?',
+                    ),
+                  );
               });
             },
-          )
+          ),
         ],
       ),
       body: Column(
         children: [
           Expanded(
             child: Container(
-              decoration: BoxDecoration(
-                color: isDark ? Colors.black : Colors.grey.shade50,
-              ),
+              color: isDark ? const Color(0xFF080C14) : Colors.grey.shade50,
               child: ListView.builder(
                 controller: _scrollCtrl,
                 padding: const EdgeInsets.all(16),
                 itemCount: _messages.length,
-                itemBuilder: (ctx, i) {
-                  final msg = _messages[i];
-                  final isBot = msg['role'] == 'bot';
-                  return _ChatBubble(
-                    text: msg['text'] ?? '',
-                    isBot: isBot,
-                  );
-                },
+                itemBuilder: (_, i) => _ChatBubble(
+                  message: _messages[i],
+                  onImageTap: _openImagePreview,
+                ),
               ),
             ),
           ),
@@ -124,43 +269,78 @@ class _AIChatScreenState extends State<AIChatScreen> {
 
   Widget _buildInputArea(bool isDark) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: isDark ? Colors.blueGrey.shade900 : Colors.white,
+        color: isDark ? const Color(0xFF0F172A) : Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 10,
             offset: const Offset(0, -2),
-          )
+          ),
         ],
       ),
       child: SafeArea(
-        child: Row(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Expanded(
-              child: TextField(
-                controller: _msgCtrl,
-                onSubmitted: (_) => _sendMessage(),
-                decoration: InputDecoration(
-                  hintText: 'Pregunta sobre tu vehículo...',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(25),
-                    borderSide: BorderSide.none,
+            if (_pendingImageBytes != null)
+              _PendingImageBanner(
+                bytes: _pendingImageBytes!,
+                isDark: isDark,
+                onRemove: () => setState(() => _pendingImageBytes = null),
+              ),
+            Row(
+              children: [
+                IconButton(
+                  icon: Icon(
+                    Icons.camera_alt_rounded,
+                    color: isDark ? const Color(0xFF38BDF8) : Colors.blue.shade700,
                   ),
-                  filled: true,
-                  fillColor: isDark ? Colors.black26 : Colors.grey.shade100,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  tooltip: 'Tomar foto',
+                  onPressed: () => _pickImage(ImageSource.camera),
                 ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            CircleAvatar(
-              backgroundColor: Colors.blue.shade700,
-              child: IconButton(
-                icon: const Icon(Icons.send, color: Colors.white),
-                onPressed: _sendMessage,
-              ),
+                IconButton(
+                  icon: Icon(
+                    Icons.add_photo_alternate_rounded,
+                    color: isDark ? const Color(0xFF38BDF8) : Colors.blue.shade700,
+                  ),
+                  tooltip: 'Subir imagen',
+                  onPressed: _showImageSourceSheet,
+                ),
+                Expanded(
+                  child: TextField(
+                    controller: _msgCtrl,
+                    textInputAction: TextInputAction.send,
+                    onSubmitted: (_) => _sendMessage(),
+                    style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+                    decoration: InputDecoration(
+                      hintText: _pendingImageBytes != null
+                          ? 'Pregunta sobre esta imagen...'
+                          : 'Pregunta sobre tu vehículo...',
+                      hintStyle: TextStyle(
+                        color: isDark ? Colors.white54 : Colors.black45,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(25),
+                        borderSide: BorderSide.none,
+                      ),
+                      filled: true,
+                      fillColor: isDark ? const Color(0xFF1E293B) : Colors.grey.shade100,
+                      contentPadding:
+                          const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                CircleAvatar(
+                  backgroundColor: Colors.blue.shade700,
+                  child: IconButton(
+                    icon: const Icon(Icons.send, color: Colors.white),
+                    onPressed: _sendMessage,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -169,26 +349,85 @@ class _AIChatScreenState extends State<AIChatScreen> {
   }
 }
 
-class _ChatBubble extends StatelessWidget {
-  final String text;
-  final bool isBot;
+class _PendingImageBanner extends StatelessWidget {
+  final Uint8List bytes;
+  final bool isDark;
+  final VoidCallback onRemove;
 
-  const _ChatBubble({required this.text, required this.isBot});
+  const _PendingImageBanner({
+    required this.bytes,
+    required this.isDark,
+    required this.onRemove,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8, left: 4, right: 4),
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E293B) : Colors.blue.shade50,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: const Color(0xFF38BDF8).withValues(alpha: 0.35),
+        ),
+      ),
+      child: Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.memory(bytes, width: 48, height: 48, fit: BoxFit.cover),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'Imagen adjunta. Escribe tu pregunta o envíala directo.',
+              style: TextStyle(
+                fontSize: 12,
+                color: isDark ? Colors.white70 : Colors.blue.shade900,
+              ),
+            ),
+          ),
+          IconButton(
+            icon: Icon(
+              Icons.close_rounded,
+              size: 20,
+              color: isDark ? Colors.white70 : Colors.black54,
+            ),
+            onPressed: onRemove,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ChatBubble extends StatelessWidget {
+  final _ChatMessage message;
+  final ValueChanged<Uint8List> onImageTap;
+
+  const _ChatBubble({
+    required this.message,
+    required this.onImageTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isBot = message.isBot;
 
     return Align(
       alignment: isBot ? Alignment.centerLeft : Alignment.centerRight,
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 6),
         padding: const EdgeInsets.all(14),
-        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.8),
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.82,
+        ),
         decoration: BoxDecoration(
-          color: isBot 
-            ? (isDark ? Colors.blueGrey.shade800 : Colors.white) 
-            : Colors.blue.shade600,
+          color: isBot
+              ? (isDark ? const Color(0xFF1E293B) : Colors.white)
+              : Colors.blue.shade600,
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(20),
             topRight: const Radius.circular(20),
@@ -197,24 +436,48 @@ class _ChatBubble extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.06),
               blurRadius: 5,
               offset: const Offset(0, 2),
-            )
+            ),
           ],
         ),
-        child: MarkdownBody(
-          data: text,
-          styleSheet: MarkdownStyleSheet(
-            p: TextStyle(
-              color: isBot ? (isDark ? Colors.white : Colors.black87) : Colors.white,
-              fontSize: 15,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (message.imageBytes != null) ...[
+              GestureDetector(
+                onTap: () => onImageTap(message.imageBytes!),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.memory(
+                    message.imageBytes!,
+                    height: 170,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
+            MarkdownBody(
+              data: message.text,
+              styleSheet: MarkdownStyleSheet(
+                p: TextStyle(
+                  color: isBot
+                      ? (isDark ? Colors.white : Colors.black87)
+                      : Colors.white,
+                  fontSize: 15,
+                ),
+                strong: TextStyle(
+                  color: isBot
+                      ? (isDark ? const Color(0xFF38BDF8) : Colors.blue.shade900)
+                      : Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
-            strong: TextStyle(
-              color: isBot ? (isDark ? Colors.blue.shade300 : Colors.blue.shade900) : Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          ],
         ),
       ),
     );
@@ -230,8 +493,14 @@ class _TypingIndicator extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
         SizedBox(width: 20),
-        Text('Master Mechanic está pensando...', 
-          style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic, color: Colors.grey)),
+        Text(
+          'Master Mechanic está pensando...',
+          style: TextStyle(
+            fontSize: 12,
+            fontStyle: FontStyle.italic,
+            color: Colors.grey,
+          ),
+        ),
       ],
     );
   }

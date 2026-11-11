@@ -20,8 +20,10 @@
 //
 // =============================================================================
 
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'registro_screen.dart';
 import '../vehicles/presentation/Agregar_vehiculo.dart';
 import '../vehicles/presentation/inicio_app.dart';
@@ -51,11 +53,31 @@ class _CarRentalLoginScreenState extends State<CarRentalLoginScreen> {
   bool isLoading = false;
   bool rememberMe = true; // Por defecto true para mayor comodidad
   bool canUseBiometrics = false;
+  bool _navigatedByAuth = false;
+  StreamSubscription<AuthState>? _authSub;
 
   @override
   void initState() {
     super.initState();
+    _authSub = Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+      if (!mounted) return;
+      if (data.event == AuthChangeEvent.signedIn &&
+          data.session != null &&
+          !_navigatedByAuth &&
+          (ModalRoute.of(context)?.isCurrent ?? false)) {
+        _navigatedByAuth = true;
+        _goToDestination();
+      }
+    });
     _initSession();
+  }
+
+  @override
+  void dispose() {
+    _authSub?.cancel();
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
   }
 
   Future<void> _initSession() async {
@@ -117,6 +139,7 @@ class _CarRentalLoginScreenState extends State<CarRentalLoginScreen> {
   // Decide a dónde navegar: InicioApp con id o AgregarVehiculo si no hay registros
   Future<void> _goToDestination() async {
     if (_auth.currentUser == null) return;
+    _navigatedByAuth = true;
 
     final String? vehiculoId = await _auth.getFirstVehicleId();
     if (!mounted) return;

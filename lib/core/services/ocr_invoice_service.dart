@@ -117,7 +117,7 @@ class OcrInvoiceService {
       final bytes = await File(imagePath).readAsBytes();
       final base64Image = base64Encode(bytes);
 
-      final url = Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$apiKey');
+      final url = Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey');
 
       final body = jsonEncode({
         "contents": [

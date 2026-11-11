@@ -75,6 +75,25 @@ class AppAppleTheme {
           side: BorderSide(color: glassBorder, width: 1.0),
         ),
       ),
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: midnightSurfaceElevated,
+        contentTextStyle: GoogleFonts.outfit(
+          color: Colors.white,
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          letterSpacing: -0.1,
+        ),
+        actionTextColor: electricCyan,
+        behavior: SnackBarBehavior.floating,
+        elevation: 6,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(
+            color: electricCyan.withValues(alpha: 0.30),
+            width: 1.0,
+          ),
+        ),
+      ),
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
           TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
@@ -122,6 +141,25 @@ class AppAppleTheme {
           ),
         ),
         color: glassBackgroundLight,
+      ),
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: midnightSurfaceElevated,
+        contentTextStyle: GoogleFonts.outfit(
+          color: Colors.white,
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          letterSpacing: -0.1,
+        ),
+        actionTextColor: electricCyan,
+        behavior: SnackBarBehavior.floating,
+        elevation: 6,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(
+            color: electricCyan.withValues(alpha: 0.30),
+            width: 1.0,
+          ),
+        ),
       ),
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
