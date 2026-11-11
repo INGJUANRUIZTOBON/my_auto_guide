@@ -11,6 +11,7 @@ import 'package:home_widget/home_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'core/theme/app_apple_theme.dart';
 import 'core/services/notification_service.dart';
+import 'core/services/auth_service.dart';
 import 'core/providers/auth_provider.dart';
 import 'core/providers/vehicle_provider.dart';
 import 'core/services/sync_service.dart';
@@ -58,6 +59,7 @@ Future<void> main() async {
       anonKey: dotenv.get('SUPABASE_ANON_KEY',
           fallback: const String.fromEnvironment('SUPABASE_ANON_KEY')),
     );
+    AuthService().initRecoveryWatcher();
 
     // 3. Inicializar Firebase (Push Notifications)
     try {

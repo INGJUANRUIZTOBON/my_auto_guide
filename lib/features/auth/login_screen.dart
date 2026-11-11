@@ -31,6 +31,7 @@ import '../../core/services/auth_service.dart';
 import '../../core/logic/performance_guard.dart';
 import '../../shared/widgets/app_snack_bar.dart';
 import '../../shared/widgets/glass_text_field.dart';
+import 'widgets/change_password_sheet.dart';
 
 import '../../core/services/biometric_service.dart';
 import '../../core/services/app_update_service.dart';
@@ -54,6 +55,7 @@ class _CarRentalLoginScreenState extends State<CarRentalLoginScreen> {
   bool rememberMe = true; // Por defecto true para mayor comodidad
   bool canUseBiometrics = false;
   bool _navigatedByAuth = false;
+  bool _inPasswordRecovery = false;
   StreamSubscription<AuthState>? _authSub;
 
   @override
@@ -61,8 +63,15 @@ class _CarRentalLoginScreenState extends State<CarRentalLoginScreen> {
     super.initState();
     _authSub = Supabase.instance.client.auth.onAuthStateChange.listen((data) {
       if (!mounted) return;
+      if (data.event == AuthChangeEvent.passwordRecovery) {
+        _inPasswordRecovery = true;
+        _openRecoveryPasswordSheet();
+        return;
+      }
       if (data.event == AuthChangeEvent.signedIn &&
           data.session != null &&
+          !_inPasswordRecovery &&
+          !_auth.hasPendingPasswordRecovery &&
           !_navigatedByAuth &&
           (ModalRoute.of(context)?.isCurrent ?? false)) {
         _navigatedByAuth = true;
@@ -70,6 +79,17 @@ class _CarRentalLoginScreenState extends State<CarRentalLoginScreen> {
       }
     });
     _initSession();
+  }
+
+  Future<void> _openRecoveryPasswordSheet() async {
+    if (!mounted) return;
+    _inPasswordRecovery = true;
+    final updated = await ChangePasswordSheet.show(context, isRecovery: true);
+    _inPasswordRecovery = false;
+    _auth.clearPendingPasswordRecovery();
+    if (updated && mounted && _auth.currentUser != null) {
+      await _goToDestination();
+    }
   }
 
   @override
@@ -113,6 +133,12 @@ class _CarRentalLoginScreenState extends State<CarRentalLoginScreen> {
           emailController.text = _auth.currentUser!.email!;
         }
       });
+    }
+
+    // Si viene desde un enlace de recuperación de Supabase, abrir modal de cambio de clave
+    if (_auth.hasPendingPasswordRecovery || _inPasswordRecovery) {
+      await _openRecoveryPasswordSheet();
+      return;
     }
 
     // Si "Recordarme" está activo y hay una sesión válida en Supabase, ir directo al inicio
@@ -235,11 +261,47 @@ class _CarRentalLoginScreenState extends State<CarRentalLoginScreen> {
   }
 
   Future<void> sendPasswordReset() async {
+    String targetEmail = emailController.text.trim();
+    if (targetEmail.isEmpty) {
+      final ctrl = TextEditingController();
+      final entered = await showDialog<String>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Recuperar contraseña'),
+          content: TextField(
+            controller: ctrl,
+            keyboardType: TextInputType.emailAddress,
+            decoration: const InputDecoration(
+              labelText: 'Ingresa tu correo registrado',
+              hintText: 'usuario@correo.com',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx, ctrl.text.trim()),
+              child: const Text('Enviar enlace'),
+            ),
+          ],
+        ),
+      );
+      ctrl.dispose();
+      if (entered == null || entered.isEmpty) return;
+      targetEmail = entered;
+      emailController.text = entered;
+    }
+
     try {
-      await _auth.sendPasswordReset(emailController.text);
+      await _auth.sendPasswordReset(targetEmail);
       if (!mounted) return;
       AppSnackBar.show(
-          context, 'Te enviamos un enlace para restablecer tu contraseña.');
+        context,
+        'Te enviamos un correo desde Supabase para cambiar tu contraseña. Abre el enlace en tu teléfono.',
+        duration: const Duration(seconds: 6),
+      );
     } on AuthLogicException catch (e) {
       if (!mounted) return;
       AppSnackBar.show(context, e.message);

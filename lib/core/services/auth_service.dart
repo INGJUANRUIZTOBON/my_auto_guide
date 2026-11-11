@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'supabase_service.dart';
@@ -20,6 +21,23 @@ class AuthService {
   static const String authCallbackUrl = 'io.supabase.myautoguide://login-callback';
 
   final SupabaseClient _supabase = SupabaseService().client;
+  StreamSubscription<AuthState>? _recoverySub;
+  bool _hasPendingPasswordRecovery = false;
+
+  bool get hasPendingPasswordRecovery => _hasPendingPasswordRecovery;
+
+  void clearPendingPasswordRecovery() {
+    _hasPendingPasswordRecovery = false;
+  }
+
+  /// Escucha globalmente eventos de recuperación de contraseña (incluso en arranque en frío por deep link).
+  void initRecoveryWatcher() {
+    _recoverySub ??= _supabase.auth.onAuthStateChange.listen((data) {
+      if (data.event == AuthChangeEvent.passwordRecovery) {
+        _hasPendingPasswordRecovery = true;
+      }
+    });
+  }
 
   /// Retorna el usuario actual si hay sesión; de otra forma, null
   User? get currentUser => _supabase.auth.currentUser;
@@ -82,18 +100,46 @@ class AuthService {
 
   /// Envia enlace para restablecer contraseña
   Future<void> sendPasswordReset(String email) async {
-    if (email.trim().isEmpty) {
+    final cleanEmail = email.trim();
+    if (cleanEmail.isEmpty) {
       throw AuthLogicException('Ingresa tu e-mail para recuperar la contraseña.');
     }
     try {
       await _supabase.auth.resetPasswordForEmail(
-        email.trim(),
+        cleanEmail,
         redirectTo: kIsWeb ? null : authCallbackUrl,
       );
     } on AuthException catch (e) {
       throw AuthLogicException(e.message);
     } catch (e) {
       throw AuthLogicException('Error inesperado: $e');
+    }
+  }
+
+  /// Actualiza directamente la contraseña del usuario en Supabase Auth.
+  Future<void> updatePassword(String newPassword) async {
+    final cleanPassword = newPassword.trim();
+    if (cleanPassword.length < 6) {
+      throw AuthLogicException('La nueva contraseña debe tener al menos 6 caracteres.');
+    }
+    if (_supabase.auth.currentSession == null && _supabase.auth.currentUser == null) {
+      throw AuthLogicException(
+        'No hay una sesión de recuperación activa. Abre el enlace enviado a tu correo o inicia sesión nuevamente.',
+      );
+    }
+    try {
+      await _supabase.auth.updateUser(
+        UserAttributes(password: cleanPassword),
+      );
+      _hasPendingPasswordRecovery = false;
+    } on AuthException catch (e) {
+      final msg = e.message.toLowerCase();
+      if (msg.contains('same password') || msg.contains('different from the old')) {
+        throw AuthLogicException('La nueva contraseña debe ser diferente a la actual.');
+      }
+      throw AuthLogicException(e.message);
+    } catch (e) {
+      throw AuthLogicException('No se pudo actualizar la contraseña: $e');
     }
   }
 

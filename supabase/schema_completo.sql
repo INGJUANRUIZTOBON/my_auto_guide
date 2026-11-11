@@ -451,7 +451,7 @@ INSERT INTO public.app_versions (
 VALUES (
     13,
     '1.1.0',
-    'https://github.com/INGJUANRUIZTOBON/my_auto_guide/releases/download/v1.1.0/app-release.apk',
+    'https://github.com/INGJUANRUIZTOBON/my_auto_guide/releases/download/1.1.0/app-release.apk',
     '• Nueva infraestructura de backend escalable.\n• Rendimiento optimizado en telemetría y navegación.\n• Sincronización offline-first robusta.',
     true,
     1

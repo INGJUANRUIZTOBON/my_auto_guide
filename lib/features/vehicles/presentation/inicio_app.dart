@@ -60,6 +60,7 @@ import '../../../shared/widgets/runt_webview.dart';
 import '../../navigation/rutas_screen.dart';
 import '../../guides/guia.dart';
 import '../../auth/login_screen.dart';
+import '../../auth/widgets/change_password_sheet.dart';
 import 'parametrizacion_mantenimientos.dart';
 import '../../expenses/presentation/gastos_screen.dart';
 import '../../navigation/presentation/historial_rutas_screen.dart';
@@ -141,6 +142,7 @@ class _InicioAppState extends State<InicioApp> {
   bool _notificacionesProcesadas = false;
   bool _checkedKm24h = false;
   late Future<Map<String, dynamic>> _initAppFuture;
+  StreamSubscription<AuthState>? _authSub;
 
   Color _getSimitColor() {
     final status = _cachedVehicleData?['simit_status'] ?? 'unchecked';
@@ -1717,6 +1719,17 @@ class _InicioAppState extends State<InicioApp> {
   void initState() {
     super.initState();
     _initAppFuture = _inicializarTodo();
+    _authSub = supabase.auth.onAuthStateChange.listen((data) {
+      if (data.event == AuthChangeEvent.passwordRecovery && mounted) {
+        ChangePasswordSheet.show(context, isRecovery: true);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _authSub?.cancel();
+    super.dispose();
   }
 
   Future<Map<String, dynamic>> _inicializarTodo() async {
@@ -2510,6 +2523,11 @@ class _InicioAppState extends State<InicioApp> {
                   tooltip: 'Mi Garaje',
                   icon: const Icon(Icons.directions_car_rounded),
                   onPressed: _abrirGarajeSelector,
+                ),
+                IconButton(
+                  tooltip: 'Cambiar contraseña',
+                  icon: const Icon(Icons.lock_reset_rounded),
+                  onPressed: () => ChangePasswordSheet.show(context),
                 ),
                 IconButton(
                     tooltip: 'Eliminar vehículo',
