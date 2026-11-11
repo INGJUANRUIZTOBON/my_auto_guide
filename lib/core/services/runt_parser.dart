@@ -66,7 +66,10 @@ class RuntVehicleProfile {
       linea.isNotEmpty ||
       vin.isNotEmpty ||
       numeroMotor.isNotEmpty ||
-      cilindraje.isNotEmpty;
+      cilindraje.isNotEmpty ||
+      clase.isNotEmpty ||
+      estadoVehiculo.isNotEmpty ||
+      organismoTransito.isNotEmpty;
 
   Map<String, dynamic> toJson() => {
         'marca': marca,
@@ -130,7 +133,7 @@ class RuntVehicleProfile {
   }
 
   /// Decodifica el resultado crudo devuelto por WebView (`runJavaScriptReturningResult`),
-  /// tolerando doble serialización JSON propia de Android WebView.
+  /// tolerando doble serialización JSON propia de Android WebView y aplicando fallback de texto plano si viene `raw_text`.
   static RuntVehicleProfile? tryDecodeWebViewResult(Object? rawResult) {
     if (rawResult == null) return null;
     try {
@@ -139,10 +142,223 @@ class RuntVehicleProfile {
         decoded = jsonDecode(decoded);
       }
       if (decoded is Map) {
-        return RuntVehicleProfile.fromMap(Map<String, dynamic>.from(decoded));
+        final map = Map<String, dynamic>.from(decoded);
+        final primary = RuntVehicleProfile.fromMap(map);
+        final rawText = map['raw_text']?.toString() ?? '';
+        if (rawText.trim().isNotEmpty) {
+          return primary.mergeWith(parseFromRawText(rawText));
+        }
+        return primary;
       }
     } catch (_) {}
+    if (rawResult is String && rawResult.trim().isNotEmpty) {
+      final fromText = parseFromRawText(rawResult);
+      if (fromText.hasAnyData) return fromText;
+    }
     return null;
+  }
+
+  /// Combina los campos faltantes con un perfil secundario extraído por otra estrategia.
+  RuntVehicleProfile mergeWith(RuntVehicleProfile fallback) {
+    String pick(String a, String b) => a.trim().isNotEmpty ? a.trim() : b.trim();
+    return RuntVehicleProfile(
+      marca: pick(marca, fallback.marca),
+      linea: pick(linea, fallback.linea),
+      modeloAno: pick(modeloAno, fallback.modeloAno),
+      color: pick(color, fallback.color),
+      clase: pick(clase, fallback.clase),
+      servicio: pick(servicio, fallback.servicio),
+      estadoVehiculo: pick(estadoVehiculo, fallback.estadoVehiculo),
+      cilindraje: pick(cilindraje, fallback.cilindraje),
+      combustible: pick(combustible, fallback.combustible),
+      vin: pick(vin, fallback.vin),
+      numeroMotor: pick(numeroMotor, fallback.numeroMotor),
+      numeroChasis: pick(numeroChasis, fallback.numeroChasis),
+      gravamenes: pick(gravamenes, fallback.gravamenes),
+      organismoTransito: pick(organismoTransito, fallback.organismoTransito),
+      soatEstado: pick(soatEstado, fallback.soatEstado),
+      soatAseguradora: pick(soatAseguradora, fallback.soatAseguradora),
+      soatPoliza: pick(soatPoliza, fallback.soatPoliza),
+      soatExpedicion: pick(soatExpedicion, fallback.soatExpedicion),
+      soatVencimiento: pick(soatVencimiento, fallback.soatVencimiento),
+      tecnoEstado: pick(tecnoEstado, fallback.tecnoEstado),
+      tecnoCertificado: pick(tecnoCertificado, fallback.tecnoCertificado),
+      tecnoCda: pick(tecnoCda, fallback.tecnoCda),
+      tecnoExpedicion: pick(tecnoExpedicion, fallback.tecnoExpedicion),
+      tecnoVencimiento: pick(tecnoVencimiento, fallback.tecnoVencimiento),
+      updatedAt: updatedAt ?? fallback.updatedAt,
+    );
+  }
+
+  /// Parser robusto de texto visible RUNTPRO (pares inline "Etiqueta: Valor" y pares apilados en líneas contiguas).
+  static RuntVehicleProfile parseFromRawText(String rawText) {
+    final lines = rawText
+        .replaceAll('\r', '\n')
+        .split('\n')
+        .map((l) => l.trim())
+        .where((l) => l.isNotEmpty)
+        .toList();
+
+    String normalizeKey(String input) {
+      return input
+          .toUpperCase()
+          .replaceAll('Á', 'A')
+          .replaceAll('É', 'E')
+          .replaceAll('Í', 'I')
+          .replaceAll('Ó', 'O')
+          .replaceAll('Ú', 'U')
+          .replaceAll('Ñ', 'N')
+          .replaceAll(RegExp(r'\s+'), ' ')
+          .trim();
+    }
+
+    String marca = '',
+        linea = '',
+        modeloAno = '',
+        color = '',
+        clase = '',
+        servicio = '',
+        estadoVehiculo = '',
+        cilindraje = '',
+        combustible = '',
+        vin = '',
+        numeroMotor = '',
+        numeroChasis = '',
+        gravamenes = '',
+        organismoTransito = '',
+        soatEstado = '',
+        soatAseguradora = '',
+        soatPoliza = '',
+        soatExpedicion = '',
+        soatVencimiento = '',
+        tecnoEstado = '',
+        tecnoCertificado = '',
+        tecnoCda = '',
+        tecnoExpedicion = '',
+        tecnoVencimiento = '';
+
+    String section = 'GENERAL';
+
+    void assign(String rawLabel, String rawVal) {
+      final k = normalizeKey(rawLabel).replaceAll(':', '').trim();
+      final v = rawVal.trim();
+      if (k.isEmpty || v.isEmpty || v.endsWith(':') || v.length > 140) return;
+
+      if (section == 'SOAT') {
+        if ((k.contains('ESTADO') || k == 'VIGENCIA') && soatEstado.isEmpty) {
+          soatEstado = v;
+        } else if ((k.contains('ENTIDAD') || k.contains('ASEGURADORA')) && soatAseguradora.isEmpty) {
+          soatAseguradora = v;
+        } else if ((k.contains('POLIZA') || k.contains('NO. POLIZA')) && soatPoliza.isEmpty) {
+          soatPoliza = v;
+        } else if (k.contains('EXPEDICION') && soatExpedicion.isEmpty) {
+          soatExpedicion = v;
+        } else if ((k.contains('FIN DE VIGENCIA') || k.contains('FIN VIGENCIA') || k.contains('VENCIMIENTO') || k.contains('HASTA')) &&
+            soatVencimiento.isEmpty) {
+          soatVencimiento = v;
+        }
+        return;
+      }
+
+      if (section == 'RTM') {
+        if (k.contains('ESTADO') && tecnoEstado.isEmpty) {
+          tecnoEstado = v;
+        } else if ((k.contains('CERTIFICADO') || k.contains('NRO. CERTIFICADO')) && tecnoCertificado.isEmpty) {
+          tecnoCertificado = v;
+        } else if ((k.contains('CDA') || k.contains('ORGANISMO') || k.contains('CENTRO DE DIAGNOSTICO')) && tecnoCda.isEmpty) {
+          tecnoCda = v;
+        } else if (k.contains('EXPEDICION') && tecnoExpedicion.isEmpty) {
+          tecnoExpedicion = v;
+        } else if ((k.contains('VIGENCIA') || k.contains('VENCIMIENTO') || k.contains('HASTA')) && tecnoVencimiento.isEmpty) {
+          tecnoVencimiento = v;
+        }
+        return;
+      }
+
+      if (k == 'MARCA' && marca.isEmpty) {
+        marca = v;
+      } else if (k == 'LINEA' && linea.isEmpty) {
+        linea = v;
+      } else if ((k == 'MODELO' || k == 'ANO MODELO') && modeloAno.isEmpty) {
+        modeloAno = v;
+      } else if (k == 'COLOR' && color.isEmpty) {
+        color = v;
+      } else if (k.contains('CLASE DE VEHICULO') && clase.isEmpty) {
+        clase = v;
+      } else if (k.contains('TIPO DE SERVICIO') && servicio.isEmpty) {
+        servicio = v;
+      } else if (k.contains('ESTADO DEL VEHICULO') && estadoVehiculo.isEmpty) {
+        estadoVehiculo = v;
+      } else if (k.contains('CILINDRA') && cilindraje.isEmpty) {
+        cilindraje = v;
+      } else if (k.contains('COMBUSTIBLE') && combustible.isEmpty) {
+        combustible = v;
+      } else if ((k == 'VIN' || k.contains('NUMERO VIN')) && vin.isEmpty) {
+        vin = v;
+      } else if (k.contains('NUMERO DE MOTOR') && numeroMotor.isEmpty) {
+        numeroMotor = v;
+      } else if ((k.contains('NUMERO DE CHASIS') || k == 'CHASIS') && numeroChasis.isEmpty) {
+        numeroChasis = v;
+      } else if ((k.contains('GRAVAMENES') || k.contains('PRENDAS') || k.contains('LIMITACIONES')) && gravamenes.isEmpty) {
+        gravamenes = v;
+      } else if (k.contains('ORGANISMO DE TRANSITO') && organismoTransito.isEmpty) {
+        organismoTransito = v;
+      }
+    }
+
+    for (int i = 0; i < lines.length; i++) {
+      final line = lines[i];
+      final up = normalizeKey(line);
+
+      if (up.contains('POLIZA SOAT') || up == 'SOAT' || up.startsWith('SOAT ')) {
+        section = 'SOAT';
+      } else if (up.contains('TECNICO MECANICA') || up.contains('TECNICO-MECANICA') || up.contains('RTM')) {
+        section = 'RTM';
+      } else if (up.contains('INFORMACION GENERAL') || up.contains('DATOS TECNICOS') || up.contains('LIMITACIONES')) {
+        section = 'GENERAL';
+      }
+
+      // Caso A: Par en la misma línea ("Marca: BAJAJ" o "Línea: PULSAR NS 200 FI")
+      final colonIdx = line.indexOf(':');
+      if (colonIdx > 0 && colonIdx < line.length - 1) {
+        final labelPart = line.substring(0, colonIdx);
+        final valPart = line.substring(colonIdx + 1);
+        assign(labelPart, valPart);
+        continue;
+      }
+
+      // Caso B: Etiqueta termina en ":" y el valor viene en la línea siguiente
+      if (line.endsWith(':') && i + 1 < lines.length) {
+        assign(line, lines[i + 1]);
+      }
+    }
+
+    return RuntVehicleProfile(
+      marca: marca,
+      linea: linea,
+      modeloAno: modeloAno,
+      color: color,
+      clase: clase,
+      servicio: servicio,
+      estadoVehiculo: estadoVehiculo,
+      cilindraje: cilindraje,
+      combustible: combustible,
+      vin: vin,
+      numeroMotor: numeroMotor,
+      numeroChasis: numeroChasis,
+      gravamenes: gravamenes,
+      organismoTransito: organismoTransito,
+      soatEstado: soatEstado,
+      soatAseguradora: soatAseguradora,
+      soatPoliza: soatPoliza,
+      soatExpedicion: soatExpedicion,
+      soatVencimiento: soatVencimiento,
+      tecnoEstado: tecnoEstado,
+      tecnoCertificado: tecnoCertificado,
+      tecnoCda: tecnoCda,
+      tecnoExpedicion: tecnoExpedicion,
+      tecnoVencimiento: tecnoVencimiento,
+    );
   }
 
   /// Convierte fechas DD/MM/AAAA o YYYY-MM-DD a ISO `YYYY-MM-DD` para Supabase.

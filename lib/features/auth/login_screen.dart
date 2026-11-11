@@ -353,27 +353,51 @@ class _CarRentalLoginScreenState extends State<CarRentalLoginScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Image.asset('assets/car.png', height: 180),
+                  Container(
+                    width: 112,
+                    height: 112,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(28),
+                      border: Border.all(
+                        color: const Color(0xFF00E5FF).withValues(alpha: 0.45),
+                        width: 1.5,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF00E5FF).withValues(alpha: 0.28),
+                          blurRadius: 28,
+                          spreadRadius: 1,
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(27),
+                      child: Image.asset(
+                        'assets/images/app_logo.png',
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
                   const Text(
-                    'Car Rental',
+                    'MY AUTO GUIDE',
                     style: TextStyle(
-                      fontFamily: 'Outfit', // Usando la nueva fuente Outfit
-                      fontWeight: FontWeight.bold,
-                      fontSize: 32,
-                      letterSpacing: 1.2,
+                      fontFamily: 'Outfit',
+                      fontWeight: FontWeight.w900,
+                      fontSize: 30,
+                      letterSpacing: 2.2,
                       color: Colors.white,
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   Text(
-                    'Viajar, Amar un coche',
+                    'Tu vehículo, bajo control inteligente',
                     style: TextStyle(
-                      fontSize: 16,
-                      letterSpacing: 0.5,
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? Colors.white.withOpacity(0.7)
-                          : Colors.black.withOpacity(0.7),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 0.4,
+                      color: Colors.white.withValues(alpha: 0.78),
                     ),
                     textAlign: TextAlign.center,
                   ),

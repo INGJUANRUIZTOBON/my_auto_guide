@@ -2,7 +2,7 @@ name: my_auto_guide
 description: A new Flutter project.
 publish_to: 'none'
 
-version: 1.2.1+18
+version: 1.2.2+19
 
 environment:
   sdk: ">=3.3.0 <4.0.0"
@@ -258,4 +258,7 @@ flutter:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: assets/APK.png
+  remove_alpha_ios: true
+  image_path: assets/images/app_logo.png
+  adaptive_icon_background: "#06080C"
+  adaptive_icon_foreground: assets/images/app_logo.png
