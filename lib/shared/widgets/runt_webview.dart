@@ -58,7 +58,10 @@ class _RuntWebViewScreenState extends State<RuntWebViewScreen> {
           onPageFinished: (url) async {
             if (mounted) setState(() => _loading = false);
 
-            // Autocompletar placa y cédula sin tocar el CAPTCHA oficial (soporta RUNT clásico y RUNTPRO Angular)
+            // Autocompletar placa y cédula real (nunca inyectar hashes SHA-256) sin tocar el CAPTCHA oficial
+            final safeCedula = RegExp(r'^\d{4,15}$').hasMatch(widget.cedula.trim())
+                ? widget.cedula.trim()
+                : '';
             await _controller.runJavaScript('''
               function fillInputs(attempt) {
                 const placaSelectors = [
@@ -89,8 +92,8 @@ class _RuntWebViewScreenState extends State<RuntWebViewScreen> {
                   placaEl.dispatchEvent(new Event('input', { bubbles: true }));
                   placaEl.dispatchEvent(new Event('change', { bubbles: true }));
                 }
-                if (docEl && !docEl.value && '${widget.cedula}') {
-                  docEl.value = '${widget.cedula}';
+                if (docEl && !docEl.value && '$safeCedula') {
+                  docEl.value = '$safeCedula';
                   docEl.dispatchEvent(new Event('input', { bubbles: true }));
                   docEl.dispatchEvent(new Event('change', { bubbles: true }));
                 }
@@ -162,8 +165,19 @@ class _RuntWebViewScreenState extends State<RuntWebViewScreen> {
       // 2. Extraer campos DOM, tablas HTML/Angular Material y raw_text para fallback multipaso
       const scraperJs = r'''
         (function() {
+          function textOf(el) {
+            if (!el) return '';
+            const clone = el.cloneNode(true);
+            clone.querySelectorAll('mat-icon, .material-icons, .material-icons-outlined, svg').forEach(function(ic) {
+              ic.remove();
+            });
+            return (clone.innerText || clone.textContent || '');
+          }
           function norm(s) {
-            return (s || '').replace(/\s+/g, ' ').trim();
+            return (s || '')
+              .replace(/\b(check_circle_outline|check_circle|car_crash|error_outline|cancel|warning|verified|info)\b/gi, '')
+              .replace(/\s+/g, ' ')
+              .trim();
           }
           function upper(s) {
             return norm(s).toUpperCase()
@@ -205,7 +219,7 @@ class _RuntWebViewScreenState extends State<RuntWebViewScreen> {
 
           function scrapeDoc(doc) {
             if (!doc || !doc.body) return;
-            const textChunk = doc.body.innerText || doc.body.textContent || '';
+            const textChunk = textOf(doc.body);
             if (textChunk) {
               out.raw_text += (out.raw_text ? '\n' : '') + textChunk;
             }
@@ -213,7 +227,7 @@ class _RuntWebViewScreenState extends State<RuntWebViewScreen> {
             // 2A. Pares inline tipo "Marca: BAJAJ" o stacked en contenedores
             doc.querySelectorAll('p, span, div, li').forEach(function(el) {
               if (el.children.length > 2) return;
-              const txt = norm(el.innerText);
+              const txt = norm(textOf(el));
               const idx = txt.indexOf(':');
               if (idx > 1 && idx < txt.length - 1 && idx < 45) {
                 assignPair(txt.slice(0, idx), txt.slice(idx + 1));
@@ -225,8 +239,8 @@ class _RuntWebViewScreenState extends State<RuntWebViewScreen> {
               const nextEl = lbl.nextElementSibling;
               if (nextEl && !nextEl.querySelector('table')) {
                 const input = nextEl.querySelector('input, select') || nextEl;
-                const val = input.value !== undefined && input.value !== '' ? input.value : nextEl.innerText;
-                assignPair(lbl.innerText, val);
+                const val = input.value !== undefined && input.value !== '' ? input.value : textOf(nextEl);
+                assignPair(textOf(lbl), val);
               }
             });
 
@@ -234,22 +248,22 @@ class _RuntWebViewScreenState extends State<RuntWebViewScreen> {
             const tableSelectors = 'table, mat-table, [role="table"]';
             const tables = [...doc.querySelectorAll(tableSelectors)];
             for (const t of tables) {
-              const tableText = upper(t.innerText);
+              const tableText = upper(textOf(t));
               const rows = [...t.querySelectorAll('tr, mat-row, [role="row"]')];
 
               for (const r of rows) {
                 const cells = [...r.querySelectorAll('th, td, mat-cell, [role="cell"]')];
                 if (cells.length === 2) {
-                  assignPair(cells[0].innerText, cells[1].innerText);
+                  assignPair(textOf(cells[0]), textOf(cells[1]));
                 }
               }
 
-              const headers = [...t.querySelectorAll('thead th, tr:first-child th, mat-header-cell, [role="columnheader"]')].map(h => upper(h.innerText));
+              const headers = [...t.querySelectorAll('thead th, tr:first-child th, mat-header-cell, [role="columnheader"]')].map(h => upper(textOf(h)));
               const bodyRows = [...t.querySelectorAll('tbody tr, mat-row')];
               const firstRow = bodyRows.length > 0 ? bodyRows[0] : (rows.length > 1 ? rows[1] : null);
 
               if ((tableText.includes('SOAT') || tableText.includes('POLIZA')) && firstRow) {
-                const cols = [...firstRow.querySelectorAll('td, mat-cell, [role="cell"]')].map(c => norm(c.innerText));
+                const cols = [...firstRow.querySelectorAll('td, mat-cell, [role="cell"]')].map(c => norm(textOf(c)));
                 headers.forEach((h, idx) => {
                   const val = cols[idx] || '';
                   if (!val) return;

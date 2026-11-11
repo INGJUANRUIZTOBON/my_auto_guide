@@ -106,7 +106,7 @@ class RuntVehicleProfile {
       };
 
   factory RuntVehicleProfile.fromMap(Map<String, dynamic> map) {
-    String clean(String key) => (map[key]?.toString() ?? '').trim();
+    String clean(String key) => sanitizeField((map[key]?.toString() ?? ''));
     return RuntVehicleProfile(
       marca: clean('marca'),
       linea: clean('linea'),
@@ -424,5 +424,23 @@ class RuntVehicleProfile {
       return '$year-$month-$day';
     }
     return null;
+  }
+
+  /// Limpia nombres de íconos Material (`check_circle`, `car_crash`, etc.) que RUNTPRO incrusta en `innerText`.
+  static String sanitizeField(String raw) {
+    var cleaned = raw
+        .replaceAll(
+          RegExp(
+            r'\b(check_circle_outline|check_circle|car_crash|error_outline|cancel|warning|verified|info|directions_car|two_wheeler)\b',
+            caseSensitive: false,
+          ),
+          '',
+        )
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+    if (cleaned.startsWith('•')) {
+      cleaned = cleaned.substring(1).trim();
+    }
+    return cleaned;
   }
 }

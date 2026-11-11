@@ -30,10 +30,10 @@ class _AppUpdateLockScreenState extends State<AppUpdateLockScreen> with SingleTi
     super.initState();
     _pulseController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 1800),
     )..repeat(reverse: true);
 
-    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.08).animate(
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.04).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
   }
@@ -95,35 +95,49 @@ class _AppUpdateLockScreenState extends State<AppUpdateLockScreen> with SingleTi
   @override
   Widget build(BuildContext context) {
     final isMandatory = widget.updateInfo.isMandatory;
+    const obsidian = Color(0xFF06080C);
+    const surface = Color(0xFF121722);
+    const cyan = Color(0xFF00E5FF);
+    const cobalt = Color(0xFF2979FF);
 
     return PopScope(
       canPop: !isMandatory,
       child: Scaffold(
-        backgroundColor: const Color(0xFF0A0C10),
+        backgroundColor: obsidian,
         body: Stack(
           children: [
-            // Círculos de luz de fondo con efecto Glassmorphism
+            // Halos atmosféricos estilo Obsidiana Cockpit
             Positioned(
-              top: -80,
-              right: -60,
+              top: -120,
+              right: -90,
               child: Container(
-                width: 280,
-                height: 280,
+                width: 320,
+                height: 320,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: const Color(0xFF00FF87).withValues(alpha: 0.12),
+                  gradient: RadialGradient(
+                    colors: [
+                      cyan.withValues(alpha: 0.16),
+                      Colors.transparent,
+                    ],
+                  ),
                 ),
               ),
             ),
             Positioned(
-              bottom: -60,
-              left: -50,
+              bottom: -110,
+              left: -80,
               child: Container(
-                width: 260,
-                height: 260,
+                width: 300,
+                height: 300,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: const Color(0xFF0A84FF).withValues(alpha: 0.10),
+                  gradient: RadialGradient(
+                    colors: [
+                      cobalt.withValues(alpha: 0.18),
+                      Colors.transparent,
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -135,83 +149,142 @@ class _AppUpdateLockScreenState extends State<AppUpdateLockScreen> with SingleTi
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Ícono animado de actualización
+                      // Logo oficial MY AUTO GUIDE con badge OTA
                       ScaleTransition(
                         scale: _pulseAnimation,
-                        child: Container(
-                          width: 86,
-                          height: 86,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF00FF87), Color(0xFF00A86B)],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFF00FF87).withValues(alpha: 0.35),
-                                blurRadius: 28,
-                                spreadRadius: 4,
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            Container(
+                              width: 108,
+                              height: 108,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(28),
+                                border: Border.all(
+                                  color: cyan.withValues(alpha: 0.45),
+                                  width: 1.5,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: cyan.withValues(alpha: 0.25),
+                                    blurRadius: 28,
+                                    spreadRadius: 1,
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
-                          child: const Icon(
-                            Icons.system_update_rounded,
-                            color: Colors.black,
-                            size: 44,
-                          ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(27),
+                                child: Image.asset(
+                                  'assets/images/app_logo.png',
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              right: -6,
+                              bottom: -6,
+                              child: Container(
+                                width: 34,
+                                height: 34,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  gradient: const LinearGradient(
+                                    colors: [cyan, cobalt],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  border: Border.all(color: obsidian, width: 2.5),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: cyan.withValues(alpha: 0.45),
+                                      blurRadius: 10,
+                                    ),
+                                  ],
+                                ),
+                                child: const Icon(
+                                  Icons.arrow_downward_rounded,
+                                  color: Colors.white,
+                                  size: 18,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 22),
 
-                      // Título principal
                       const Text(
                         'MY AUTO GUIDE',
                         style: TextStyle(
-                          fontSize: 14,
+                          fontFamily: 'Outfit',
+                          fontSize: 15,
                           fontWeight: FontWeight.w900,
-                          letterSpacing: 2.5,
-                          color: Color(0xFF00FF87),
+                          letterSpacing: 3.0,
+                          color: cyan,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 6),
 
                       const Text(
                         'Actualización Disponible',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: 24,
+                          fontFamily: 'Outfit',
+                          fontSize: 25,
                           fontWeight: FontWeight.w900,
-                          letterSpacing: -0.5,
+                          letterSpacing: -0.4,
                           color: Colors.white,
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 4),
 
                       Text(
-                        'Versión ${widget.updateInfo.versionName}',
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF8E8E93),
+                        'Tu vehículo, bajo control inteligente',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white.withValues(alpha: 0.60),
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 12),
 
-                      // Tarjeta de Notas de la Versión
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: cyan.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: cyan.withValues(alpha: 0.35)),
+                        ),
+                        child: Text(
+                          'Versión ${widget.updateInfo.versionName}',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.4,
+                            color: cyan,
+                            fontFeatures: [FontFeature.tabularFigures()],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 22),
+
+                      // Tarjeta de Notas de la Versión (Cockpit Surface)
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF14171F),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: const Color(0xFF1F2430), width: 1.5),
+                          color: surface,
+                          borderRadius: BorderRadius.circular(22),
+                          border: Border.all(
+                            color: cyan.withValues(alpha: 0.22),
+                            width: 1.2,
+                          ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.4),
-                              blurRadius: 15,
-                              offset: const Offset(0, 8),
+                              color: Colors.black.withValues(alpha: 0.55),
+                              blurRadius: 20,
+                              offset: const Offset(0, 10),
                             ),
                           ],
                         ),
@@ -220,13 +293,14 @@ class _AppUpdateLockScreenState extends State<AppUpdateLockScreen> with SingleTi
                           children: [
                             const Row(
                               children: [
-                                Icon(Icons.stars_rounded, color: Color(0xFF00FF87), size: 20),
+                                Icon(Icons.auto_awesome_rounded, color: cyan, size: 19),
                                 SizedBox(width: 8),
                                 Text(
                                   'Novedades de la actualización',
                                   style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
+                                    fontFamily: 'Outfit',
+                                    fontSize: 14.5,
+                                    fontWeight: FontWeight.w800,
                                     color: Colors.white,
                                     letterSpacing: 0.2,
                                   ),
@@ -239,26 +313,26 @@ class _AppUpdateLockScreenState extends State<AppUpdateLockScreen> with SingleTi
                               style: const TextStyle(
                                 fontSize: 13,
                                 color: Color(0xFFE2E8F0),
-                                height: 1.5,
+                                height: 1.55,
                               ),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 28),
+                      const SizedBox(height: 26),
 
-                      // Sección de Progreso o Error
+                      // Sección de Progreso
                       if (_isDownloading || _downloadProgress > 0) ...[
                         ClipRRect(
                           borderRadius: BorderRadius.circular(10),
                           child: LinearProgressIndicator(
                             value: _downloadProgress > 0 ? _downloadProgress : null,
                             minHeight: 10,
-                            backgroundColor: const Color(0xFF1F2430),
-                            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF00FF87)),
+                            backgroundColor: const Color(0xFF1E293B),
+                            valueColor: const AlwaysStoppedAnimation<Color>(cyan),
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 10),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -279,7 +353,8 @@ class _AppUpdateLockScreenState extends State<AppUpdateLockScreen> with SingleTi
                               style: const TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF00FF87),
+                                color: cyan,
+                                fontFeatures: [FontFeature.tabularFigures()],
                               ),
                             ),
                           ],
@@ -291,16 +366,18 @@ class _AppUpdateLockScreenState extends State<AppUpdateLockScreen> with SingleTi
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.redAccent.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.redAccent.withValues(alpha: 0.4)),
+                            color: const Color(0xFFFF1744).withValues(alpha: 0.14),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: const Color(0xFFFF1744).withValues(alpha: 0.45),
+                            ),
                           ),
                           child: Text(
                             _errorMessage!,
                             textAlign: TextAlign.center,
                             style: const TextStyle(
                               fontSize: 12,
-                              color: Color(0xFFFF6B6B),
+                              color: Color(0xFFFF8A80),
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -308,17 +385,39 @@ class _AppUpdateLockScreenState extends State<AppUpdateLockScreen> with SingleTi
                         const SizedBox(height: 20),
                       ],
 
-                      // Botón de Acción Principal
-                      SizedBox(
+                      // Botón Principal Obsidiana Cockpit (Gradiente Cian -> Cobalto)
+                      Container(
                         width: double.infinity,
                         height: 54,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          gradient: _isDownloading
+                              ? null
+                              : const LinearGradient(
+                                  colors: [cyan, cobalt],
+                                  begin: Alignment.centerLeft,
+                                  end: Alignment.centerRight,
+                                ),
+                          color: _isDownloading ? surface : null,
+                          boxShadow: _isDownloading
+                              ? null
+                              : [
+                                  BoxShadow(
+                                    color: cobalt.withValues(alpha: 0.40),
+                                    blurRadius: 18,
+                                    offset: const Offset(0, 6),
+                                  ),
+                                ],
+                        ),
                         child: ElevatedButton(
                           onPressed: _isDownloading
                               ? null
                               : (_extractedApkPath != null ? _reinstalarApk : _iniciarActualizacion),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF00FF87),
-                            foregroundColor: Colors.black,
+                            backgroundColor: Colors.transparent,
+                            shadowColor: Colors.transparent,
+                            disabledBackgroundColor: Colors.transparent,
+                            foregroundColor: Colors.white,
                             elevation: 0,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
@@ -332,8 +431,8 @@ class _AppUpdateLockScreenState extends State<AppUpdateLockScreen> with SingleTi
                                       width: 20,
                                       height: 20,
                                       child: CircularProgressIndicator(
-                                        strokeWidth: 2.5,
-                                        color: Colors.black,
+                                        strokeWidth: 2.4,
+                                        color: cyan,
                                       ),
                                     ),
                                     SizedBox(width: 12),
@@ -341,27 +440,58 @@ class _AppUpdateLockScreenState extends State<AppUpdateLockScreen> with SingleTi
                                       'Actualizando...',
                                       style: TextStyle(
                                         fontSize: 15,
-                                        fontWeight: FontWeight.bold,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.white,
                                       ),
                                     ),
                                   ],
                                 )
-                              : Text(
-                                  _extractedApkPath != null ? 'Completar Instalación' : 'Descargar e Instalar Ahora',
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 0.3,
-                                  ),
+                              : Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      _extractedApkPath != null
+                                          ? Icons.install_mobile_rounded
+                                          : Icons.download_rounded,
+                                      size: 20,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      _extractedApkPath != null
+                                          ? 'Completar Instalación'
+                                          : 'Descargar e Instalar Ahora',
+                                      style: const TextStyle(
+                                        fontFamily: 'Outfit',
+                                        fontSize: 15.5,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 0.3,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                         ),
                       ),
-                      const SizedBox(height: 16),
+
+                      if (!isMandatory && !_isDownloading) ...[
+                        const SizedBox(height: 8),
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: Text(
+                            'Recordar más tarde',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white.withValues(alpha: 0.65),
+                            ),
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 12),
 
                       Text(
                         isMandatory
                             ? '🔒 Actualización requerida para garantizar la seguridad y sincronización.'
-                            : 'Puedes posponer esta actualización en este momento.',
+                            : 'Mantén MY AUTO GUIDE al día para recibir todas las mejoras.',
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                           fontSize: 11,

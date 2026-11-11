@@ -2,14 +2,13 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 import '../../core/services/driver_license_parser.dart';
 import '../../core/services/notification_service.dart';
 import 'app_snack_bar.dart';
 
-import 'package:webview_flutter/webview_flutter.dart';
-
 /// Consulta ciudadana RUNTPRO por cédula para extraer categorías de licencia de conducción,
-/// estado (Activa/Vencida) y fechas de vencimiento.
+/// estado (Activa/Vencida) y fechas de vencimiento abriendo automáticamente "Ver Detalle".
 class RuntDriverLicenseWebViewScreen extends StatefulWidget {
   final String cedula;
   final String vehiculoId;
@@ -60,8 +59,15 @@ class _RuntDriverLicenseWebViewScreenState
       ..loadRequest(Uri.parse(_runtCitizenUrl));
   }
 
+  /// Solo autocompleta si es cédula numérica real (evita inyectar hashes SHA-256 de 64 caracteres).
   Future<void> _autofillDocument() async {
-    if (widget.cedula.trim().isEmpty) return;
+    final prefs = await SharedPreferences.getInstance();
+    final cachedPlainDoc = prefs.getString('runt_plain_cedula_global') ?? '';
+    final candidate = RegExp(r'^\d{4,15}$').hasMatch(widget.cedula.trim())
+        ? widget.cedula.trim()
+        : (RegExp(r'^\d{4,15}$').hasMatch(cachedPlainDoc) ? cachedPlainDoc : '');
+    if (candidate.isEmpty) return;
+
     await _controller.runJavaScript('''
       (function fillDoc(attempt) {
         const selectors = [
@@ -77,7 +83,7 @@ class _RuntDriverLicenseWebViewScreenState
         }
         if (el) {
           if (!el.value) {
-            el.value = '${widget.cedula}';
+            el.value = '$candidate';
             el.dispatchEvent(new Event('input', { bubbles: true }));
             el.dispatchEvent(new Event('change', { bubbles: true }));
           }
@@ -95,7 +101,7 @@ class _RuntDriverLicenseWebViewScreenState
           prefs.getString('runt_driver_license_profile_global');
       if (raw != null && raw.isNotEmpty) {
         final parsed = RuntDriverProfile.tryDecodeWebViewResult(raw);
-        if (mounted && parsed != null && parsed.hasAnyData) {
+        if (mounted && parsed != null && parsed.licencias.isNotEmpty) {
           setState(() => _profile = parsed);
         }
       }
@@ -110,40 +116,53 @@ class _RuntDriverLicenseWebViewScreenState
     });
 
     try {
+      // Paso 1: Expandir paneles colapsados Y hacer clic automático en "Ver Detalle" para abrir el modal de categorías (A2, B1, C1...)
       await _controller.runJavaScript('''
         (function() {
-          function expandInDoc(doc) {
+          function prepareDoc(doc) {
+            if (!doc || !doc.body) return;
             const triggers = doc.querySelectorAll(
               '[data-toggle="collapse"], [data-bs-toggle="collapse"], .panel-heading a, .accordion-button, mat-expansion-panel-header, [role="button"][aria-expanded]'
             );
             triggers.forEach(function(el) {
               const txt = (el.innerText || el.textContent || '').toUpperCase();
-              if (
-                txt.includes('LICENCIA') ||
-                txt.includes('CONDUC') ||
-                txt.includes('DATOS') ||
-                txt.includes('HISTOR') ||
-                txt.includes('CERTIFICADO') ||
-                txt.includes('PASE')
-              ) {
-                const expanded = el.getAttribute('aria-expanded');
-                if (expanded !== 'true') {
+              if (txt.includes('LICENCIA') || txt.includes('CONDUC') || txt.includes('DATOS')) {
+                if (el.getAttribute('aria-expanded') !== 'true') {
                   try { el.click(); } catch (_) {}
                 }
               }
             });
+
+            const bodyText = (doc.body.innerText || '').toUpperCase();
+            if (!bodyText.includes('CATEGORIAS DE LA LICENCIA') && !bodyText.includes('CATEGORÍAS DE LA LICENCIA')) {
+              const clickables = doc.querySelectorAll('a, button, span[role="button"]');
+              for (const el of clickables) {
+                const t = (el.innerText || el.textContent || '').trim().toUpperCase();
+                if (t === 'VER DETALLE' || t.includes('VER DETALLE')) {
+                  try { el.click(); break; } catch (_) {}
+                }
+              }
+            }
           }
-          expandInDoc(document);
+          prepareDoc(document);
           document.querySelectorAll('iframe').forEach(function(fr) {
-            try { if (fr.contentDocument) expandInDoc(fr.contentDocument); } catch (_) {}
+            try { if (fr.contentDocument) prepareDoc(fr.contentDocument); } catch (_) {}
           });
         })();
       ''');
 
-      await Future.delayed(const Duration(milliseconds: 900));
+      await Future.delayed(const Duration(milliseconds: 950));
 
       const scraperJs = r'''
         (function() {
+          function textOf(el) {
+            if (!el) return '';
+            const clone = el.cloneNode(true);
+            clone.querySelectorAll('mat-icon, .material-icons, .material-icons-outlined, svg').forEach(function(ic) {
+              ic.remove();
+            });
+            return (clone.innerText || clone.textContent || '');
+          }
           function norm(s) { return (s || '').replace(/\s+/g, ' ').trim(); }
           function upper(s) {
             return norm(s).toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -157,41 +176,63 @@ class _RuntDriverLicenseWebViewScreenState
             raw_text: ''
           };
 
+          let parentEstado = '';
+          let parentNum = '';
+          let parentOrg = '';
+
           function scrapeDoc(doc) {
             if (!doc || !doc.body) return;
-            const textChunk = doc.body.innerText || doc.body.textContent || '';
+            const textChunk = textOf(doc.body);
             if (textChunk) {
               out.raw_text += (out.raw_text ? '\n' : '') + textChunk;
             }
 
             const tables = [...doc.querySelectorAll('table, mat-table, [role="table"]')];
+            // Primera pasada: capturar tabla principal "Licencia(s) de conducción" (Estado ACTIVA, Nro licencia, OT Expide)
             for (const t of tables) {
-              const tUp = upper(t.innerText);
-              if (!tUp.includes('CATEGORIA') && !tUp.includes('LICENCIA') && !tUp.includes('VENCIMIENTO')) continue;
-              const headers = [...t.querySelectorAll('thead th, tr:first-child th, mat-header-cell, [role="columnheader"]')].map(h => upper(h.innerText));
+              const tUp = upper(textOf(t));
+              if (!tUp.includes('OT EXPIDE') && !tUp.includes('NRO LICENCIA') && !tUp.includes('RETENCION')) continue;
+              const headers = [...t.querySelectorAll('thead th, tr:first-child th, mat-header-cell, [role="columnheader"]')].map(h => upper(textOf(h)));
               const bodyRows = [...t.querySelectorAll('tbody tr, mat-row, [role="row"]')];
               for (const r of bodyRows) {
-                const cols = [...r.querySelectorAll('td, mat-cell, [role="cell"]')].map(c => norm(c.innerText));
+                const cols = [...r.querySelectorAll('td, mat-cell, [role="cell"]')].map(c => norm(textOf(c)));
+                if (cols.length < 3) continue;
+                headers.forEach((h, idx) => {
+                  const val = cols[idx] || '';
+                  if (!val) return;
+                  if ((h.includes('NRO LICENCIA') || h === 'NUMERO DE LICENCIA') && !parentNum) parentNum = val;
+                  if (h === 'ESTADO' && !parentEstado) parentEstado = val;
+                  if ((h.includes('OT EXPIDE') || h.includes('ORGANISMO')) && !parentOrg) parentOrg = val;
+                });
+              }
+            }
+
+            // Segunda pasada: capturar popup "Categorías de la licencia" (Categoría, Fecha expedición, Fecha vencimiento)
+            for (const t of tables) {
+              const tUp = upper(textOf(t));
+              if (!tUp.includes('CATEGORIA') || !tUp.includes('VENCIMIENTO')) continue;
+              const headers = [...t.querySelectorAll('thead th, tr:first-child th, mat-header-cell, [role="columnheader"]')].map(h => upper(textOf(h)));
+              const bodyRows = [...t.querySelectorAll('tbody tr, mat-row, [role="row"]')];
+              for (const r of bodyRows) {
+                const cols = [...r.querySelectorAll('td, mat-cell, [role="cell"]')].map(c => norm(textOf(c)));
                 if (cols.length < 2) continue;
                 const rec = {
-                  numero_licencia: '',
+                  numero_licencia: parentNum,
                   categoria: '',
-                  estado: '',
+                  estado: parentEstado,
                   fecha_expedicion: '',
                   fecha_vencimiento: '',
-                  organismo_transito: ''
+                  organismo_transito: parentOrg
                 };
                 headers.forEach((h, idx) => {
                   const val = cols[idx] || '';
                   if (!val) return;
-                  if (h.includes('LICENCIA') || h.includes('NUMERO')) rec.numero_licencia = val;
-                  else if (h.includes('CATEGORIA')) rec.categoria = val;
-                  else if (h.includes('ESTADO')) rec.estado = val;
+                  if (h === 'CATEGORIA' || (h.includes('CATEGORIA') && !h.includes('ANTIGUA'))) rec.categoria = val;
                   else if (h.includes('EXPEDICION')) rec.fecha_expedicion = val;
                   else if (h.includes('VENCIMIENTO') || h.includes('VIGENCIA')) rec.fecha_vencimiento = val;
-                  else if (h.includes('ORGANISMO') || h.includes('TRANSITO')) rec.organismo_transito = val;
+                  else if (h === 'ESTADO') rec.estado = val;
                 });
-                if (rec.categoria || rec.fecha_vencimiento || rec.numero_licencia) {
+                if (rec.categoria && (rec.fecha_vencimiento || rec.fecha_expedicion)) {
                   out.licencias.push(rec);
                 }
               }
@@ -209,11 +250,11 @@ class _RuntDriverLicenseWebViewScreenState
       final raw = await _controller.runJavaScriptReturningResult(scraperJs);
       final parsed = RuntDriverProfile.tryDecodeWebViewResult(raw);
 
-      if (parsed == null || !parsed.hasAnyData) {
+      if (parsed == null || parsed.licencias.isEmpty) {
         if (mounted) {
           AppSnackBar.show(
             context,
-            'Completa primero tu documento, apellido, CAPTCHA y Consultar en RUNT.',
+            'Completa primero la consulta en RUNT (documento, apellido, CAPTCHA y Consultar) hasta ver tu licencia.',
             backgroundColor: Colors.orange,
           );
         }
@@ -240,6 +281,9 @@ class _RuntDriverLicenseWebViewScreenState
     final encoded = jsonEncode(profile.toJson());
     await prefs.setString('runt_driver_license_profile_${widget.vehiculoId}', encoded);
     await prefs.setString('runt_driver_license_profile_global', encoded);
+    if (RegExp(r'^\d{4,15}$').hasMatch(profile.numeroDocumento)) {
+      await prefs.setString('runt_plain_cedula_global', profile.numeroDocumento);
+    }
 
     final earliest = profile.earliestExpiration;
     String? licIso;
@@ -281,7 +325,9 @@ class _RuntDriverLicenseWebViewScreenState
   Widget build(BuildContext context) {
     final profile = _profile;
     return Scaffold(
+      backgroundColor: const Color(0xFF06080C),
       appBar: AppBar(
+        backgroundColor: const Color(0xFF06080C),
         title: const Text('Licencia de Conducción (RUNT)'),
         actions: [
           IconButton(
@@ -293,7 +339,7 @@ class _RuntDriverLicenseWebViewScreenState
       body: Stack(
         children: [
           WebViewWidget(controller: _controller),
-          if (_loading) const LinearProgressIndicator(minHeight: 3),
+          if (_loading) const LinearProgressIndicator(minHeight: 3, color: Color(0xFF00E5FF)),
           Positioned(
             bottom: 18,
             left: 16,
@@ -302,70 +348,101 @@ class _RuntDriverLicenseWebViewScreenState
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (profile != null && profile.licencias.isNotEmpty)
-                  Card(
-                    color: const Color(0xFF0F172A),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      side: BorderSide(
-                        color: const Color(0xFF38BDF8).withValues(alpha: 0.4),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF121722).withValues(alpha: 0.96),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: const Color(0xFF00E5FF).withValues(alpha: 0.35),
                       ),
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(10),
-                      child: Wrap(
-                        spacing: 6,
-                        runSpacing: 6,
-                        children: profile.licencias.map((lic) {
-                          final color = lic.isVigente
-                              ? const Color(0xFF10B981)
-                              : Colors.redAccent;
-                          return Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: color.withValues(alpha: 0.16),
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: color.withValues(alpha: 0.5)),
-                            ),
-                            child: Text(
-                              '${lic.categoria} • ${lic.isVigente ? "Vigente" : "No vigente"}'
-                              '${lic.fechaVencimiento.isNotEmpty ? " (${lic.fechaVencimiento})" : ""}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Tus licencias detectadas (${profile.vigentes.length} vigentes)',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: profile.licencias.map((lic) {
+                            final color = lic.isVigente
+                                ? const Color(0xFF10B981)
+                                : const Color(0xFFFF1744);
+                            return Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 9,
+                                vertical: 5,
                               ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
+                              decoration: BoxDecoration(
+                                color: color.withValues(alpha: 0.16),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: color.withValues(alpha: 0.5)),
+                              ),
+                              child: Text(
+                                '${lic.categoria} • ${lic.isVigente ? "Vigente" : "Vencida"}'
+                                '${lic.fechaVencimiento.isNotEmpty ? " • ${lic.fechaVencimiento}" : ""}',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ],
                     ),
                   ),
                 const SizedBox(height: 8),
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2563EB),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF00E5FF), Color(0xFF2979FF)],
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF2979FF).withValues(alpha: 0.35),
+                        blurRadius: 16,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
                   ),
-                  onPressed: _extracting ? null : _extraerLicencias,
-                  icon: _extracting
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Icon(Icons.badge_rounded),
-                  label: Text(
-                    _extracting
-                        ? 'Extrayendo licencias...'
-                        : 'Extraer y Guardar Mis Licencias RUNT',
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    ),
+                    onPressed: _extracting ? null : _extraerLicencias,
+                    icon: _extracting
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Icon(Icons.badge_rounded),
+                    label: Text(
+                      _extracting
+                          ? 'Extrayendo licencias...'
+                          : 'Extraer y Guardar Mis Licencias RUNT',
+                      style: const TextStyle(fontWeight: FontWeight.w800),
+                    ),
                   ),
                 ),
               ],

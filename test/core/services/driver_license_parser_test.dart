@@ -52,5 +52,31 @@ void main() {
       expect(profile.vigentes.length, 1);
       expect(profile.vigentes.first.categoria, 'B1');
     });
+
+    test('Parses RUNTPRO Ver Detalle popup stacked layout for A2, C1, B1 accurately', () {
+      const mobilePopupDump = '''
+        1002579736 STRIA MCPAL TTOyTTE ESPINAL 01/12/2021 ACTIVA NO Ver Detalle
+        Categorías de la licencia Nro: 1002579736
+        A2
+        01/12/2021
+        01/12/2031
+        C1
+        01/12/2021
+        01/12/2024
+        B1
+        01/12/2021
+        01/12/2031
+      ''';
+
+      final profile = RuntDriverProfile.parseFromRawText(mobilePopupDump);
+      expect(profile.licencias.length, 3);
+      expect(profile.licencias.map((l) => l.categoria).toList(), ['A2', 'C1', 'B1']);
+      // A2 (2031) y B1 (2031) vigentes, C1 (2024) vencida
+      expect(profile.licencias[0].isVigente, isTrue);
+      expect(profile.licencias[1].isVigente, isFalse);
+      expect(profile.licencias[2].isVigente, isTrue);
+      expect(profile.vigentes.length, 2);
+      expect(profile.earliestExpiration, DateTime(2031, 12, 1));
+    });
   });
 }

@@ -91,6 +91,7 @@ import 'widgets/insurance_picker_sheet.dart';
 import 'widgets/pico_y_placa_card.dart';
 import 'widgets/custom_maintenances_card.dart';
 import 'widgets/legal_extras_sheet.dart';
+import 'widgets/runt_profile_sheet.dart';
 import '../../expenses/presentation/driver_profitability_screen.dart';
 import '../../fleet/presentation/fleet_dashboard_screen.dart';
 import '../../obd_scanner/presentation/screens/scanner_dashboard_screen.dart';
@@ -182,161 +183,28 @@ class _InicioAppState extends State<InicioApp> {
     }
 
     if (!mounted) return;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(ctx).size.height * 0.78,
-        ),
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF0F172A) : Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(26)),
-          border: Border.all(
-            color: const Color(0xFF38BDF8).withValues(alpha: 0.25),
+    await RuntProfileSheet.show(
+      context,
+      placa: vehicleData['placa']?.toString() ?? '',
+      profile: profile,
+      onUpdateFromRunt: () async {
+        final updated = await Navigator.push<bool>(
+          context,
+          MaterialPageRoute(
+            builder: (_) => RuntWebViewScreen(
+              placa: vehicleData['placa']?.toString() ?? '',
+              cedula: vehicleData['cedula']?.toString() ?? '',
+              vehiculoId: widget.vehiculoId,
+            ),
           ),
-        ),
-        child: SafeArea(
-          top: false,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: isDark ? Colors.white24 : Colors.black12,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  const Icon(Icons.fact_check_rounded, color: Color(0xFF38BDF8)),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      'Ficha Técnica RUNT • ${vehicleData['placa'] ?? ''}',
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w700,
-                        color: isDark ? Colors.white : const Color(0xFF0F172A),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              if (profile == null || !profile.hasAnyData)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 18),
-                  child: Text(
-                    'Aún no has extraído la ficha completa desde el RUNT. '
-                    'Toca "Actualizar desde RUNT" y presiona "Extraer y Guardar Toda la Ficha RUNT" tras consultar tu placa.',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: isDark ? Colors.white70 : Colors.black54,
-                      height: 1.45,
-                    ),
-                  ),
-                )
-              else
-                Flexible(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        for (final entry in <(String, String)>[
-                          ('Marca / Línea', '${profile.marca} ${profile.linea}'.trim()),
-                          ('Año / Color', '${profile.modeloAno} ${profile.color}'.trim()),
-                          ('Clase / Servicio', '${profile.clase} ${profile.servicio}'.trim()),
-                          ('Estado RUNT', profile.estadoVehiculo),
-                          ('Cilindraje', profile.cilindraje),
-                          ('Combustible', profile.combustible),
-                          ('VIN', profile.vin),
-                          ('Motor', profile.numeroMotor),
-                          ('Chasis', profile.numeroChasis),
-                          ('SOAT', '${profile.soatEstado} • Vence: ${profile.soatVencimiento}'.trim()),
-                          ('Aseguradora SOAT', profile.soatAseguradora),
-                          ('Póliza SOAT', profile.soatPoliza),
-                          ('Tecnomecánica', '${profile.tecnoEstado} • Vence: ${profile.tecnoVencimiento}'.trim()),
-                          ('CDA RTM', profile.tecnoCda),
-                          ('Gravámenes / Prendas', profile.gravamenes),
-                          ('Tránsito', profile.organismoTransito),
-                        ].where((e) => e.$2.trim().isNotEmpty && e.$2.trim() != '• Vence:'))
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 6),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                SizedBox(
-                                  width: 130,
-                                  child: Text(
-                                    entry.$1,
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                      color: isDark ? Colors.white54 : Colors.black54,
-                                    ),
-                                  ),
-                                ),
-                                Expanded(
-                                  child: Text(
-                                    entry.$2,
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                      color: isDark ? Colors.white : const Color(0xFF0F172A),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-              const SizedBox(height: 16),
-              ElevatedButton.icon(
-                onPressed: () async {
-                  Navigator.pop(ctx);
-                  final updated = await Navigator.push<bool>(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => RuntWebViewScreen(
-                        placa: vehicleData['placa']?.toString() ?? '',
-                        cedula: vehicleData['cedula']?.toString() ?? '',
-                        vehiculoId: widget.vehiculoId,
-                      ),
-                    ),
-                  );
-                  if (updated == true && mounted) {
-                    setState(() {
-                      _cachedVehicleData = null;
-                      _initAppFuture = _inicializarTodo();
-                    });
-                  }
-                },
-                icon: const Icon(Icons.sync_rounded),
-                label: const Text('Actualizar desde RUNT Oficial'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2563EB),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+        );
+        if (updated == true && mounted) {
+          setState(() {
+            _cachedVehicleData = null;
+            _initAppFuture = _inicializarTodo();
+          });
+        }
+      },
     );
   }
 

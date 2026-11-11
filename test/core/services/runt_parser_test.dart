@@ -98,5 +98,10 @@ void main() {
       final pctFromFuture = VehicleHealthLogic.calculateDocumentPercentage(date: halfYearAhead);
       expect(pctFromFuture, closeTo(0.50, 0.03));
     });
+
+    test('sanitizeField removes Material icon ligature noise from RUNTPRO innerText', () {
+      expect(RuntVehicleProfile.sanitizeField('check_circle VIGENTE'), 'VIGENTE');
+      expect(RuntVehicleProfile.sanitizeField('car_crash • Vence: 12/06/2027'), 'Vence: 12/06/2027');
+    });
   });
 }
