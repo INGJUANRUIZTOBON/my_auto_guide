@@ -1,73 +1,140 @@
-# 🚗 My Auto Guide
+# 🏎️ MY AUTO GUIDE (v1.2.10)
+> **Tu vehículo, bajo control inteligente.**  
+> Ecosistema integral de telemetría automotriz, navegación pro con GPS Kalman, catálogo cloud de Colombia, diagnóstico OBD2 y automatización RUNT.
 
-**My Auto Guide** es una aplicación móvil desarrollada en **Flutter** diseñada para la gestión integral de vehículos (carros y motos). Permite a los usuarios llevar un registro detallado de sus vehículos, gestionar mantenimientos, consultar manuales, recibir recordatorios importantes, navegar rutas con mapa GPS y acceder a plataformas externas como el RUNT de manera directa.
+[![Flutter](https://img.shields.io/badge/Flutter-3.27.0-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev)
+[![Supabase](https://img.shields.io/badge/Supabase-Backend%20%26%20CDN-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com)
+[![Android](https://img.shields.io/badge/Android-APK%20v1.2.10-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://github.com/INGJUANRUIZTOBON/my_auto_guide/releases/download/1.1.0/app-release.apk)
+[![License](https://img.shields.io/badge/Licencia-Privada%20%2F%20Comercial-FF6D00?style=for-the-badge)](LICENSE)
 
-## ✨ Características Principales
+---
 
-- 🔐 **Autenticación Segura**: Sistema de inicio de sesión y registro impulsado por **Supabase**.
-- 🚙 **Gestión de Vehículos**: Agregar, visualizar y organizar información de carros y motocicletas.
-- ⚙️ **Control de Mantenimientos**: Parametrización, control y registro de próximos mantenimientos (cadena, filtro de aire, aceite, SOAT y tecnomecánica).
-- 🔔 **Notificaciones y Recordatorios**: Alertas programadas para evitar el olvido del vencimiento de documentos y mantenimientos usando `flutter_local_notifications`.
-- 📖 **Guías y Manuales**: Visualizador integrado de documentos PDF (`syncfusion_flutter_pdfviewer`) y reproducción de videos tutoriales de YouTube dentro de la app (`youtube_player_iframe`).
-- 🌐 **Consulta Externa**: Integración mediante vistas web (`webview_flutter`) para consultar multas e información oficial en el **RUNT** (Registro Único Nacional de Tránsito).
-- 📸 **Gestión de Multimedia**: Captura de fotografías o subida de imágenes desde la galería para registrar documentos y guardar fotos del vehículo.
-- 🗺️ **Rutas y Navegación GPS**: Mapa interactivo con **OpenStreetMap** para buscar destinos, trazar la ruta óptima (OSRM) y navegar en tiempo real estilo Waze. Al completar la ruta, el kilometraje recorrido se suma automáticamente al vehículo.
-- 📄 **Gestión de Documentos**: Subida, visualización y eliminación de documentos del vehículo (SOAT, Tecnomecánica, Seguro, Tarjeta de Propiedad) con almacenamiento en Supabase Storage.
+## 📥 Descarga Directa de la Aplicación
 
-## 🛠️ Tecnologías y Dependencias
+Puedes descargar el instalador oficial de Android directamente desde el repositorio:
 
-El proyecto se enriquece de las siguientes librerías principales:
+[![Descargar APK](https://img.shields.io/badge/Descargar%20APK%20Oficial-v1.2.10%20(Build%2027)-00E5FF?style=for-the-badge&logo=android&logoColor=black)](https://github.com/INGJUANRUIZTOBON/my_auto_guide/releases/download/1.1.0/app-release.apk)
 
-- **Framework**: `Flutter` (SDK >=3.3.0 <4.0.0)
-- **Backend as a Service**: `supabase_flutter` para la base de datos, autenticación y almacenamiento de archivos.
-- **UI & UX**: `dotted_border`, `photo_view`, y uso de Material Design en Flutter.
-- **Gestión de Archivos y Permisos**: `file_picker`, `image_picker`, `permission_handler`, `path_provider`.
-- **Integración Web y Media**: `webview_flutter`, `youtube_player_iframe`, `url_launcher`.
-- **Notificaciones**: `flutter_local_notifications`, `timezone`.
-- **Mapas y Navegación GPS**: `flutter_map` (OpenStreetMap), `latlong2`, `geolocator`.
-- **PDF**: `syncfusion_flutter_pdfviewer`.
+- 📦 **Enlace directo de descarga**: [app-release.apk (GitHub Releases)](https://github.com/INGJUANRUIZTOBON/my_auto_guide/releases/download/1.1.0/app-release.apk)
+- 🚀 **Auto-Actualización OTA**: La app cuenta con motor Over-The-Air impulsado por Supabase. Al instalar esta versión, cualquier actualización futura se descargará e instalará automáticamente en tu teléfono.
 
-## 📂 Estructura del Código
+---
 
-A continuación se detalla el listado de los archivos más importantes dentro del directorio `/lib` y la función que cumplen en el proyecto:
+## 🌟 Novedades de la Versión 1.2.10
 
-- `main.dart`: Punto de entrada de la aplicación y configuraciones base (Supabase init, temas).
-- `inicio_app.dart`: Pantalla inicial (Dashboard / Home), donde se despliegan las métricas, documentos, indicadores de mantenimiento y herramientas del vehículo.
-- `login_screen.dart` / `registro_screen.dart`: Módulo y pantallas del flujo de autenticación e incorporación (Onboarding).
-- `Agregar_vehiculo.dart` / `Agregar_carro.dart`: Pantallas con los formularios y la lógica necesaria para registrar nuevas motocicletas o automóviles.
-- `guia.dart`: Pantalla de consulta interactiva donde los usuarios ven documentos, manuales PDF o videos tutoriales de YouTube.
-- `parametrizacion_mantenimientos.dart`: Sistema principal donde se configuran los intervalos de mantenimientos, fechas de chequeos (cadena, filtro, aceite, SOAT, tecnomecánica).
-- `runt_webview.dart`: Vista de navegador embebida para realizar las consultas dentro de la página oficial del RUNT sin salir de la app.
-- `rutas_screen.dart`: Pantalla de navegación GPS con mapa OpenStreetMap, búsqueda de destinos (Nominatim), trazado de ruta óptima (OSRM) y actualización automática del kilometraje al completar la ruta.
+### 1. 🌌 Animación Cinemática de Carga — Escaneo Láser Holográfico (60-120 FPS)
+- **Motor GPU nativo (`CustomPainter`)**: Efecto túnel de viento aerodinámico que recorre la silueta del vehículo con un haz láser neón vertical de izquierda a derecha.
+- **Siluetas inteligentes adaptativas**: Diferenciación vectorial precisa entre carrocerías de automóvil y motocicleta.
+- **Entrada natural (Micro-escala 0.96 → 1.0)**: Cross-fade suave de 250ms y respuesta háptica física (*Taptic Engine*) al completar la descarga.
+- **Resiliencia Offline**: Detección de pérdida de cobertura 4G con timeout automático a los 5s y botón de reintento.
 
-## 🚀 Instalación y Configuración
+### 2. 📡 GPS Bajo Demanda y Navegación Pro Colombia (Estilo Waze)
+- **Foreground Service estrictamente bajo demanda**: La notificación fija *"Recorrido en Progreso"* y el rastreador de fondo **solo se encienden cuando presionas Iniciar Ruta o Recorrido Libre**, auto-destruyéndose inmediatamente al finalizar o salir del mapa.
+- **Filtro de Kalman Cinemático**: Suavizado continuo de coordenadas eliminando rebotes de antena y saltos erráticos a 60 FPS.
+- **Grabación con pantalla suspendida**: Mantiene la telemetría, velocidad y odometría viva en el bolsillo sin que Android duerma el chip GPS.
+- **Servicios viales de Colombia**: Radares de fotomultas, peajes estimados, precios de combustible actualizados, reportes comunitarios y voz manos libres (`flutter_tts`).
 
-Para poner en marcha esta aplicación en tu propia máquina:
+### 3. ☁️ Catálogo Cloud de Marcas y Modelos de Colombia
+- **127 modelos y 22 marcas comerciales**: Carga dinámica bajo demanda desde Supabase Storage CDN (sin inflar el APK).
+- **Especificaciones técnicas completas**: Cilindraje (cc), tipo de combustible, capacidad de tanque (galones), potencia (HP) y grado de aceite recomendado.
+- **Logos oficiales en alta definición**: Transparencias nativas RGBA para todas las marcas (carros y motos).
 
-1. **Asegúrate de tener Flutter instalado**.
-2. **Clona el repositorio** localmente:
-   ```bash
-   git clone <URL_DEL_REPOSITORIO>
-   cd my_auto_guide
-   ```
-3. **Obtén las dependencias**:
-   ```bash
-   flutter pub get
-   ```
-4. **Conecta Supabase**:
-   Debes verificar o configurar las variables de conexión de Supabase (la `URL` y la `Anon Key`) en el archivo principal correspondiente para que el ingreso, registro y extracción de base de datos funcionen correctamente.
-5. **Permisos del dispositivo**:
-   La aplicación requiere los siguientes permisos en Android:
-   - 📍 Ubicación (GPS) — para la funcionalidad de Rutas
-   - 📷 Cámara — para captura de fotos del vehículo
-   - 📁 Almacenamiento — para gestión de archivos y documentos
-6. **Corre la aplicación**:
-   Puedes probar el proyecto simulando en un emulador o un dispositivo físico conectado usando el comando:
-   ```bash
-   flutter run
-   ```
-   > **Nota:** La funcionalidad de Rutas requiere un dispositivo físico con GPS activo para la navegación en tiempo real.
+### 4. 📋 Integración y Extracción Automática RUNTPRO
+- **Extractor inteligente en 3 etapas**: Conexión con el portal oficial del RUNT para consultar SOAT, Tecnomecánica (RTM), histórico de revisiones, gravámenes y multas en SIMIT.
+- **Mi Licencia de Conducción**: Consulta ciudadana por cédula que detecta categorías vigentes (A2, B1, C1) y calcula el porcentaje de vida útil restante.
 
-## 📝 Contribuciones y Notas
+### 5. 🤖 Master Mechanic IA Multimodal (Gemini 2.5 Flash)
+- Asistente de diagnóstico mecánico vehicular con soporte de visión artificial: adjunta fotos desde la cámara o galería y recibe asesoría técnica en tiempo real.
 
-Este repositorio contiene todo lo necesario para escalar una infraestructura de administración mecánica y vehicular orientada al usuario final. La arquitectura del proyecto está pensada para ser fácil de extender mediante componentes como `webview`, servicios locales (notificaciones), mapas con navegación GPS o validadores del lado de la nube (Supabase).
+### 6. 🔌 Escáner OBD2 Pro & Modo HUD Parabrisas
+- Conectividad Bluetooth ELM327 para lectura de telemetría en vivo, códigos de falla (DTC), Freeze Frame (Modo 02) y modo HUD invertido para reflejo en el parabrisas nocturno.
+
+---
+
+## 🏗️ Arquitectura del Sistema
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                        PRESENTATION LAYER (UI)                         │
+│   Obsidiana Cockpit  •  Liquid Glass UI  •  HUD  •  SmartVehicleImage  │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │
+┌───────────────────────────────────▼────────────────────────────────────┐
+│                         PROVIDERS & LOGIC                              │
+│   NavigationController  •  AuthProvider  •  TelemetryCalculator        │
+│   GpsKalmanFilter       •  VehicleAILogic •  AppWidgetLogic            │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │
+┌───────────────────────────────────▼────────────────────────────────────┐
+│                       SERVICES & BACKGROUND                            │
+│   BackgroundNavService (Foreground) • AppUpdateService (OTA)           │
+│   CloudCatalogService               • RuntVehicleService               │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │
+┌───────────────────────────────────▼────────────────────────────────────┐
+│                         DATA LAYER & BACKEND                           │
+│   Supabase PostgREST  •  Supabase Storage CDN  •  FlutterSecureStorage │
+│   OpenStreetMap OSRM  •  Google Gemini 2.5 Flash                       │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🛠️ Tecnologías y Librerías Principales
+
+| Módulo | Tecnologías / Dependencias |
+| :--- | :--- |
+| **Framework Base** | Flutter 3.27.0 • Dart >= 3.3.0 |
+| **Backend & Base de Datos** | Supabase Flutter SDK (`supabase_flutter: ^2.10.0`) |
+| **Mapas & Geometría GPS** | `flutter_map: ^6.1.0`, `latlong2`, `geolocator: ^13.0.2` |
+| **Procesamiento de Fondo** | `flutter_background_service: ^5.0.10`, `home_widget` |
+| **Inteligencia Artificial** | `google_generative_ai: ^0.4.5` (Gemini 2.5 Flash) |
+| **Seguridad Criptográfica** | `flutter_secure_storage: ^9.2.2`, `crypto: ^3.0.6` |
+| **Diagnóstico OBD2** | `flutter_blue_plus: ^2.3.14` |
+| **Documentos & Reportes** | `syncfusion_flutter_pdfviewer`, `pdf`, `printing` |
+
+---
+
+## 🚀 Puesta en Marcha Local (Desarrolladores)
+
+### Requisitos Previos
+- Flutter SDK 3.27.0 o superior
+- Java Development Kit (JDK 17)
+- Android SDK con soporte para API 34
+
+### Instalación
+```bash
+# 1. Clonar el repositorio
+git clone https://github.com/INGJUANRUIZTOBON/my_auto_guide.git
+cd my_auto_guide
+
+# 2. Instalar dependencias
+flutter pub get
+
+# 3. Configurar variables de entorno
+# Copiar .env.example a .env y añadir tus credenciales de Supabase
+cp .env.example .env
+
+# 4. Ejecutar pruebas unitarias (144 tests)
+flutter test --no-pub
+
+# 5. Compilar APK Release
+flutter build apk --release --no-pub
+```
+
+El binario de producción se generará en:  
+`build/app/outputs/flutter-apk/app-release.apk`
+
+---
+
+## 🔒 Seguridad y Privacidad
+
+- **Cifrado Hardware (Keystore / Keychain)**: Las credenciales de sesión y tokens de API se almacenan cifrados mediante hardware con `FlutterSecureStorage`.
+- **Anonimización de Cédula**: Las cédulas de los propietarios se procesan con hashing criptográfico SHA-256 para prevenir fugas de datos en consultas externas.
+- **Políticas RLS en Supabase**: Row Level Security activado en todas las tablas para garantizar que cada usuario acceda exclusivamente a sus propios vehículos y telemetría.
+
+---
+
+## 📄 Licencia
+
+Desarrollado con altos estándares de ingeniería de software para el ecosistema automotor colombiano. Todos los derechos reservados.
