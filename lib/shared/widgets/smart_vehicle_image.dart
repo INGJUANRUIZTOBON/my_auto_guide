@@ -1,12 +1,15 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'vehicle_hologram_loader.dart';
 
 /// Widget universal de imagen automotriz para MY AUTO GUIDE.
 /// Soporta:
-/// 1. URLs remotas (HTTP / HTTPS) de Supabase Storage / CDN con fade y fallback elegante.
+/// 1. URLs remotas (HTTP / HTTPS) de Supabase Storage / CDN con fade cinemático y micro-escala.
 /// 2. Archivos locales del dispositivo (cámara / galería / file://).
 /// 3. Assets preempaquetados en la app (assets/...).
-/// 4. Fallback con silueta o icono temático si la imagen no existe o falla la red.
+/// 4. Escaneo Láser Holográfico a 60-120 FPS como placeholder durante la descarga.
+/// 5. Fallback con silueta o icono temático si la imagen no existe o falla la red.
 class SmartVehicleImage extends StatelessWidget {
   final String? imagePath;
   final BoxFit fit;
@@ -16,6 +19,7 @@ class SmartVehicleImage extends StatelessWidget {
   final bool isCar;
   final Color? fallbackColor;
   final Widget? customFallback;
+  final bool enableHaptic;
 
   const SmartVehicleImage({
     super.key,
@@ -27,6 +31,7 @@ class SmartVehicleImage extends StatelessWidget {
     this.isCar = false,
     this.fallbackColor,
     this.customFallback,
+    this.enableHaptic = false,
   });
 
   @override
@@ -48,7 +53,10 @@ class SmartVehicleImage extends StatelessWidget {
         fit: fit,
         cacheWidth: effectiveCacheWidth,
         frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-          if (wasSynchronouslyLoaded || frame != null) return child;
+          if (wasSynchronouslyLoaded) return child;
+          if (frame != null) {
+            return _buildFadeInTransition(child);
+          }
           return _buildLoadingPlaceholder();
         },
         errorBuilder: (context, error, stackTrace) => _buildFallback(),
@@ -98,8 +106,7 @@ class SmartVehicleImage extends StatelessWidget {
   }
 
   /// Fallback Over-The-Air (OTA) resiliente:
-  /// Si el asset local no existe en el APK instalado (ej. versión previa o actualización en caliente),
-  /// lo descargamos directamente del CDN de Supabase Storage.
+  /// Si el asset local no existe en el APK instalado, lo descargamos del CDN de Supabase Storage.
   Widget _buildRemoteFallback(String assetPath) {
     final cleanPath = assetPath.startsWith('/') ? assetPath.substring(1) : assetPath;
     final remoteUrl =
@@ -111,29 +118,47 @@ class SmartVehicleImage extends StatelessWidget {
       fit: fit,
       cacheWidth: cacheWidth ?? 800,
       frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-        if (wasSynchronouslyLoaded || frame != null) return child;
+        if (wasSynchronouslyLoaded) return child;
+        if (frame != null) {
+          return _buildFadeInTransition(child);
+        }
         return _buildLoadingPlaceholder();
       },
       errorBuilder: (context, error, stackTrace) => _buildFallback(),
     );
   }
 
+  /// Transición suave de entrada: cross-fade (250ms) con micro-escala natural de 0.96 a 1.0
+  Widget _buildFadeInTransition(Widget child) {
+    if (enableHaptic) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        HapticFeedback.lightImpact();
+      });
+    }
+    return TweenAnimationBuilder<double>(
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeOutCubic,
+      tween: Tween<double>(begin: 0.0, end: 1.0),
+      builder: (context, value, _) {
+        final scale = 0.96 + (0.04 * value);
+        return Opacity(
+          opacity: value,
+          child: Transform.scale(
+            scale: scale,
+            child: child,
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildLoadingPlaceholder() {
-    return SizedBox(
+    return VehicleHologramLoader(
       width: width,
       height: height,
-      child: Center(
-        child: SizedBox(
-          width: 24,
-          height: 24,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            valueColor: AlwaysStoppedAnimation<Color>(
-              fallbackColor ?? const Color(0xFF00E5FF).withOpacity(0.5),
-            ),
-          ),
-        ),
-      ),
+      isCar: isCar,
+      accentColor: fallbackColor,
+      enableHaptic: enableHaptic,
     );
   }
 

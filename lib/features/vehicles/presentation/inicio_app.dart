@@ -3013,6 +3013,7 @@ class _MainHero extends StatelessWidget {
                                 isCar: imagePath.toLowerCase().contains('carro') ||
                                     imagePath.toLowerCase().contains('carros/'),
                                 fallbackColor: brandTheme.primaryColor.withValues(alpha: 0.2),
+                                enableHaptic: true,
                               ),
                       ),
                       Positioned(
