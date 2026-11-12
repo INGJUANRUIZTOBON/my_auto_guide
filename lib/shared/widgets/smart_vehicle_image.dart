@@ -42,25 +42,12 @@ class SmartVehicleImage extends StatelessWidget {
       return _buildFallback();
     }
 
-    // 1. Imagen de Red (Supabase Storage, CDN, URLs HTTP/HTTPS)
+    // 1. Imagen de Red (Supabase Storage CDN, URLs HTTP/HTTPS)
+    // Todas las imágenes de vehículos y logos se cargan dinámicamente desde Supabase Storage
     if (raw.startsWith('http://') || raw.startsWith('https://')) {
       final effectiveCacheWidth =
           cacheWidth ?? (width != null ? (width! * 2).toInt() : 800);
-      return Image.network(
-        raw,
-        width: width,
-        height: height,
-        fit: fit,
-        cacheWidth: effectiveCacheWidth,
-        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-          if (wasSynchronouslyLoaded) return child;
-          if (frame != null) {
-            return _buildFadeInTransition(child);
-          }
-          return _buildLoadingPlaceholder();
-        },
-        errorBuilder: (context, error, stackTrace) => _buildFallback(),
-      );
+      return _buildNetworkImage(raw, effectiveCacheWidth);
     }
 
     // 2. Archivo local en almacenamiento del teléfono (Cámara / Galería)
@@ -105,18 +92,14 @@ class SmartVehicleImage extends StatelessWidget {
     );
   }
 
-  /// Fallback Over-The-Air (OTA) resiliente:
-  /// Si el asset local no existe en el APK instalado, lo descargamos del CDN de Supabase Storage.
-  Widget _buildRemoteFallback(String assetPath) {
-    final cleanPath = assetPath.startsWith('/') ? assetPath.substring(1) : assetPath;
-    final remoteUrl =
-        'https://iqdobggghorpuepuquhb.supabase.co/storage/v1/object/public/catalog-assets/$cleanPath';
+  /// Descarga remota desde Supabase Storage CDN con micro-transición y placeholder
+  Widget _buildNetworkImage(String url, int effectiveCacheWidth) {
     return Image.network(
-      remoteUrl,
+      url,
       width: width,
       height: height,
       fit: fit,
-      cacheWidth: cacheWidth ?? 800,
+      cacheWidth: effectiveCacheWidth,
       frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
         if (wasSynchronouslyLoaded) return child;
         if (frame != null) {
@@ -126,6 +109,15 @@ class SmartVehicleImage extends StatelessWidget {
       },
       errorBuilder: (context, error, stackTrace) => _buildFallback(),
     );
+  }
+
+  /// Fallback Over-The-Air (OTA) resiliente:
+  /// Si el asset local no existe en el APK instalado, lo descargamos del CDN de Supabase Storage.
+  Widget _buildRemoteFallback(String assetPath) {
+    final cleanPath = assetPath.startsWith('/') ? assetPath.substring(1) : assetPath;
+    final remoteUrl =
+        'https://iqdobggghorpuepuquhb.supabase.co/storage/v1/object/public/catalog-assets/$cleanPath';
+    return _buildNetworkImage(remoteUrl, cacheWidth ?? 800);
   }
 
   /// Transición suave de entrada: cross-fade (250ms) con micro-escala natural de 0.96 a 1.0
@@ -165,7 +157,7 @@ class SmartVehicleImage extends StatelessWidget {
   Widget _buildFallback() {
     if (customFallback != null) return customFallback!;
 
-    final color = fallbackColor ?? const Color(0xFF00E5FF).withOpacity(0.3);
+    final color = fallbackColor ?? const Color(0xFF00E5FF).withValues(alpha: 0.3);
     final icon = isCar ? Icons.directions_car_rounded : Icons.two_wheeler_rounded;
 
     return SizedBox(

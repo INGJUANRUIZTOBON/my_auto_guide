@@ -13,7 +13,7 @@
 
 Puedes descargar el instalador oficial de Android directamente desde el repositorio:
 
-[![Descargar APK](https://img.shields.io/badge/Descargar%20APK%20Oficial-v1.2.12%20(Build%2029)-00E5FF?style=for-the-badge&logo=android&logoColor=black)](https://github.com/INGJUANRUIZTOBON/my_auto_guide/releases/download/1.1.0/app-release.apk)
+[![Descargar APK](https://img.shields.io/badge/Descargar%20APK%20Oficial-v1.2.12%20(Build%2030)-00E5FF?style=for-the-badge&logo=android&logoColor=black)](https://github.com/INGJUANRUIZTOBON/my_auto_guide/releases/download/1.1.0/app-release.apk)
 
 - 📦 **Enlace directo de descarga**: [app-release.apk (GitHub Releases)](https://github.com/INGJUANRUIZTOBON/my_auto_guide/releases/download/1.1.0/app-release.apk)
 - 🚀 **Auto-Actualización OTA**: La app cuenta con motor Over-The-Air impulsado por Supabase. Al instalar esta versión, cualquier actualización futura se descargará e instalará automáticamente en tu teléfono.
