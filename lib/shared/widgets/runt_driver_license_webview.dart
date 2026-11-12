@@ -127,6 +127,8 @@ class _RuntDriverLicenseWebViewScreenState
               el.scrollIntoView({ behavior: 'instant', block: 'center' });
               el.click();
               el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+              el.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+              el.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, cancelable: true }));
             } catch (_) {}
           }
           function expandDoc(doc) {
@@ -136,19 +138,17 @@ class _RuntDriverLicenseWebViewScreenState
             );
             candidates.forEach(function(el) {
               const t = norm(el.innerText || el.textContent || '');
-              if (!(t.includes('LICENCIA(S) DE CONDUC') || t.includes('LICENCIAS DE CONDUC'))) return;
-              if (t.length > 90) return;
+              if (!(t.includes('LICENCIA') || t.includes('CONDUC'))) return;
+              if (t.includes('SOLICITUD') || t.includes('MULTA')) return;
 
               const header = el.closest('mat-expansion-panel-header') || el;
               const panel = header.closest('mat-expansion-panel, .panel, .accordion-item, .card');
               const isExpanded =
                 header.getAttribute('aria-expanded') === 'true' ||
                 (panel && (panel.classList.contains('mat-expanded') || panel.classList.contains('show')));
-              const alreadyHasTable =
-                norm(doc.body.innerText || '').includes('OT EXPIDE LIC') ||
-                norm(doc.body.innerText || '').includes('VER DETALLE');
+              const alreadyHasModal = norm(doc.body.innerText || '').includes('CATEGORIAS DE LA LICENCIA');
 
-              if (!isExpanded && !alreadyHasTable) {
+              if (!isExpanded && !alreadyHasModal) {
                 triggerClick(header);
               }
             });
@@ -181,6 +181,8 @@ class _RuntDriverLicenseWebViewScreenState
                   el.scrollIntoView({ behavior: 'instant', block: 'center' });
                   el.click();
                   el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+                  el.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+                  el.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, cancelable: true }));
                   break;
                 } catch (_) {}
               }
@@ -201,7 +203,7 @@ class _RuntDriverLicenseWebViewScreenState
             function norm(s) {
               return (s || '').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
             }
-            const t = norm(document.body ? document.body.innerText : '');
+            const t = norm(document.body ? (document.body.innerText || document.body.textContent || '') : '');
             if (t.includes('CATEGORIAS DE LA LICENCIA') ||
                 (t.includes('FECHA VENCIMIENTO') && /\b(A1|A2|B1|B2|B3|C1|C2|C3)\b/.test(t))) {
               return 'READY';
@@ -216,11 +218,10 @@ class _RuntDriverLicenseWebViewScreenState
         (function() {
           function textOf(el) {
             if (!el) return '';
-            const clone = el.cloneNode(true);
-            clone.querySelectorAll('mat-icon, .material-icons, .material-icons-outlined, svg').forEach(function(ic) {
-              ic.remove();
-            });
-            return (clone.innerText || clone.textContent || '');
+            return (el.innerText || el.textContent || '')
+              .replace(/\b(check_circle_outline|check_circle|car_crash|error_outline|cancel|warning|verified|info)\b/gi, '')
+              .replace(/\s+/g, ' ')
+              .trim();
           }
           function norm(s) { return (s || '').replace(/\s+/g, ' ').trim(); }
           function upper(s) {
@@ -235,24 +236,46 @@ class _RuntDriverLicenseWebViewScreenState
             raw_text: ''
           };
 
-          let parentEstado = '';
+          let parentEstado = 'ACTIVA';
           let parentNum = '';
           let parentOrg = '';
 
           function scrapeDoc(doc) {
             if (!doc || !doc.body) return;
-            const textChunk = textOf(doc.body);
-            if (textChunk) {
-              out.raw_text += (out.raw_text ? '\n' : '') + textChunk;
+            const fullBodyText = doc.body.innerText || doc.body.textContent || '';
+            if (fullBodyText) {
+              out.raw_text += (out.raw_text ? '\n' : '') + fullBodyText;
             }
 
+            // Capturar datos del conductor de bloques RUNTPRO
+            doc.querySelectorAll('div, p, span, tr, li, td').forEach(function(el) {
+              if (el.children.length > 2) return;
+              const txt = upper(el.innerText || el.textContent || '');
+              if (!out.nombre_conductor && (txt.includes('NOMBRE COMPLETO:') || txt.includes('NOMBRE:'))) {
+                const parts = txt.split(/NOMBRE(?:\s+COMPLETO)?\s*:\s*/);
+                if (parts[1]) out.nombre_conductor = norm(parts[1]).split('\n')[0].trim();
+              }
+              if (!out.numero_documento && (txt.includes('DOCUMENTO:') || txt.includes('C.C.'))) {
+                const m = txt.match(/\b\d{6,15}\b/);
+                if (m) out.numero_documento = m[0];
+              }
+              if (!out.estado_conductor && txt.includes('ESTADO DEL CONDUCTOR:')) {
+                const parts = txt.split(/ESTADO DEL CONDUCTOR\s*:\s*/);
+                if (parts[1]) out.estado_conductor = norm(parts[1]).split('\n')[0].trim();
+              }
+              if (!out.numero_inscripcion && (txt.includes('INSCRIPCION:') || txt.includes('INSCRIPCIÓN:'))) {
+                const m = txt.match(/\b\d{6,15}\b/);
+                if (m) out.numero_inscripcion = m[0];
+              }
+            });
+
             // Capturar overlays/diálogos de Angular Material explícitamente si no están en flujo normal
-            doc.querySelectorAll('mat-dialog-container, .cdk-overlay-container .mat-mdc-dialog-surface, .modal-content').forEach(function(dlg) {
-              const dt = textOf(dlg);
+            doc.querySelectorAll('mat-dialog-container, .cdk-overlay-container, .mat-mdc-dialog-surface, .modal-content').forEach(function(dlg) {
+              const dt = dlg.innerText || dlg.textContent || '';
               if (dt) out.raw_text += '\n' + dt;
             });
 
-            const tables = [...doc.querySelectorAll('table, mat-table, [role="table"]')];
+            const tables = [...doc.querySelectorAll('mat-dialog-container table, .cdk-overlay-container table, table, mat-table, [role="table"]')];
             // Primera pasada: capturar tabla principal "Licencia(s) de conducción"
             for (const t of tables) {
               const tUp = upper(textOf(t));
@@ -266,7 +289,7 @@ class _RuntDriverLicenseWebViewScreenState
                   const val = cols[idx] || '';
                   if (!val) return;
                   if ((h.includes('NRO') || h.includes('NUMERO')) && h.includes('LICENCIA') && !parentNum) parentNum = val;
-                  if (h === 'ESTADO' && !parentEstado) parentEstado = val;
+                  if (h === 'ESTADO' && val) parentEstado = val;
                   if ((h.includes('OT EXPIDE') || h.includes('ORGANISMO')) && !parentOrg) parentOrg = val;
                 });
               }
@@ -320,6 +343,8 @@ class _RuntDriverLicenseWebViewScreenState
                     rec.fecha_vencimiento = dates[0];
                   }
                 }
+
+                if (!rec.estado) rec.estado = parentEstado || 'ACTIVA';
 
                 if (rec.categoria && (rec.fecha_vencimiento || rec.fecha_expedicion)) {
                   out.licencias.push(rec);
