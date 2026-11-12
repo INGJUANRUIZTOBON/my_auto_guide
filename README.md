@@ -1,10 +1,10 @@
-# 🏎️ MY AUTO GUIDE (v1.2.11)
+# 🏎️ MY AUTO GUIDE (v1.2.12)
 > **Tu vehículo, bajo control inteligente.**  
 > Ecosistema integral de telemetría automotriz, navegación pro con GPS Kalman, catálogo cloud de Colombia, diagnóstico OBD2 y automatización RUNT.
 
 [![Flutter](https://img.shields.io/badge/Flutter-3.27.0-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev)
 [![Supabase](https://img.shields.io/badge/Supabase-Backend%20%26%20CDN-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com)
-[![Android](https://img.shields.io/badge/Android-APK%20v1.2.11-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://github.com/INGJUANRUIZTOBON/my_auto_guide/releases/download/1.1.0/app-release.apk)
+[![Android](https://img.shields.io/badge/Android-APK%20v1.2.12-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://github.com/INGJUANRUIZTOBON/my_auto_guide/releases/download/1.1.0/app-release.apk)
 [![License](https://img.shields.io/badge/Licencia-Privada%20%2F%20Comercial-FF6D00?style=for-the-badge)](LICENSE)
 
 ---
@@ -13,20 +13,20 @@
 
 Puedes descargar el instalador oficial de Android directamente desde el repositorio:
 
-[![Descargar APK](https://img.shields.io/badge/Descargar%20APK%20Oficial-v1.2.11%20(Build%2028)-00E5FF?style=for-the-badge&logo=android&logoColor=black)](https://github.com/INGJUANRUIZTOBON/my_auto_guide/releases/download/1.1.0/app-release.apk)
+[![Descargar APK](https://img.shields.io/badge/Descargar%20APK%20Oficial-v1.2.12%20(Build%2029)-00E5FF?style=for-the-badge&logo=android&logoColor=black)](https://github.com/INGJUANRUIZTOBON/my_auto_guide/releases/download/1.1.0/app-release.apk)
 
 - 📦 **Enlace directo de descarga**: [app-release.apk (GitHub Releases)](https://github.com/INGJUANRUIZTOBON/my_auto_guide/releases/download/1.1.0/app-release.apk)
 - 🚀 **Auto-Actualización OTA**: La app cuenta con motor Over-The-Air impulsado por Supabase. Al instalar esta versión, cualquier actualización futura se descargará e instalará automáticamente en tu teléfono.
 
 ---
 
-## 🌟 Novedades de la Versión 1.2.11
+## 🌟 Novedades de la Versión 1.2.12
 
-### 1. 🚗 Integración Masiva Autoland Colombia (24 Marcas y 52 Nuevos Modelos)
-- **14 Nuevas Marcas de Alta Gama y Comerciales**: Audi, BMW, Citroën, Cupra, Jeep, Jetour, Mercedes-Benz, Mini, Mitsubishi, Peugeot, Seat, Subaru, Tesla y Volvo con logos HD transparentes en la barra de selección.
-- **Recorte Holográfico Transparente en Fondo Oscuro**: 52 siluetas vectoriales y fotografías sin fondo procesadas con redes neuronales (`rembg` / `u2netp`), logrando un contraste perfecto en el garaje sin marcos blancos ni fotos toscas de concesionario.
-- **Deduplicación Inteligente por Línea**: Se omitieron duplicados por año o placas conforme a las directrices de diseño (solo 1 entrada por modelo icónico: CX-60, CX-90, Bronco, Tasman, Formentor, Model 3, etc.).
-- **Ficha Técnica y Fluidos Homologados**: Cilindraje exacto en CC, tipo de combustible (Gasolina, Híbrido, Eléctrico), potencia HP y especificación exacta de lubricante automotriz para mantenimiento predictivo.
+### 1. 🚗 Catálogo Nacional Masivo: Autoland + Autonal Colombia (32 Marcas y 87 Modelos)
+- **7 Nuevas Marcas Oficiales Agregadas**: Changan, Chery, Deepal, Haval, Honda (Línea Carros), JMC y Opel, con sus respectivos logos vectoriales HD y paleta de color oficial.
+- **35 Nuevos Modelos Exclusivos de Autonal**: Sin duplicar ninguno de los existentes (BYD Seagull, BYD Yuan Plus, Chery Tiggo 4, Suzuki Baleno, Suzuki Fronx, VW Golf, VW Voyage, Audi Q5, BMW X2, Ford Fiesta, Jeep Compass, etc.).
+- **Procesamiento Neuronal Transparente**: 100% de los vehículos con recorte limpio de fondo (`rembg` / `u2netp`) y márgenes balanceados para el garaje oscuro.
+- **Resolución de Error 42P10 en Supabase**: Script de migración con deduplicación y creación de índice único `(marca_id, tipo, linea)` para inserciones y actualizaciones idempotentes libres de conflicto.
 
 ### 2. 🌌 Animación Cinemática de Carga — Escaneo Láser Holográfico (60-120 FPS)
 - **Motor GPU nativo (`CustomPainter`)**: Efecto túnel de viento aerodinámico que recorre la silueta del vehículo con un haz láser neón vertical de izquierda a derecha.

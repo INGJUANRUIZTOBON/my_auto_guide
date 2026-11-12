@@ -46,6 +46,8 @@ class VehicleCatalogService {
       {'modelo': 'MONTANA', 'img': 'assets/carros/chevrolet/Montana.png'},
       {'modelo': 'COLORADO RS', 'img': 'assets/carros/chevrolet/colorado.png'},
       {'modelo': 'SILVERADO', 'img': 'assets/carros/chevrolet/silverado.png'},
+      {'modelo': 'CRUZE', 'img': 'assets/carros/chevrolet/chevrolet_cruze.png'},
+      {'modelo': 'JOY', 'img': 'assets/carros/chevrolet/chevrolet_joy.png'},
     ],
     'RENAULT': [
       {'modelo': 'DUSTER', 'img': 'assets/carros/renault/duster.png'},
@@ -55,6 +57,7 @@ class VehicleCatalogService {
       {'modelo': 'STEPWAY', 'img': 'assets/carros/renault/stepway.png'},
       {'modelo': 'KWID', 'img': 'assets/carros/renault/kwid.png'},
       {'modelo': 'KOLEOS', 'img': 'assets/carros/renault/koleos.png'},
+      {'modelo': 'ARKANA', 'img': 'assets/carros/renault/renault_arkana.png'},
     
       {'modelo': 'CAPTUR', 'img': 'assets/carros/renault/renault_captur.png'},
     ],
@@ -70,6 +73,7 @@ class VehicleCatalogService {
       {'modelo': 'K3 CROSS', 'img': 'assets/carros/kia/kia_k3_cross.png'},
       {'modelo': 'NIRO', 'img': 'assets/carros/kia/kia_niro.png'},
       {'modelo': 'TASMAN', 'img': 'assets/carros/kia/kia_tasman.png'},
+      {'modelo': 'SOLUTO', 'img': 'assets/carros/kia/kia_soluto.png'},
     ],
     'NISSAN': [
       {'modelo': 'VERSA', 'img': 'assets/carros/nissan/versa.png'},
@@ -87,6 +91,8 @@ class VehicleCatalogService {
       {'modelo': 'JIMNY', 'img': 'assets/carros/suzuki/jimny.png'},
     
       {'modelo': 'GRAND VITARA', 'img': 'assets/carros/suzuki/suzuki_grand_vitara.png'},
+      {'modelo': 'BALENO', 'img': 'assets/carros/suzuki/suzuki_baleno.png'},
+      {'modelo': 'FRONX', 'img': 'assets/carros/suzuki/suzuki_fronx.png'},
     ],
     'VOLKSWAGEN': [
       {'modelo': 'GOL', 'img': 'assets/carros/volkswagen/gol.png'},
@@ -95,6 +101,8 @@ class VehicleCatalogService {
     
       {'modelo': 'JETTA', 'img': 'assets/carros/volkswagen/volkswagen_jetta.png'},
       {'modelo': 'VIRTUS', 'img': 'assets/carros/volkswagen/volkswagen_virtus.png'},
+      {'modelo': 'GOLF', 'img': 'assets/carros/volkswagen/volkswagen_golf.png'},
+      {'modelo': 'VOYAGE', 'img': 'assets/carros/volkswagen/volkswagen_voyage.png'},
     ],
     'FORD': [
       {'modelo': 'RANGER', 'img': 'assets/carros/ford/ranger.png'},
@@ -107,24 +115,34 @@ class VehicleCatalogService {
       {'modelo': 'EDGE', 'img': 'assets/carros/ford/ford_edge.png'},
       {'modelo': 'F-150', 'img': 'assets/carros/ford/ford_f_150.png'},
       {'modelo': 'MAVERICK', 'img': 'assets/carros/ford/ford_maverick.png'},
+      {'modelo': 'FIESTA', 'img': 'assets/carros/ford/ford_fiesta.png'},
     ],
     'HYUNDAI': [
       {'modelo': 'HB20', 'img': 'assets/carros/hyundai/hb20.png'},
       {'modelo': 'TUCSON', 'img': 'assets/carros/hyundai/tucson.png'},
     
       {'modelo': 'CRETA', 'img': 'assets/carros/hyundai/hyundai_creta.png'},
+      {'modelo': 'HB20 GRAVITI', 'img': 'assets/carros/hyundai/hyundai_hb20_graviti.png'},
+      {'modelo': 'KONA', 'img': 'assets/carros/hyundai/hyundai_kona.png'},
+      {'modelo': 'STARIA', 'img': 'assets/carros/hyundai/hyundai_staria.png'},
     ],
     'BYD': [
       {'modelo': 'DOLPHIN MINI', 'img': 'assets/carros/byd/dolphin_mini.png'},
+      {'modelo': 'QIN PLUS', 'img': 'assets/carros/byd/byd_qin_plus.png'},
+      {'modelo': 'SEAGULL', 'img': 'assets/carros/byd/byd_seagull.png'},
       {'modelo': 'SONG PLUS', 'img': 'assets/carros/byd/song_plus.png'},
+      {'modelo': 'SONG PRO', 'img': 'assets/carros/byd/byd_song_pro.png'},
+      {'modelo': 'YUAN PLUS', 'img': 'assets/carros/byd/byd_yuan_plus.png'},
     ],
 
     'AUDI': [
       {'modelo': 'Q3', 'img': 'assets/carros/audi/audi_q3.png'},
+      {'modelo': 'Q5', 'img': 'assets/carros/audi/audi_q5.png'},
       {'modelo': 'S3', 'img': 'assets/carros/audi/audi_s3.png'},
     ],
     'CITROËN': [
       {'modelo': 'C3', 'img': 'assets/carros/citroen/citroen_c3.png'},
+      {'modelo': 'C3 AIRCROSS', 'img': 'assets/carros/citroen/citroen_c3_aircross.png'},
       {'modelo': 'C5 AIRCROSS', 'img': 'assets/carros/citroen/citroen_c5_aircross.png'},
     ],
     'CUPRA': [
@@ -132,6 +150,8 @@ class VehicleCatalogService {
     ],
     'JEEP': [
       {'modelo': 'WRANGLER UNLIMITED 4X4', 'img': 'assets/carros/jeep/jeep_wrangler_unlimited_4x4.png'},
+      {'modelo': 'COMPASS', 'img': 'assets/carros/jeep/jeep_compass.png'},
+      {'modelo': 'RENEGADE', 'img': 'assets/carros/jeep/jeep_renegade.png'},
     ],
     'JETOUR': [
       {'modelo': 'X70', 'img': 'assets/carros/jetour/jetour_x70.png'},
@@ -149,9 +169,11 @@ class VehicleCatalogService {
     ],
     'MINI': [
       {'modelo': 'COUNTRYMAN', 'img': 'assets/carros/mini/mini_countryman.png'},
+      {'modelo': 'COOPER', 'img': 'assets/carros/mini/mini_cooper.png'},
     ],
     'MITSUBISHI': [
       {'modelo': 'ECLIPSE CROSS', 'img': 'assets/carros/mitsubishi/mitsubishi_eclipse_cross.png'},
+      {'modelo': 'ASX', 'img': 'assets/carros/mitsubishi/mitsubishi_asx.png'},
     ],
     'PEUGEOT': [
       {'modelo': '208', 'img': 'assets/carros/peugeot/peugeot_208.png'},
@@ -160,6 +182,8 @@ class VehicleCatalogService {
     'SEAT': [
       {'modelo': 'ATECA', 'img': 'assets/carros/seat/seat_ateca.png'},
       {'modelo': 'TARRACO', 'img': 'assets/carros/seat/seat_tarraco.png'},
+      {'modelo': 'ARONA', 'img': 'assets/carros/seat/seat_arona.png'},
+      {'modelo': 'IBIZA', 'img': 'assets/carros/seat/seat_ibiza.png'},
     ],
     'SUBARU': [
       {'modelo': 'CROSSTREK', 'img': 'assets/carros/subaru/subaru_crosstrek.png'},
@@ -167,11 +191,35 @@ class VehicleCatalogService {
     ],
     'TESLA': [
       {'modelo': 'MODEL 3', 'img': 'assets/carros/tesla/tesla_model_3.png'},
+      {'modelo': 'MODEL Y', 'img': 'assets/carros/tesla/tesla_model_y.png'},
     ],
     'VOLVO': [
       {'modelo': 'EC40 RECHARGE ELÉCTRICO', 'img': 'assets/carros/volvo/volvo_ec40_recharge_el_ctrico.png'},
       {'modelo': 'XC40 RECHARGE', 'img': 'assets/carros/volvo/volvo_xc40_recharge.png'},
       {'modelo': 'XC60 RECHARGE', 'img': 'assets/carros/volvo/volvo_xc60_recharge.png'},
+    ],
+    'CHANGAN': [
+      {'modelo': 'CS-55 PLUS', 'img': 'assets/carros/changan/changan_cs_55_plus.png'},
+    ],
+    'CHERY': [
+      {'modelo': 'EQ7', 'img': 'assets/carros/chery/chery_eq7.png'},
+      {'modelo': 'TIGGO 4', 'img': 'assets/carros/chery/chery_tiggo_4.png'},
+    ],
+    'DEEPAL': [
+      {'modelo': 'S07', 'img': 'assets/carros/deepal/deepal_s07.png'},
+    ],
+    'HAVAL': [
+      {'modelo': 'H6', 'img': 'assets/carros/haval/haval_h6.png'},
+    ],
+    'HONDA': [
+      {'modelo': 'CR-V', 'img': 'assets/carros/honda/honda_cr_v.png'},
+      {'modelo': 'HR-V', 'img': 'assets/carros/honda/honda_hr_v.png'},
+    ],
+    'JMC': [
+      {'modelo': 'JMEV EV3', 'img': 'assets/carros/jmc/jmc_jmev_ev3.png'},
+    ],
+    'OPEL': [
+      {'modelo': 'ROCKS-E', 'img': 'assets/carros/opel/opel_rocks_e.png'},
     ],
   };
 

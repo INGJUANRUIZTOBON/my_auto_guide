@@ -1,0 +1,527 @@
+[
+  {
+    "brand": "AUDI",
+    "brand_slug": "audi",
+    "line": "Q5",
+    "full_model": "Audi Q5",
+    "asset_path": "assets/carros/audi/audi_q5.png",
+    "cdn_url": "https://iqdobggghorpuepuquhb.supabase.co/storage/v1/object/public/catalog-assets/assets/carros/audi/audi_q5.png",
+    "specs": {
+      "cc": 2000,
+      "fuel": "Híbrido",
+      "oil": "5W-30 Sintético API SP",
+      "hp": 125.0,
+      "year": 2025
+    }
+  },
+  {
+    "brand": "BMW",
+    "brand_slug": "bmw",
+    "line": "X2",
+    "full_model": "Bmw X2",
+    "asset_path": "assets/carros/bmw/bmw_x2.png",
+    "cdn_url": "https://iqdobggghorpuepuquhb.supabase.co/storage/v1/object/public/catalog-assets/assets/carros/bmw/bmw_x2.png",
+    "specs": {
+      "cc": 2000,
+      "fuel": "Gasolina",
+      "oil": "5W-30 Sintético API SP",
+      "hp": 125.0,
+      "year": 2022
+    }
+  },
+  {
+    "brand": "BYD",
+    "brand_slug": "byd",
+    "line": "Qin Plus",
+    "full_model": "Byd Qin Plus",
+    "asset_path": "assets/carros/byd/byd_qin_plus.png",
+    "cdn_url": "https://iqdobggghorpuepuquhb.supabase.co/storage/v1/object/public/catalog-assets/assets/carros/byd/byd_qin_plus.png",
+    "specs": {
+      "cc": 1500,
+      "fuel": "Híbrido",
+      "oil": "5W-30 Sintético API SP",
+      "hp": 125.0,
+      "year": 2024
+    }
+  },
+  {
+    "brand": "BYD",
+    "brand_slug": "byd",
+    "line": "Seagull",
+    "full_model": "Byd Seagull",
+    "asset_path": "assets/carros/byd/byd_seagull.png",
+    "cdn_url": "https://iqdobggghorpuepuquhb.supabase.co/storage/v1/object/public/catalog-assets/assets/carros/byd/byd_seagull.png",
+    "specs": {
+      "cc": 0,
+      "fuel": "Eléctrico",
+      "oil": "Líquido Refrigerante Batería EV",
+      "hp": 180.0,
+      "year": 2026
+    }
+  },
+  {
+    "brand": "BYD",
+    "brand_slug": "byd",
+    "line": "Song Pro",
+    "full_model": "Byd Song Pro",
+    "asset_path": "assets/carros/byd/byd_song_pro.png",
+    "cdn_url": "https://iqdobggghorpuepuquhb.supabase.co/storage/v1/object/public/catalog-assets/assets/carros/byd/byd_song_pro.png",
+    "specs": {
+      "cc": 1500,
+      "fuel": "Híbrido",
+      "oil": "5W-30 Sintético API SP",
+      "hp": 125.0,
+      "year": 2025
+    }
+  },
+  {
+    "brand": "BYD",
+    "brand_slug": "byd",
+    "line": "Yuan Plus",
+    "full_model": "Byd Yuan Plus",
+    "asset_path": "assets/carros/byd/byd_yuan_plus.png",
+    "cdn_url": "https://iqdobggghorpuepuquhb.supabase.co/storage/v1/object/public/catalog-assets/assets/carros/byd/byd_yuan_plus.png",
+    "specs": {
+      "cc": 0,
+      "fuel": "Eléctrico",
+      "oil": "Líquido Refrigerante Batería EV",
+      "hp": 180.0,
+      "year": 2026
+    }
+  },
+  {
+    "brand": "CHANGAN",
+    "brand_slug": "changan",
+    "line": "CS-55 Plus",
+    "full_model": "Changan CS-55 Plus",
+    "asset_path": "assets/carros/changan/changan_cs_55_plus.png",
+    "cdn_url": "https://iqdobggghorpuepuquhb.supabase.co/storage/v1/object/public/catalog-assets/assets/carros/changan/changan_cs_55_plus.png",
+    "specs": {
+      "cc": 1500,
+      "fuel": "Gasolina",
+      "oil": "0W-20 Sintético Dexos 1 / API SP",
+      "hp": 140.0,
+      "year": 2024
+    }
+  },
+  {
+    "brand": "CHERY",
+    "brand_slug": "chery",
+    "line": "EQ7",
+    "full_model": "Chery EQ7",
+    "asset_path": "assets/carros/chery/chery_eq7.png",
+    "cdn_url": "https://iqdobggghorpuepuquhb.supabase.co/storage/v1/object/public/catalog-assets/assets/carros/chery/chery_eq7.png",
+    "specs": {
+      "cc": 0,
+      "fuel": "Eléctrico",
+      "oil": "Líquido Refrigerante Batería EV",
+      "hp": 180.0,
+      "year": 2026
+    }
+  },
+  {
+    "brand": "CHERY",
+    "brand_slug": "chery",
+    "line": "Tiggo 4",
+    "full_model": "Chery Tiggo 4",
+    "asset_path": "assets/carros/chery/chery_tiggo_4.png",
+    "cdn_url": "https://iqdobggghorpuepuquhb.supabase.co/storage/v1/object/public/catalog-assets/assets/carros/chery/chery_tiggo_4.png",
+    "specs": {
+      "cc": 1500,
+      "fuel": "Híbrido",
+      "oil": "5W-30 Sintético API SP",
+      "hp": 125.0,
+      "year": 2025
+    }
+  },
+  {
+    "brand": "CHEVROLET",
+    "brand_slug": "chevrolet",
+    "line": "Cruze",
+    "full_model": "Chevrolet Cruze",
+    "asset_path": "assets/carros/chevrolet/chevrolet_cruze.png",
+    "cdn_url": "https://iqdobggghorpuepuquhb.supabase.co/storage/v1/object/public/catalog-assets/assets/carros/chevrolet/chevrolet_cruze.png",
+    "specs": {
+      "cc": 1800,
+      "fuel": "Híbrido",
+      "oil": "5W-30 Sintético API SP",
+      "hp": 125.0,
+      "year": 2015
+    }
+  },
+  {
+    "brand": "CHEVROLET",
+    "brand_slug": "chevrolet",
+    "line": "Joy",
+    "full_model": "Chevrolet Joy",
+    "asset_path": "assets/carros/chevrolet/chevrolet_joy.png",
+    "cdn_url": "https://iqdobggghorpuepuquhb.supabase.co/storage/v1/object/public/catalog-assets/assets/carros/chevrolet/chevrolet_joy.png",
+    "specs": {
+      "cc": 1400,
+      "fuel": "Híbrido",
+      "oil": "0W-20 Sintético Dexos 1 / API SP",
+      "hp": 140.0,
+      "year": 2023
+    }
+  },
+  {
+    "brand": "CITROËN",
+    "brand_slug": "citroen",
+    "line": "C3 Aircross",
+    "full_model": "Citroën C3 Aircross",
+    "asset_path": "assets/carros/citroen/citroen_c3_aircross.png",
+    "cdn_url": "https://iqdobggghorpuepuquhb.supabase.co/storage/v1/object/public/catalog-assets/assets/carros/citroen/citroen_c3_aircross.png",
+    "specs": {
+      "cc": 1000,
+      "fuel": "Gasolina",
+      "oil": "0W-20 Sintético Dexos 1 / API SP",
+      "hp": 140.0,
+      "year": 2025
+    }
+  },
+  {
+    "brand": "DEEPAL",
+    "brand_slug": "deepal",
+    "line": "S07",
+    "full_model": "Deepal S07",
+    "asset_path": "assets/carros/deepal/deepal_s07.png",
+    "cdn_url": "https://iqdobggghorpuepuquhb.supabase.co/storage/v1/object/public/catalog-assets/assets/carros/deepal/deepal_s07.png",
+    "specs": {
+      "cc": 1500,
+      "fuel": "Hibrido",
+      "oil": "5W-30 Sintético API SP",
+      "hp": 125.0,
+      "year": 2026
+    }
+  },
+  {
+    "brand": "FORD",
+    "brand_slug": "ford",
+    "line": "Fiesta",
+    "full_model": "Ford Fiesta",
+    "asset_path": "assets/carros/ford/ford_fiesta.png",
+    "cdn_url": "https://iqdobggghorpuepuquhb.supabase.co/storage/v1/object/public/catalog-assets/assets/carros/ford/ford_fiesta.png",
+    "specs": {
+      "cc": 1600,
+      "fuel": "Gasolina",
+      "oil": "5W-30 Sintético API SP",
+      "hp": 125.0,
+      "year": 2015
+    }
+  },
+  {
+    "brand": "HAVAL",
+    "brand_slug": "haval",
+    "line": "H6",
+    "full_model": "Haval H6",
+    "asset_path": "assets/carros/haval/haval_h6.png",
+    "cdn_url": "https://iqdobggghorpuepuquhb.supabase.co/storage/v1/object/public/catalog-assets/assets/carros/haval/haval_h6.png",
+    "specs": {
+      "cc": 1500,
+      "fuel": "Híbrido",
+      "oil": "0W-20 Sintético Dexos 1 / API SP",
+      "hp": 140.0,
+      "year": 2024
+    }
+  },
+  {
+    "brand": "HONDA",
+    "brand_slug": "honda",
+    "line": "CR-V",
+    "full_model": "Honda CR-V",
+    "asset_path": "assets/carros/honda/honda_cr_v.png",
+    "cdn_url": "https://iqdobggghorpuepuquhb.supabase.co/storage/v1/object/public/catalog-assets/assets/carros/honda/honda_cr_v.png",
+    "specs": {
+      "cc": 1500,
+      "fuel": "Gasolina",
+      "oil": "5W-30 Sintético API SP",
+      "hp": 125.0,
+      "year": 2025
+    }
+  },
+  {
+    "brand": "HONDA",
+    "brand_slug": "honda",
+    "line": "HR-V",
+    "full_model": "Honda HR-V",
+    "asset_path": "assets/carros/honda/honda_hr_v.png",
+    "cdn_url": "https://iqdobggghorpuepuquhb.supabase.co/storage/v1/object/public/catalog-assets/assets/carros/honda/honda_hr_v.png",
+    "specs": {
+      "cc": 1800,
+      "fuel": "Gasolina",
+      "oil": "5W-30 Sintético API SP",
+      "hp": 125.0,
+      "year": 2022
+    }
+  },
+  {
+    "brand": "HYUNDAI",
+    "brand_slug": "hyundai",
+    "line": "HB20 Graviti",
+    "full_model": "Hyundai HB20 Graviti",
+    "asset_path": "assets/carros/hyundai/hyundai_hb20_graviti.png",
+    "cdn_url": "https://iqdobggghorpuepuquhb.supabase.co/storage/v1/object/public/catalog-assets/assets/carros/hyundai/hyundai_hb20_graviti.png",
+    "specs": {
+      "cc": 1600,
+      "fuel": "Gasolina",
+      "oil": "5W-30 Sintético API SP",
+      "hp": 125.0,
+      "year": 2023
+    }
+  },
+  {
+    "brand": "HYUNDAI",
+    "brand_slug": "hyundai",
+    "line": "Kona",
+    "full_model": "Hyundai Kona",
+    "asset_path": "assets/carros/hyundai/hyundai_kona.png",
+    "cdn_url": "https://iqdobggghorpuepuquhb.supabase.co/storage/v1/object/public/catalog-assets/assets/carros/hyundai/hyundai_kona.png",
+    "specs": {
+      "cc": 1600,
+      "fuel": "Híbrido",
+      "oil": "5W-30 Sintético API SP",
+      "hp": 125.0,
+      "year": 2023
+    }
+  },
+  {
+    "brand": "HYUNDAI",
+    "brand_slug": "hyundai",
+    "line": "Staria",
+    "full_model": "Hyundai Staria",
+    "asset_path": "assets/carros/hyundai/hyundai_staria.png",
+    "cdn_url": "https://iqdobggghorpuepuquhb.supabase.co/storage/v1/object/public/catalog-assets/assets/carros/hyundai/hyundai_staria.png",
+    "specs": {
+      "cc": 2200,
+      "fuel": "Diésel",
+      "oil": "5W-30 Sintético Low SAPS DPF",
+      "hp": 170.0,
+      "year": 2024
+    }
+  },
+  {
+    "brand": "JEEP",
+    "brand_slug": "jeep",
+    "line": "Compass",
+    "full_model": "Jeep Compass",
+    "asset_path": "assets/carros/jeep/jeep_compass.png",
+    "cdn_url": "https://iqdobggghorpuepuquhb.supabase.co/storage/v1/object/public/catalog-assets/assets/carros/jeep/jeep_compass.png",
+    "specs": {
+      "cc": 1300,
+      "fuel": "Gasolina",
+      "oil": "0W-20 Sintético Dexos 1 / API SP",
+      "hp": 140.0,
+      "year": 2025
+    }
+  },
+  {
+    "brand": "JEEP",
+    "brand_slug": "jeep",
+    "line": "Renegade",
+    "full_model": "Jeep Renegade",
+    "asset_path": "assets/carros/jeep/jeep_renegade.png",
+    "cdn_url": "https://iqdobggghorpuepuquhb.supabase.co/storage/v1/object/public/catalog-assets/assets/carros/jeep/jeep_renegade.png",
+    "specs": {
+      "cc": 1800,
+      "fuel": "Gasolina",
+      "oil": "5W-30 Sintético API SP",
+      "hp": 125.0,
+      "year": 2022
+    }
+  },
+  {
+    "brand": "JMC",
+    "brand_slug": "jmc",
+    "line": "JMEV EV3",
+    "full_model": "Jmc JMEV EV3",
+    "asset_path": "assets/carros/jmc/jmc_jmev_ev3.png",
+    "cdn_url": "https://iqdobggghorpuepuquhb.supabase.co/storage/v1/object/public/catalog-assets/assets/carros/jmc/jmc_jmev_ev3.png",
+    "specs": {
+      "cc": 0,
+      "fuel": "Eléctrico",
+      "oil": "Líquido Refrigerante Batería EV",
+      "hp": 180.0,
+      "year": 2024
+    }
+  },
+  {
+    "brand": "KIA",
+    "brand_slug": "kia",
+    "line": "Soluto",
+    "full_model": "Kia Soluto",
+    "asset_path": "assets/carros/kia/kia_soluto.png",
+    "cdn_url": "https://iqdobggghorpuepuquhb.supabase.co/storage/v1/object/public/catalog-assets/assets/carros/kia/kia_soluto.png",
+    "specs": {
+      "cc": 1400,
+      "fuel": "Gasolina",
+      "oil": "0W-20 Sintético Dexos 1 / API SP",
+      "hp": 140.0,
+      "year": 2026
+    }
+  },
+  {
+    "brand": "MINI",
+    "brand_slug": "mini",
+    "line": "Cooper",
+    "full_model": "Mini Cooper",
+    "asset_path": "assets/carros/mini/mini_cooper.png",
+    "cdn_url": "https://iqdobggghorpuepuquhb.supabase.co/storage/v1/object/public/catalog-assets/assets/carros/mini/mini_cooper.png",
+    "specs": {
+      "cc": 1500,
+      "fuel": "Gasolina",
+      "oil": "5W-30 Sintético API SP",
+      "hp": 125.0,
+      "year": 2022
+    }
+  },
+  {
+    "brand": "MITSUBISHI",
+    "brand_slug": "mitsubishi",
+    "line": "ASX",
+    "full_model": "Mitsubishi ASX",
+    "asset_path": "assets/carros/mitsubishi/mitsubishi_asx.png",
+    "cdn_url": "https://iqdobggghorpuepuquhb.supabase.co/storage/v1/object/public/catalog-assets/assets/carros/mitsubishi/mitsubishi_asx.png",
+    "specs": {
+      "cc": 2000,
+      "fuel": "Gasolina",
+      "oil": "5W-30 Sintético API SP",
+      "hp": 125.0,
+      "year": 2024
+    }
+  },
+  {
+    "brand": "OPEL",
+    "brand_slug": "opel",
+    "line": "Rocks-e",
+    "full_model": "Opel Rocks-e",
+    "asset_path": "assets/carros/opel/opel_rocks_e.png",
+    "cdn_url": "https://iqdobggghorpuepuquhb.supabase.co/storage/v1/object/public/catalog-assets/assets/carros/opel/opel_rocks_e.png",
+    "specs": {
+      "cc": 0,
+      "fuel": "Eléctrico",
+      "oil": "Líquido Refrigerante Batería EV",
+      "hp": 180.0,
+      "year": 2025
+    }
+  },
+  {
+    "brand": "RENAULT",
+    "brand_slug": "renault",
+    "line": "Arkana",
+    "full_model": "Renault Arkana",
+    "asset_path": "assets/carros/renault/renault_arkana.png",
+    "cdn_url": "https://iqdobggghorpuepuquhb.supabase.co/storage/v1/object/public/catalog-assets/assets/carros/renault/renault_arkana.png",
+    "specs": {
+      "cc": 1300,
+      "fuel": "Híbrido",
+      "oil": "0W-20 Sintético Dexos 1 / API SP",
+      "hp": 140.0,
+      "year": 2026
+    }
+  },
+  {
+    "brand": "SEAT",
+    "brand_slug": "seat",
+    "line": "Arona",
+    "full_model": "Seat Arona",
+    "asset_path": "assets/carros/seat/seat_arona.png",
+    "cdn_url": "https://iqdobggghorpuepuquhb.supabase.co/storage/v1/object/public/catalog-assets/assets/carros/seat/seat_arona.png",
+    "specs": {
+      "cc": 1600,
+      "fuel": "Gasolina",
+      "oil": "5W-30 Sintético API SP",
+      "hp": 125.0,
+      "year": 2022
+    }
+  },
+  {
+    "brand": "SEAT",
+    "brand_slug": "seat",
+    "line": "Ibiza",
+    "full_model": "Seat Ibiza",
+    "asset_path": "assets/carros/seat/seat_ibiza.png",
+    "cdn_url": "https://iqdobggghorpuepuquhb.supabase.co/storage/v1/object/public/catalog-assets/assets/carros/seat/seat_ibiza.png",
+    "specs": {
+      "cc": 1600,
+      "fuel": "Gasolina",
+      "oil": "5W-30 Sintético API SP",
+      "hp": 125.0,
+      "year": 2026
+    }
+  },
+  {
+    "brand": "SUZUKI",
+    "brand_slug": "suzuki",
+    "line": "Baleno",
+    "full_model": "Suzuki Baleno",
+    "asset_path": "assets/carros/suzuki/suzuki_baleno.png",
+    "cdn_url": "https://iqdobggghorpuepuquhb.supabase.co/storage/v1/object/public/catalog-assets/assets/carros/suzuki/suzuki_baleno.png",
+    "specs": {
+      "cc": 1400,
+      "fuel": "Gasolina",
+      "oil": "0W-20 Sintético Dexos 1 / API SP",
+      "hp": 140.0,
+      "year": 2024
+    }
+  },
+  {
+    "brand": "SUZUKI",
+    "brand_slug": "suzuki",
+    "line": "Fronx",
+    "full_model": "Suzuki Fronx",
+    "asset_path": "assets/carros/suzuki/suzuki_fronx.png",
+    "cdn_url": "https://iqdobggghorpuepuquhb.supabase.co/storage/v1/object/public/catalog-assets/assets/carros/suzuki/suzuki_fronx.png",
+    "specs": {
+      "cc": 1500,
+      "fuel": "Híbrido",
+      "oil": "5W-30 Sintético API SP",
+      "hp": 125.0,
+      "year": 2026
+    }
+  },
+  {
+    "brand": "TESLA",
+    "brand_slug": "tesla",
+    "line": "Model Y",
+    "full_model": "Tesla Model Y",
+    "asset_path": "assets/carros/tesla/tesla_model_y.png",
+    "cdn_url": "https://iqdobggghorpuepuquhb.supabase.co/storage/v1/object/public/catalog-assets/assets/carros/tesla/tesla_model_y.png",
+    "specs": {
+      "cc": 0,
+      "fuel": "Eléctrico",
+      "oil": "Líquido Refrigerante Batería EV",
+      "hp": 180.0,
+      "year": 2026
+    }
+  },
+  {
+    "brand": "VOLKSWAGEN",
+    "brand_slug": "volkswagen",
+    "line": "Golf",
+    "full_model": "Volkswagen Golf",
+    "asset_path": "assets/carros/volkswagen/volkswagen_golf.png",
+    "cdn_url": "https://iqdobggghorpuepuquhb.supabase.co/storage/v1/object/public/catalog-assets/assets/carros/volkswagen/volkswagen_golf.png",
+    "specs": {
+      "cc": 1400,
+      "fuel": "Gasolina",
+      "oil": "0W-20 Sintético Dexos 1 / API SP",
+      "hp": 140.0,
+      "year": 2018
+    }
+  },
+  {
+    "brand": "VOLKSWAGEN",
+    "brand_slug": "volkswagen",
+    "line": "Voyage",
+    "full_model": "Volkswagen Voyage",
+    "asset_path": "assets/carros/volkswagen/volkswagen_voyage.png",
+    "cdn_url": "https://iqdobggghorpuepuquhb.supabase.co/storage/v1/object/public/catalog-assets/assets/carros/volkswagen/volkswagen_voyage.png",
+    "specs": {
+      "cc": 1600,
+      "fuel": "Gasolina",
+      "oil": "5W-30 Sintético API SP",
+      "hp": 125.0,
+      "year": 2022
+    }
+  }
+]
