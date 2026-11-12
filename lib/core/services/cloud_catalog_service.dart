@@ -186,9 +186,20 @@ class CloudCatalogService {
     return _getFallbackBrands(isMoto: isMoto);
   }
 
+  /// Normaliza el identificador de marca para tolerar nombres comerciales
+  static String normalizeMarcaId(String raw) {
+    final clean = raw.toLowerCase().trim();
+    if (clean.startsWith('akt')) return 'akt';
+    if (clean.startsWith('hero')) return 'hero';
+    if (clean.contains('royal')) return 'royal_enfield';
+    if (clean.startsWith('victory') || clean.startsWith('victori')) return 'victory';
+    if (clean.startsWith('bmw')) return 'bmw';
+    return clean;
+  }
+
   /// Obtiene modelos de una marca específica filtrados por tipo.
   Future<List<CatalogModel>> getModelsForBrand(String marcaId, {required bool isMoto}) async {
-    final cleanMarca = marcaId.toLowerCase().trim();
+    final cleanMarca = normalizeMarcaId(marcaId);
     final tipo = isMoto ? 'moto' : 'carro';
     final cacheKey = 'cloud_catalog_models_${cleanMarca}_$tipo';
 

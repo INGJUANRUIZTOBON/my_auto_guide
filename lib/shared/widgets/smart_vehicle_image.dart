@@ -39,12 +39,14 @@ class SmartVehicleImage extends StatelessWidget {
 
     // 1. Imagen de Red (Supabase Storage, CDN, URLs HTTP/HTTPS)
     if (raw.startsWith('http://') || raw.startsWith('https://')) {
+      final effectiveCacheWidth =
+          cacheWidth ?? (width != null ? (width! * 2).toInt() : 800);
       return Image.network(
         raw,
         width: width,
         height: height,
         fit: fit,
-        cacheWidth: cacheWidth ?? 800,
+        cacheWidth: effectiveCacheWidth,
         frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
           if (wasSynchronouslyLoaded || frame != null) return child;
           return _buildLoadingPlaceholder();

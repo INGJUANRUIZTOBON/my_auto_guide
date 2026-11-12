@@ -503,6 +503,7 @@ class _VehicleRegistrationViewState extends State<VehicleRegistrationView> {
                                       fit: BoxFit.contain,
                                       width: 48,
                                       height: 48,
+                                      isCar: widget.kind == VehicleKind.carro,
                                     ),
                                   ),
                                   const SizedBox(height: 4),
