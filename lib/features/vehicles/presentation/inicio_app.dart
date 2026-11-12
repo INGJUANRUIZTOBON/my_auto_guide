@@ -73,6 +73,7 @@ import '../../expenses/presentation/bitacora_tanqueo_screen.dart';
 import '../../../shared/widgets/simit_webview.dart';
 import '../../../shared/widgets/liquid_glass_fab.dart';
 import '../../../shared/widgets/app_snack_bar.dart';
+import '../../../shared/widgets/smart_vehicle_image.dart';
 import '../../../core/utils/formatters.dart';
 import 'captura_360_screen.dart';
 import '../../ai_bot/presentation/ai_chat_screen.dart';
@@ -3005,12 +3006,14 @@ class _MainHero extends StatelessWidget {
                         tag: 'vehicle_main_image',
                         child: has360 && images360.isNotEmpty
                             ? Interactive360Spinner(imageUrls: images360)
-                            : (imagePath.isNotEmpty
-                                ? Image.asset(imagePath,
-                                    fit: BoxFit.contain, cacheWidth: 800)
-                                : Icon(Icons.motorcycle,
-                                    size: 100,
-                                    color: brandTheme.primaryColor.withOpacity(0.2))),
+                            : SmartVehicleImage(
+                                imagePath: imagePath,
+                                fit: BoxFit.contain,
+                                cacheWidth: 800,
+                                isCar: imagePath.toLowerCase().contains('carro') ||
+                                    imagePath.toLowerCase().contains('carros/'),
+                                fallbackColor: brandTheme.primaryColor.withValues(alpha: 0.2),
+                              ),
                       ),
                       Positioned(
                         top: 0,

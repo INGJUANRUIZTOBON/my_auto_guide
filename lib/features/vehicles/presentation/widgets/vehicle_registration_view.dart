@@ -17,13 +17,15 @@
 // =============================================================================
 
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../../core/services/cloud_catalog_service.dart';
 import '../../../../core/services/insurance_catalog_service.dart';
 import '../../../../core/services/supabase_service.dart';
 import '../../../../core/services/vehicle_catalog_service.dart';
 import '../../../../shared/widgets/app_snack_bar.dart';
-import '../../domain/models/insurance_company_model.dart';
+import '../../../../shared/widgets/smart_vehicle_image.dart';
 import '../inicio_app.dart';
 import 'insurance_picker_sheet.dart';
 
@@ -62,10 +64,17 @@ class VehicleRegistrationView extends StatefulWidget {
 class _VehicleRegistrationViewState extends State<VehicleRegistrationView> {
   // Servicios
   final _catalogService = VehicleCatalogService();
+  final _cloudCatalog = CloudCatalogService();
 
   late final Map<String, List<Map<String, String>>> catalogo;
   late final Map<String, String> logos;
   late final Map<String, Color> brandColors;
+
+  List<CatalogBrand> _cloudBrands = [];
+  List<CatalogModel> _cloudModels = [];
+  bool _loadingCatalog = false;
+  bool _isManualMode = false;
+  String? _customImagePath;
 
   late String marcaSeleccionada;
   int indexModelo = 0;
@@ -76,13 +85,21 @@ class _VehicleRegistrationViewState extends State<VehicleRegistrationView> {
   final TextEditingController _apodoController = TextEditingController();
   final TextEditingController _placaController = TextEditingController();
   final TextEditingController _cedulaController = TextEditingController();
+  final TextEditingController _manualMarcaController = TextEditingController();
+  final TextEditingController _manualModeloController = TextEditingController();
 
   String _aseguradoraId = InsuranceCatalogService.noneId;
 
   final supabase = Supabase.instance.client;
 
-  List<Map<String, String>> get modelosDeMarca =>
-      catalogo[marcaSeleccionada] ?? const [];
+  List<Map<String, String>> get modelosDeMarca {
+    if (_cloudModels.isNotEmpty) {
+      return _cloudModels
+          .map((m) => {'modelo': m.modelo, 'img': m.imagenUrl})
+          .toList();
+    }
+    return catalogo[marcaSeleccionada] ?? const [];
+  }
 
   @override
   void initState() {
@@ -96,6 +113,48 @@ class _VehicleRegistrationViewState extends State<VehicleRegistrationView> {
     brandColors = _catalogService.getBrandColors();
     marcaSeleccionada = widget.kind.defaultBrand;
     _page = PageController(initialPage: indexModelo);
+
+    _inicializarCatalogoCloud();
+  }
+
+  Future<void> _inicializarCatalogoCloud() async {
+    final isMoto = widget.kind == VehicleKind.moto;
+    try {
+      final brands = await _cloudCatalog.getBrands(isMoto: isMoto);
+      if (mounted && brands.isNotEmpty) {
+        setState(() {
+          _cloudBrands = brands;
+          if (brands.any((b) => b.nombre.toUpperCase() == marcaSeleccionada)) {
+            final match = brands.firstWhere(
+                (b) => b.nombre.toUpperCase() == marcaSeleccionada);
+            marcaSeleccionada = match.nombre.toUpperCase();
+          } else {
+            marcaSeleccionada = brands.first.nombre.toUpperCase();
+          }
+        });
+        await _cargarModelosDeMarca(marcaSeleccionada);
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _cargarModelosDeMarca(String marca) async {
+    final isMoto = widget.kind == VehicleKind.moto;
+    setState(() => _loadingCatalog = true);
+    try {
+      final models = await _cloudCatalog.getModelsForBrand(marca, isMoto: isMoto);
+      if (mounted) {
+        setState(() {
+          _cloudModels = models;
+          indexModelo = 0;
+          _loadingCatalog = false;
+        });
+        if (_page.hasClients) {
+          _page.jumpToPage(0);
+        }
+      }
+    } catch (_) {
+      if (mounted) setState(() => _loadingCatalog = false);
+    }
   }
 
   @override
@@ -106,16 +165,70 @@ class _VehicleRegistrationViewState extends State<VehicleRegistrationView> {
     _apodoController.dispose();
     _placaController.dispose();
     _cedulaController.dispose();
+    _manualMarcaController.dispose();
+    _manualModeloController.dispose();
     super.dispose();
   }
 
-  void _cambiarMarca(String marca) {
+  Future<void> _cambiarMarca(String marca) async {
     if (marcaSeleccionada == marca) return;
     setState(() {
       marcaSeleccionada = marca;
       indexModelo = 0;
-      _page.jumpToPage(0);
+      if (_page.hasClients) {
+        _page.jumpToPage(0);
+      }
     });
+    await _cargarModelosDeMarca(marca);
+  }
+
+  Future<void> _seleccionarFotoPersonalizada() async {
+    final picker = ImagePicker();
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      backgroundColor: const Color(0xFF1C1C1E),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Selecciona la foto de tu vehículo',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: const Icon(Icons.camera_alt_rounded, color: Color(0xFF00E5FF)),
+                title: const Text('Tomar foto con la cámara', style: TextStyle(color: Colors.white)),
+                onTap: () => Navigator.pop(ctx, ImageSource.camera),
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library_rounded, color: Color(0xFF00FF87)),
+                title: const Text('Elegir de la galería', style: TextStyle(color: Colors.white)),
+                onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    if (source != null) {
+      final picked = await picker.pickImage(source: source, imageQuality: 85);
+      if (picked != null && mounted) {
+        setState(() {
+          _customImagePath = picked.path;
+        });
+      }
+    }
   }
 
   Future<void> _mostrarSelectorAseguradora() async {
@@ -145,10 +258,31 @@ class _VehicleRegistrationViewState extends State<VehicleRegistrationView> {
     final apodo = _apodoController.text.trim();
     final placa = _placaController.text.trim().toUpperCase();
     final cedula = _cedulaController.text.trim();
-    final modelo =
-        modelosDeMarca.isEmpty ? '' : modelosDeMarca[indexModelo]['modelo']!;
-    final imagePath =
-        modelosDeMarca.isEmpty ? '' : modelosDeMarca[indexModelo]['img']!;
+
+    final String marca;
+    final String modelo;
+    final String imagePath;
+
+    if (_isManualMode) {
+      marca = _manualMarcaController.text.trim().toUpperCase();
+      modelo = _manualModeloController.text.trim();
+      imagePath = _customImagePath ??
+          (widget.kind == VehicleKind.moto
+              ? 'assets/motos/bajaj/boxer-ct100.png'
+              : 'assets/carros/toyota/corolla.png');
+      if (marca.isEmpty || modelo.isEmpty) {
+        AppSnackBar.show(context, 'Por favor ingresa la marca y el modelo de tu vehículo');
+        return;
+      }
+    } else {
+      marca = marcaSeleccionada;
+      modelo = modelosDeMarca.isEmpty ? '' : modelosDeMarca[indexModelo]['modelo']!;
+      imagePath = modelosDeMarca.isEmpty ? '' : modelosDeMarca[indexModelo]['img']!;
+      if (modelo.isEmpty || imagePath.isEmpty) {
+        AppSnackBar.show(context, widget.kind.invalidSelectionMessage);
+        return;
+      }
+    }
 
     if (placa.isEmpty) {
       AppSnackBar.show(context, 'Por favor ingresa la ${widget.kind.plateLabel.toLowerCase()}');
@@ -158,15 +292,11 @@ class _VehicleRegistrationViewState extends State<VehicleRegistrationView> {
       AppSnackBar.show(context, 'Por favor ingresa la cédula del propietario');
       return;
     }
-    if (modelo.isEmpty || imagePath.isEmpty) {
-      AppSnackBar.show(context, widget.kind.invalidSelectionMessage);
-      return;
-    }
 
     try {
       final row = await SupabaseService().createVehicle(
         userId: user.id,
-        marca: marcaSeleccionada,
+        marca: marca,
         modelo: modelo,
         apodo: apodo,
         kms: kms,
@@ -251,93 +381,224 @@ class _VehicleRegistrationViewState extends State<VehicleRegistrationView> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                SizedBox(
-                  height: headerHeight,
-                  child: Row(
-                    children: [
-                      Column(
-                        children: [
-                          _SideTab(
-                            text: 'Carro',
-                            selected: widget.kind == VehicleKind.carro,
-                            onTap: widget.kind == VehicleKind.carro
-                                ? null
-                                : _irAOtroRegistro,
-                          ),
-                          _SideTab(
-                            text: 'Moto',
-                            selected: widget.kind == VehicleKind.moto,
-                            onTap: widget.kind == VehicleKind.moto
-                                ? null
-                                : _irAOtroRegistro,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: PageView.builder(
-                          controller: _page,
-                          itemCount: modelosDeMarca.length,
-                          onPageChanged: (i) => setState(() => indexModelo = i),
-                          itemBuilder: (context, i) {
-                            final img = modelosDeMarca[i]['img']!;
-                            return Hero(
-                              tag: 'vehicle_main_image',
-                              child: Image.asset(img, fit: BoxFit.contain),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text(modeloActual,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 18)),
-                const SizedBox(height: 12),
-                SizedBox(
-                  height: 100,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: logos.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 14),
-                    itemBuilder: (context, index) {
-                      final marca = logos.keys.elementAt(index);
-                      final selected = marcaSeleccionada == marca;
-                      final brandColor = brandColors[marca] ?? Colors.blue;
-                      return GestureDetector(
-                        onTap: () => _cambiarMarca(marca),
-                        child: Column(
+                if (!_isManualMode) ...[
+                  SizedBox(
+                    height: headerHeight,
+                    child: Row(
+                      children: [
+                        Column(
                           children: [
-                            Container(
-                              width: 64,
-                              height: 64,
-                              decoration: BoxDecoration(
-                                color: selected
-                                    ? brandColor.withOpacity(0.1)
-                                    : Colors.white,
-                                borderRadius: BorderRadius.circular(14),
-                                border: Border.all(
-                                    color: selected
-                                        ? brandColor
-                                        : Colors.grey.shade300,
-                                    width: 2),
-                              ),
-                              padding: const EdgeInsets.all(6),
-                              child: Image.asset(logos[marca]!,
-                                  fit: BoxFit.contain),
+                            _SideTab(
+                              text: 'Carro',
+                              selected: widget.kind == VehicleKind.carro,
+                              onTap: widget.kind == VehicleKind.carro
+                                  ? null
+                                  : _irAOtroRegistro,
                             ),
-                            Text(marca,
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: selected
-                                        ? brandColor
-                                        : Colors.black54)),
+                            _SideTab(
+                              text: 'Moto',
+                              selected: widget.kind == VehicleKind.moto,
+                              onTap: widget.kind == VehicleKind.moto
+                                  ? null
+                                  : _irAOtroRegistro,
+                            ),
                           ],
                         ),
-                      );
-                    },
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: _loadingCatalog
+                              ? const Center(
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Color(0xFF00E5FF),
+                                  ),
+                                )
+                              : PageView.builder(
+                                  controller: _page,
+                                  itemCount: modelosDeMarca.length,
+                                  onPageChanged: (i) =>
+                                      setState(() => indexModelo = i),
+                                  itemBuilder: (context, i) {
+                                    final img = modelosDeMarca[i]['img']!;
+                                    return Hero(
+                                      tag: 'vehicle_main_image',
+                                      child: SmartVehicleImage(
+                                        imagePath: img,
+                                        fit: BoxFit.contain,
+                                        isCar: widget.kind == VehicleKind.carro,
+                                      ),
+                                    );
+                                  },
+                                ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    modeloActual,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 18),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    height: 100,
+                    child: Builder(
+                      builder: (context) {
+                        final brandsList = _cloudBrands.isNotEmpty
+                            ? _cloudBrands
+                                .map((b) => b.nombre.toUpperCase())
+                                .toList()
+                            : logos.keys.toList();
+
+                        return ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: brandsList.length,
+                          separatorBuilder: (_, __) => const SizedBox(width: 14),
+                          itemBuilder: (context, index) {
+                            final marca = brandsList[index];
+                            final selected = marcaSeleccionada == marca;
+                            final brandColor = _cloudBrands.isNotEmpty
+                                ? _cloudBrands
+                                    .firstWhere(
+                                      (b) => b.nombre.toUpperCase() == marca,
+                                      orElse: () => _cloudBrands.first,
+                                    )
+                                    .color
+                                : (brandColors[marca] ?? Colors.blue);
+                            final logoPath = _cloudBrands.isNotEmpty
+                                ? _cloudBrands
+                                    .firstWhere(
+                                      (b) => b.nombre.toUpperCase() == marca,
+                                      orElse: () => _cloudBrands.first,
+                                    )
+                                    .logoUrl
+                                : (logos[marca] ?? '');
+
+                            return GestureDetector(
+                              onTap: () => _cambiarMarca(marca),
+                              child: Column(
+                                children: [
+                                  Container(
+                                    width: 64,
+                                    height: 64,
+                                    decoration: BoxDecoration(
+                                      color: selected
+                                          ? brandColor.withOpacity(0.1)
+                                          : Colors.white,
+                                      borderRadius: BorderRadius.circular(14),
+                                      border: Border.all(
+                                          color: selected
+                                              ? brandColor
+                                              : Colors.grey.shade300,
+                                          width: 2),
+                                    ),
+                                    padding: const EdgeInsets.all(6),
+                                    child: SmartVehicleImage(
+                                      imagePath: logoPath,
+                                      fit: BoxFit.contain,
+                                      width: 48,
+                                      height: 48,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    marca,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                      color: selected
+                                          ? brandColor
+                                          : (isDark
+                                              ? Colors.white70
+                                              : Colors.black54),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ] else ...[
+                  // Modo manual: Foto personalizada + Marca y modelo manual
+                  GestureDetector(
+                    onTap: _seleccionarFotoPersonalizada,
+                    child: Container(
+                      height: 180,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? Colors.white.withOpacity(0.05)
+                            : Colors.black.withOpacity(0.03),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: const Color(0xFF00E5FF).withOpacity(0.4),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: _customImagePath != null
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(16),
+                              child: SmartVehicleImage(
+                                imagePath: _customImagePath,
+                                fit: BoxFit.cover,
+                                isCar: widget.kind == VehicleKind.carro,
+                              ),
+                            )
+                          : Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.add_a_photo_rounded,
+                                    size: 46, color: Color(0xFF00E5FF)),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Toca para tomar o subir foto de tu vehículo',
+                                  style: TextStyle(
+                                    color: isDark
+                                        ? Colors.white70
+                                        : Colors.black54,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  _buildField(
+                    _manualMarcaController,
+                    'Marca del vehículo (ej. Royal Enfield, Bajaj, Renault)',
+                    Icons.branding_watermark_rounded,
+                  ),
+                  _buildField(
+                    _manualModeloController,
+                    'Línea o Modelo (ej. Himalayan 450, Duster)',
+                    Icons.directions_car_rounded,
+                  ),
+                ],
+                const SizedBox(height: 8),
+                TextButton.icon(
+                  onPressed: () {
+                    setState(() => _isManualMode = !_isManualMode);
+                  },
+                  icon: Icon(
+                    _isManualMode
+                        ? Icons.auto_awesome_rounded
+                        : Icons.edit_note_rounded,
+                    color: const Color(0xFF00E5FF),
+                  ),
+                  label: Text(
+                    _isManualMode
+                        ? 'Volver a seleccionar del catálogo'
+                        : '¿No encuentras tu modelo? Escríbelo manualmente',
+                    style: const TextStyle(
+                      color: Color(0xFF00E5FF),
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
