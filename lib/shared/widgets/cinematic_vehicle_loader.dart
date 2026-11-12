@@ -1,9 +1,9 @@
 import 'dart:convert';
-import 'dart:io';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../core/services/vehicle_catalog_service.dart';
 import 'cinematic_painters.dart';
 import 'smart_vehicle_image.dart';
 
@@ -334,6 +334,16 @@ class _CinematicVehicleLoaderState extends State<CinematicVehicleLoader>
         ? 'PLACA ${snap.placa.toUpperCase()} • TELEMETRÍA'
         : 'ECOSISTEMA VEHICULAR COLOMBIA';
 
+    final resolvedAvatarPath = (snap?.imagePath != null && snap!.imagePath!.isNotEmpty)
+        ? snap.imagePath!
+        : (hasSnap
+            ? VehicleCatalogService().resolveVehicleImage(
+                snap.marca,
+                snap.modelo,
+                isCar: snap.isCar,
+              )
+            : null);
+
     return Opacity(
       opacity: ignition,
       child: Column(
@@ -348,17 +358,21 @@ class _CinematicVehicleLoaderState extends State<CinematicVehicleLoader>
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (snap?.imagePath != null && snap!.imagePath!.isNotEmpty) ...[
+                if (resolvedAvatarPath != null && resolvedAvatarPath.isNotEmpty) ...[
                   ClipOval(
                     child: SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: _buildTinyAvatar(snap.imagePath!, snap.isCar),
+                      width: 22,
+                      height: 22,
+                      child: _buildTinyAvatar(resolvedAvatarPath, snap?.isCar ?? false),
                     ),
                   ),
                   const SizedBox(width: 8),
                 ] else ...[
-                  const Icon(Icons.shield_outlined, size: 15, color: Color(0xFF00E5FF)),
+                  Icon(
+                    snap?.isCar == true ? Icons.directions_car_rounded : Icons.two_wheeler_rounded,
+                    size: 16,
+                    color: const Color(0xFF00E5FF),
+                  ),
                   const SizedBox(width: 6),
                 ],
                 Text(
@@ -392,17 +406,50 @@ class _CinematicVehicleLoaderState extends State<CinematicVehicleLoader>
     return SmartVehicleImage(
       imagePath: path,
       isCar: isCar,
-      width: 18,
-      height: 18,
-      fit: BoxFit.cover,
+      width: 22,
+      height: 22,
+      fit: BoxFit.contain,
       fallbackColor: Colors.white70,
     );
   }
 
   Widget _buildVehicleVisual(bool showMoto) {
-    final asset = showMoto
+    final snap = _snapshot;
+    final candidatePath = (snap?.imagePath != null && snap!.imagePath!.isNotEmpty)
+        ? snap.imagePath!
+        : (snap != null
+            ? VehicleCatalogService().resolveVehicleImage(
+                snap.marca,
+                snap.modelo,
+                isCar: snap.isCar,
+              )
+            : null);
+
+    final fallbackAsset = showMoto
         ? 'assets/images/splash_moto.jpg'
         : 'assets/images/splash_car.jpg';
+
+    if (candidatePath != null && candidatePath.isNotEmpty) {
+      return ShaderMask(
+        shaderCallback: (rect) => const RadialGradient(
+          colors: [Colors.white, Colors.white, Colors.transparent],
+          stops: [0.0, 0.85, 1.0],
+        ).createShader(rect),
+        blendMode: BlendMode.dstIn,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: SmartVehicleImage(
+            imagePath: candidatePath,
+            isCar: !showMoto,
+            fit: BoxFit.contain,
+            customFallback: Image.asset(
+              fallbackAsset,
+              fit: BoxFit.cover,
+            ),
+          ),
+        ),
+      );
+    }
 
     return ShaderMask(
       shaderCallback: (rect) => const RadialGradient(
@@ -413,8 +460,8 @@ class _CinematicVehicleLoaderState extends State<CinematicVehicleLoader>
       child: AnimatedSwitcher(
         duration: const Duration(milliseconds: 600),
         child: Image.asset(
-          asset,
-          key: ValueKey(asset),
+          fallbackAsset,
+          key: ValueKey(fallbackAsset),
           fit: BoxFit.cover,
           cacheWidth: 900,
         ),

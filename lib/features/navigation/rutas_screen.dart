@@ -719,6 +719,7 @@ class _RutasScreenState extends State<RutasScreen>
 
       _fgKalman.reset();
 
+      await BackgroundNavService.initializeService();
       await BackgroundNavService.resetRouteStorage(
         initialPoint: _controller.telemetry.currentPos,
       );

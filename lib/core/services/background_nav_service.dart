@@ -36,11 +36,11 @@ class BackgroundNavService {
     await prefs.setInt(prefStartTimeKey, DateTime.now().millisecondsSinceEpoch);
   }
 
-  static Future<void> initializeService() async {
-    final service = FlutterBackgroundService();
+  static bool _isInitialized = false;
 
-    // Pequeño delay para asegurar que otros servicios (notificaciones) estén listos
-    await Future.delayed(const Duration(milliseconds: 500));
+  static Future<void> initializeService() async {
+    if (_isInitialized) return;
+    final service = FlutterBackgroundService();
 
     await service.configure(
       androidConfiguration: AndroidConfiguration(
@@ -58,6 +58,7 @@ class BackgroundNavService {
         onBackground: onIosBackground,
       ),
     );
+    _isInitialized = true;
   }
 
   @pragma('vm:entry-point')

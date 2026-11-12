@@ -15,7 +15,6 @@ import 'core/services/auth_service.dart';
 import 'core/providers/auth_provider.dart';
 import 'core/providers/vehicle_provider.dart';
 import 'core/services/sync_service.dart';
-import 'core/services/background_nav_service.dart';
 import 'core/logic/app_widget_logic.dart';
 import 'features/auth/login_screen.dart';
 import 'core/logic/performance_guard.dart';
@@ -75,7 +74,9 @@ Future<void> main() async {
     // 5. Inicializar Notificaciones y Zonas Horarias
     if (!kIsWeb) {
       await NotificationService().init();
-      await BackgroundNavService.initializeService();
+      // BackgroundNavService se inicializa bajo demanda (lazy) ÚNICAMENTE
+      // cuando el usuario inicia una ruta GPS en [RutasScreen], eliminando
+      // la notificación persistente fija de Foreground Service al abrir la app.
       await AppWidgetLogic.initializeWidgetInteraction();
       
       // Detener y limpiar cualquier servicio residual de GPS al arrancar para evitar notificaciones fijas
@@ -83,8 +84,7 @@ Future<void> main() async {
         final prefs = await SharedPreferences.getInstance();
         final isNavigating = prefs.getBool('is_navigating') ?? false;
         final service = FlutterBackgroundService();
-        if (!isNavigating || await service.isRunning()) {
-          await prefs.setBool('is_navigating', false);
+        if (!isNavigating && await service.isRunning()) {
           service.invoke('stopService');
         }
       } catch (_) {}
