@@ -78,5 +78,39 @@ void main() {
       expect(profile.vigentes.length, 2);
       expect(profile.earliestExpiration, DateTime(2031, 12, 1));
     });
+
+    test('Parses mobile stacked cards without colons and interleaved field labels', () {
+      const mobileCardDump = '''
+        NOMBRE COMPLETO
+        J****N D****O R****Z T****N
+        DOCUMENTO
+        C.C. 1002579736
+        ESTADO DEL CONDUCTOR
+        ACTIVO
+        NÚMERO DE INSCRIPCIÓN
+        20290929
+        Categorías de la licencia Nro: 1002579736
+        Categoría
+        A2
+        Fecha expedición
+        01/12/2021
+        Fecha vencimiento
+        01/12/2031
+        Categoría
+        B1
+        Fecha expedición
+        01/12/2021
+        Fecha vencimiento
+        01/12/2031
+      ''';
+
+      final profile = RuntDriverProfile.parseFromRawText(mobileCardDump);
+      expect(profile.nombreConductor, contains('R****Z'));
+      expect(profile.estadoConductor, 'ACTIVO');
+      expect(profile.numeroInscripcion, '20290929');
+      expect(profile.licencias.length, 2);
+      expect(profile.vigentes.length, 2);
+      expect(profile.earliestExpiration, DateTime(2031, 12, 1));
+    });
   });
 }

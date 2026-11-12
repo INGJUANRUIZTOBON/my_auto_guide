@@ -11,6 +11,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // VULN-01
 import '../logic/app_widget_logic.dart';
+import '../logic/gps_kalman_filter.dart';
 import '../../features/navigation/logic/telemetry_calculator.dart';
 
 class BackgroundNavService {
@@ -72,6 +73,14 @@ class BackgroundNavService {
     StreamSubscription<Position>? gpsSubscription;
 
     if (service is AndroidServiceInstance) {
+      try {
+        // Promover inmediatamente a Foreground Service para que Android 13/14/15
+        // no suspenda el GPS al apagar pantalla o bloquear el teléfono.
+        service.setAsForegroundService();
+      } catch (e) {
+        debugPrint('[BG_NAV] Aviso promoviendo a Foreground: $e');
+      }
+
       service.on('setAsForeground').listen((event) {
         service.setAsForegroundService();
       });
@@ -92,6 +101,7 @@ class BackgroundNavService {
     double maxSpeedKmH = 0.0;
     LatLng? lastPos;
     List<LatLng> routePoints = [];
+    final kalman = GpsKalmanFilter();
 
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -114,19 +124,13 @@ class BackgroundNavService {
       late LocationSettings locationSettings;
 
       if (defaultTargetPlatform == TargetPlatform.android) {
+        // FlutterBackgroundService ya administra el Foreground Service de tipo location;
+        // NO declarar otro ForegroundNotificationConfig aquí evita conflicto en Android 13/14/15.
         locationSettings = AndroidSettings(
           accuracy: LocationAccuracy.bestForNavigation,
-          distanceFilter: 4,
+          distanceFilter: 3,
           forceLocationManager: false,
           intervalDuration: const Duration(seconds: 2),
-          foregroundNotificationConfig: const ForegroundNotificationConfig(
-            notificationTitle: notificationTitle,
-            notificationText: 'Grabando tu ruta GPS con pantalla suspendida',
-            notificationChannelName: 'Seguimiento GPS en Ruta',
-            enableWakeLock: true,
-            enableWifiLock: true,
-            setOngoing: true,
-          ),
         );
       } else if (defaultTargetPlatform == TargetPlatform.iOS ||
           defaultTargetPlatform == TargetPlatform.macOS) {
@@ -179,25 +183,34 @@ class BackgroundNavService {
       gpsSubscription = Geolocator.getPositionStream(
         locationSettings: locationSettings,
       ).listen((Position position) async {
-        final currentPos = LatLng(position.latitude, position.longitude);
+        final rawPos = LatLng(position.latitude, position.longitude);
 
         // Filtrar rebotes de antena con mala precisión o saltos imposibles
         if (!TelemetryCalculator.isValidGpsSample(
           accuracyMeters: position.accuracy,
           previousPoint: lastPos,
-          nextPoint: currentPos,
+          nextPoint: rawPos,
         )) {
           return;
         }
 
-        if (lastPos != null) {
-          final distKm =
-              TelemetryCalculator.calculateIncrementalDistance(lastPos!, currentPos);
-          totalDistanceMeters += distKm * 1000.0;
-        }
+        final currentPos = kalman.process(
+          lat: rawPos.latitude,
+          lng: rawPos.longitude,
+          accuracyMeters: position.accuracy,
+          timestampMs: position.timestamp.millisecondsSinceEpoch,
+          speedMs: position.speed >= 0 ? position.speed : 0.0,
+        );
 
+        final distAnchor = routePoints.isNotEmpty ? routePoints.last : lastPos;
         final previousLength = routePoints.length;
         routePoints = TelemetryCalculator.optimizeRoutePoints(routePoints, currentPos);
+
+        if (distAnchor != null && routePoints.length != previousLength) {
+          final distKm =
+              TelemetryCalculator.calculateIncrementalDistance(distAnchor, currentPos);
+          totalDistanceMeters += distKm * 1000.0;
+        }
         lastPos = currentPos;
 
         final speedKmH = position.speed >= 0 ? position.speed * 3.6 : 0.0;
@@ -216,15 +229,17 @@ class BackgroundNavService {
         }
         await prefs.setDouble(prefTotalDistanceKey, totalDistanceKm);
         await prefs.setDouble(prefMaxSpeedKey, maxSpeedKmH);
-        await prefs.setDouble('nav_last_lat', position.latitude);
-        await prefs.setDouble('nav_last_lng', position.longitude);
+        await prefs.setDouble('nav_last_lat', currentPos.latitude);
+        await prefs.setDouble('nav_last_lng', currentPos.longitude);
 
         // PRIORIDAD 2: Notificar a la UI si está activa
         service.invoke('update', {
-          'lat': position.latitude,
-          'lng': position.longitude,
+          'lat': currentPos.latitude,
+          'lng': currentPos.longitude,
           'distance': totalDistanceKm,
           'speed': position.speed,
+          'heading': position.heading,
+          'accuracy': position.accuracy,
           'maxSpeedKmH': maxSpeedKmH,
           'pointsCount': routePoints.length,
         });
@@ -245,8 +260,8 @@ class BackgroundNavService {
             isTracking: true,
           );
           supabaseChannel?.track({
-            'lat': position.latitude,
-            'lng': position.longitude,
+            'lat': currentPos.latitude,
+            'lng': currentPos.longitude,
             'dist': totalDistanceKm,
             'ts': DateTime.now().millisecondsSinceEpoch,
             'speed': position.speed,

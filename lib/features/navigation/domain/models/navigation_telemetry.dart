@@ -5,8 +5,10 @@ class NavigationTelemetry {
   final LatLng? currentPos;
   final List<LatLng> travelledPoints;
   final double distanceKm;
+  final double currentSpeedKmH;
   final double maxSpeedKmH;
   final double averageSpeedKmH;
+  final double headingDegrees;
   final DateTime? startTime;
   final double fuelConsumptionGal;
   final double estimatedCost;
@@ -15,8 +17,10 @@ class NavigationTelemetry {
     this.currentPos,
     this.travelledPoints = const [],
     this.distanceKm = 0.0,
+    this.currentSpeedKmH = 0.0,
     this.maxSpeedKmH = 0.0,
     this.averageSpeedKmH = 0.0,
+    this.headingDegrees = 0.0,
     this.startTime,
     this.fuelConsumptionGal = 0.0,
     this.estimatedCost = 0.0,
@@ -26,8 +30,10 @@ class NavigationTelemetry {
     LatLng? currentPos,
     List<LatLng>? travelledPoints,
     double? distanceKm,
+    double? currentSpeedKmH,
     double? maxSpeedKmH,
     double? averageSpeedKmH,
+    double? headingDegrees,
     DateTime? startTime,
     double? fuelConsumptionGal,
     double? estimatedCost,
@@ -36,8 +42,10 @@ class NavigationTelemetry {
       currentPos: currentPos ?? this.currentPos,
       travelledPoints: travelledPoints ?? this.travelledPoints,
       distanceKm: distanceKm ?? this.distanceKm,
+      currentSpeedKmH: currentSpeedKmH ?? this.currentSpeedKmH,
       maxSpeedKmH: maxSpeedKmH ?? this.maxSpeedKmH,
       averageSpeedKmH: averageSpeedKmH ?? this.averageSpeedKmH,
+      headingDegrees: headingDegrees ?? this.headingDegrees,
       startTime: startTime ?? this.startTime,
       fuelConsumptionGal: fuelConsumptionGal ?? this.fuelConsumptionGal,
       estimatedCost: estimatedCost ?? this.estimatedCost,

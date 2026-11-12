@@ -349,35 +349,61 @@ class RuntDriverProfile {
       final colonIdx = line.indexOf(':');
       String keyPart = '';
       String valPart = '';
+      bool consumedNextLine = false;
       if (colonIdx > 0 && colonIdx < line.length - 1) {
         keyPart = normalizeKey(line.substring(0, colonIdx));
         valPart = line.substring(colonIdx + 1).trim();
       } else if (line.endsWith(':') && i + 1 < lines.length) {
         keyPart = normalizeKey(line.substring(0, line.length - 1));
         valPart = lines[i + 1].trim();
+        consumedNextLine = true;
+      } else if (i + 1 < lines.length &&
+          (up == 'NOMBRE COMPLETO' ||
+              up == 'DOCUMENTO' ||
+              up == 'NUMERO DE DOCUMENTO' ||
+              up == 'ESTADO DEL CONDUCTOR' ||
+              up == 'NUMERO DE INSCRIPCION' ||
+              up == 'CATEGORIA' ||
+              up == 'ESTADO' ||
+              up == 'FECHA EXPEDICION' ||
+              up == 'FECHA DE EXPEDICION' ||
+              up == 'FECHA VENCIMIENTO' ||
+              up == 'FECHA DE VENCIMIENTO')) {
+        keyPart = up;
+        valPart = lines[i + 1].trim();
+        consumedNextLine = true;
       }
 
       if (keyPart.isNotEmpty && valPart.isNotEmpty) {
+        void advanceIfStacked() {
+          if (consumedNextLine) i++;
+        }
+
         if ((keyPart.contains('NOMBRE') || keyPart.contains('APELLIDOS')) && nombre.isEmpty) {
           nombre = valPart;
+          advanceIfStacked();
           continue;
         }
         if ((keyPart.contains('NUMERO DE DOCUMENTO') || keyPart == 'DOCUMENTO') && documento.isEmpty) {
           documento = valPart;
+          advanceIfStacked();
           continue;
         }
         if (keyPart.contains('ESTADO DEL CONDUCTOR') && estadoConductor.isEmpty) {
           estadoConductor = valPart;
+          advanceIfStacked();
           continue;
         }
         if (keyPart.contains('INSCRIPCION') && inscripcion.isEmpty) {
           inscripcion = valPart;
+          advanceIfStacked();
           continue;
         }
         if (keyPart.contains('NUMERO DE LICENCIA') || keyPart == 'NRO. LICENCIA' || keyPart == 'LICENCIA') {
           if (curNum.isNotEmpty && curCat.isNotEmpty) flushCurrent();
           curNum = valPart;
           if (globalLicenseNum.isEmpty) globalLicenseNum = valPart;
+          advanceIfStacked();
           continue;
         }
         if (keyPart == 'CATEGORIA') {
@@ -386,23 +412,28 @@ class RuntDriverProfile {
             if (curCat.isNotEmpty) flushCurrent();
             curCat = m.group(1)!;
           }
+          advanceIfStacked();
           continue;
         }
         if (keyPart == 'ESTADO' || keyPart.contains('ESTADO LICENCIA')) {
           final st = extractLicenseState(valPart);
           if (st.isNotEmpty) curEstado = st;
+          advanceIfStacked();
           continue;
         }
         if (keyPart.contains('EXPEDICION')) {
           curExp = valPart;
+          advanceIfStacked();
           continue;
         }
         if (keyPart.contains('VENCIMIENTO') || keyPart.contains('VIGENCIA')) {
           curVen = valPart;
+          advanceIfStacked();
           continue;
         }
         if (keyPart.contains('ORGANISMO') || keyPart.contains('SECRETARIA')) {
           curOrg = valPart;
+          advanceIfStacked();
           continue;
         }
       }
@@ -425,25 +456,41 @@ class RuntDriverProfile {
       }
 
       // Caso móvil apilado: línea sola "A2" seguida de fecha expedición y fecha vencimiento
+      // (permite encabezados de celda intercalados como "Fecha expedición" / "Fecha vencimiento")
       if (strictCatLineRegex.hasMatch(up)) {
         final nextDates = <String>[];
-        for (int j = i + 1; j < lines.length && j <= i + 3; j++) {
+        for (int j = i + 1; j < lines.length && j <= i + 6; j++) {
           final lNext = lines[j];
           if (strictCatLineRegex.hasMatch(normalizeKey(lNext))) break;
           for (final dm in dateRegex.allMatches(lNext)) {
             nextDates.add(dm.group(0)!);
           }
+          if (nextDates.length >= 2) break;
         }
-        if (nextDates.isNotEmpty) {
+        if (nextDates.length >= 2) {
           records.add(
             DriverLicenseRecord(
               numeroLicencia: globalLicenseNum,
               categoria: up,
               estado: globalParentEstado,
-              fechaExpedicion: nextDates.length >= 2 ? nextDates.first : '',
+              fechaExpedicion: nextDates.first,
               fechaVencimiento: nextDates.last,
             ),
           );
+        } else if (nextDates.length == 1) {
+          // Solo asumir fecha única como vencimiento si no está inmediatamente después de etiqueta EXPEDICION
+          final prevUp = i + 1 < lines.length ? normalizeKey(lines[i + 1]) : '';
+          if (!prevUp.contains('EXPEDICION')) {
+            records.add(
+              DriverLicenseRecord(
+                numeroLicencia: globalLicenseNum,
+                categoria: up,
+                estado: globalParentEstado,
+                fechaExpedicion: '',
+                fechaVencimiento: nextDates.first,
+              ),
+            );
+          }
         }
       }
     }

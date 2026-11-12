@@ -5,6 +5,7 @@ import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../domain/models/navigation_telemetry.dart';
 import '../../logic/telemetry_calculator.dart';
+import 'package:my_auto_guide/core/logic/gps_kalman_filter.dart';
 import 'package:my_auto_guide/core/services/background_nav_service.dart';
 import 'package:my_auto_guide/core/services/navigation_service.dart';
 import 'package:my_auto_guide/core/services/voice_navigation_service.dart';
@@ -148,9 +149,42 @@ class NavigationController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateCurrentPosition(LatLng pos, {double? speedMs, double? bgDistanceKm}) {
+  void updateCurrentPosition(
+    LatLng pos, {
+    double? speedMs,
+    double? headingDegrees,
+    double? bgDistanceKm,
+  }) {
     final oldPos = _telemetry.currentPos;
-    
+
+    // Road Snapping estilo Waze cuando hay una ruta trazada activa
+    LatLng effectivePos = pos;
+    double resolvedHeading = _telemetry.headingDegrees;
+    if (_state == NavigationState.navigating && _routePoints.length >= 2) {
+      final snap = GpsMotionMath.snapToRoutePolyline(
+        position: pos,
+        routePoints: _routePoints,
+        maxSnapDistanceMeters: 18.0,
+      );
+      if (snap.snapped) {
+        effectivePos = snap.position;
+        if (snap.segmentBearingDegrees != null) {
+          resolvedHeading = snap.segmentBearingDegrees!;
+        }
+      }
+    }
+
+    // Calcular rumbo real (prioriza heading hardware válido si se mueve > 4 km/h, si no rumbo geométrico)
+    final double speedKmH = (speedMs != null && speedMs >= 0) ? speedMs * 3.6 : 0.0;
+    if (headingDegrees != null && headingDegrees > 0.0 && headingDegrees <= 360.0 && speedKmH >= 4.0) {
+      resolvedHeading = headingDegrees;
+    } else if (oldPos != null) {
+      final movedMeters = const Distance().as(LengthUnit.Meter, oldPos, effectivePos);
+      if (movedMeters >= 2.0) {
+        resolvedHeading = GpsMotionMath.calculateBearingDegrees(oldPos, effectivePos);
+      }
+    }
+
     // Actualizar puntos recorridos y distancia si estamos navegando
     List<LatLng> pts = _telemetry.travelledPoints;
     double dist = _telemetry.distanceKm;
@@ -158,16 +192,17 @@ class NavigationController extends ChangeNotifier {
     double avgSpeed = _telemetry.averageSpeedKmH;
 
     if (_state == NavigationState.navigating || _state == NavigationState.freeTracking) {
-      pts = TelemetryCalculator.optimizeRoutePoints(pts, pos);
-      
+      final distAnchor = pts.isNotEmpty ? pts.last : oldPos;
+      final prevLen = pts.length;
+      pts = TelemetryCalculator.optimizeRoutePoints(pts, effectivePos);
+
       if (bgDistanceKm != null && bgDistanceKm > dist) {
         dist = bgDistanceKm;
-      } else if (oldPos != null) {
-        dist += TelemetryCalculator.calculateIncrementalDistance(oldPos, pos);
+      } else if (distAnchor != null && pts.length != prevLen) {
+        dist += TelemetryCalculator.calculateIncrementalDistance(distAnchor, effectivePos);
       }
 
       if (speedMs != null && speedMs >= 0) {
-        final speedKmH = speedMs * 3.6;
         if (speedKmH > maxSpeed) maxSpeed = speedKmH;
         VoiceNavigationService().checkSpeedLimit(speedKmH);
       }
@@ -188,7 +223,7 @@ class NavigationController extends ChangeNotifier {
       // Umbral de 40 m: cubre curvas amplias y latencia de GPS urbano
       if (_steps.isNotEmpty && _currentStepIndex < _steps.length) {
         final stepLoc = _steps[_currentStepIndex].location;
-        final distToStep = const Distance().as(LengthUnit.Meter, pos, stepLoc);
+        final distToStep = const Distance().as(LengthUnit.Meter, effectivePos, stepLoc);
         if (distToStep < 40 && _currentStepIndex < _steps.length - 1) {
           _currentStepIndex++;
         }
@@ -197,7 +232,7 @@ class NavigationController extends ChangeNotifier {
       // Emisión de instrucciones por voz TTS
       if (_state == NavigationState.navigating && _steps.isNotEmpty) {
         VoiceNavigationService().processTelemetry(
-          currentPos: pos,
+          currentPos: effectivePos,
           steps: _steps,
           currentStepIndex: _currentStepIndex,
           destinationName: _destinationName,
@@ -206,16 +241,18 @@ class NavigationController extends ChangeNotifier {
     }
 
     _telemetry = _telemetry.copyWith(
-      currentPos: pos,
+      currentPos: effectivePos,
       travelledPoints: pts,
       distanceKm: dist,
+      currentSpeedKmH: speedMs != null && speedMs >= 0 ? speedKmH : _telemetry.currentSpeedKmH,
       maxSpeedKmH: maxSpeed,
       averageSpeedKmH: avgSpeed,
+      headingDegrees: resolvedHeading,
     );
 
     // Auto-completar si llegamos al destino (< 40 metros)
     if (_state == NavigationState.navigating && _destination != null) {
-      final distanceToEnd = const Distance().as(LengthUnit.Meter, pos, _destination!);
+      final distanceToEnd = const Distance().as(LengthUnit.Meter, effectivePos, _destination!);
       if (distanceToEnd < 40) {
         _state = NavigationState.completed;
       }
@@ -268,6 +305,7 @@ class NavigationController extends ChangeNotifier {
       final double lat = (event?['lat'] as num?)?.toDouble() ?? 0.0;
       final double lng = (event?['lng'] as num?)?.toDouble() ?? 0.0;
       final double speedMs = (event?['speed'] as num?)?.toDouble() ?? 0.0;
+      final double heading = (event?['heading'] as num?)?.toDouble() ?? 0.0;
       final double bgDistanceKm = (event?['distance'] as num?)?.toDouble() ?? 0.0;
       final int bgPointsCount = (event?['pointsCount'] as num?)?.toInt() ?? 0;
 
@@ -278,7 +316,12 @@ class NavigationController extends ChangeNotifier {
       }
 
       if (lat != 0.0 && lng != 0.0) {
-        updateCurrentPosition(LatLng(lat, lng), speedMs: speedMs, bgDistanceKm: bgDistanceKm);
+        updateCurrentPosition(
+          LatLng(lat, lng),
+          speedMs: speedMs,
+          headingDegrees: heading,
+          bgDistanceKm: bgDistanceKm,
+        );
       }
     });
   }

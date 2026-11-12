@@ -116,42 +116,101 @@ class _RuntDriverLicenseWebViewScreenState
     });
 
     try {
-      // Paso 1: Expandir paneles colapsados Y hacer clic automático en "Ver Detalle" para abrir el modal de categorías (A2, B1, C1...)
-      await _controller.runJavaScript('''
+      // Etapa 1: Expandir paneles "Licencia(s) de conducción" si están colapsados y llevarlos a vista
+      await _controller.runJavaScript(r'''
         (function() {
-          function prepareDoc(doc) {
+          function norm(s) {
+            return (s || '').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim();
+          }
+          function triggerClick(el) {
+            try {
+              el.scrollIntoView({ behavior: 'instant', block: 'center' });
+              el.click();
+              el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+            } catch (_) {}
+          }
+          function expandDoc(doc) {
             if (!doc || !doc.body) return;
-            const triggers = doc.querySelectorAll(
-              '[data-toggle="collapse"], [data-bs-toggle="collapse"], .panel-heading a, .accordion-button, mat-expansion-panel-header, [role="button"][aria-expanded]'
+            const candidates = doc.querySelectorAll(
+              'mat-expansion-panel-header, [data-toggle="collapse"], [data-bs-toggle="collapse"], .panel-heading, .panel-heading a, .accordion-button, .card-header, [role="button"][aria-expanded], button, h2, h3, h4, h5, span'
             );
-            triggers.forEach(function(el) {
-              const txt = (el.innerText || el.textContent || '').toUpperCase();
-              if (txt.includes('LICENCIA') || txt.includes('CONDUC') || txt.includes('DATOS')) {
-                if (el.getAttribute('aria-expanded') !== 'true') {
-                  try { el.click(); } catch (_) {}
-                }
+            candidates.forEach(function(el) {
+              const t = norm(el.innerText || el.textContent || '');
+              if (!(t.includes('LICENCIA(S) DE CONDUC') || t.includes('LICENCIAS DE CONDUC'))) return;
+              if (t.length > 90) return;
+
+              const header = el.closest('mat-expansion-panel-header') || el;
+              const panel = header.closest('mat-expansion-panel, .panel, .accordion-item, .card');
+              const isExpanded =
+                header.getAttribute('aria-expanded') === 'true' ||
+                (panel && (panel.classList.contains('mat-expanded') || panel.classList.contains('show')));
+              const alreadyHasTable =
+                norm(doc.body.innerText || '').includes('OT EXPIDE LIC') ||
+                norm(doc.body.innerText || '').includes('VER DETALLE');
+
+              if (!isExpanded && !alreadyHasTable) {
+                triggerClick(header);
               }
             });
-
-            const bodyText = (doc.body.innerText || '').toUpperCase();
-            if (!bodyText.includes('CATEGORIAS DE LA LICENCIA') && !bodyText.includes('CATEGORÍAS DE LA LICENCIA')) {
-              const clickables = doc.querySelectorAll('a, button, span[role="button"]');
-              for (const el of clickables) {
-                const t = (el.innerText || el.textContent || '').trim().toUpperCase();
-                if (t === 'VER DETALLE' || t.includes('VER DETALLE')) {
-                  try { el.click(); break; } catch (_) {}
-                }
-              }
-            }
           }
-          prepareDoc(document);
+          expandDoc(document);
           document.querySelectorAll('iframe').forEach(function(fr) {
-            try { if (fr.contentDocument) prepareDoc(fr.contentDocument); } catch (_) {}
+            try { if (fr.contentDocument) expandDoc(fr.contentDocument); } catch (_) {}
           });
         })();
       ''');
 
-      await Future.delayed(const Duration(milliseconds: 950));
+      await Future.delayed(const Duration(milliseconds: 650));
+
+      // Etapa 2: Abrir "Ver Detalle" para desplegar "Categorías de la licencia"
+      await _controller.runJavaScript(r'''
+        (function() {
+          function norm(s) {
+            return (s || '').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim();
+          }
+          function clickVerDetalle(doc) {
+            if (!doc || !doc.body) return;
+            const bodyUp = norm(doc.body.innerText || '');
+            if (bodyUp.includes('CATEGORIAS DE LA LICENCIA')) return;
+
+            const clickables = doc.querySelectorAll('a, button, span, u, div[role="button"], mat-icon, td a, mat-cell a');
+            for (const el of clickables) {
+              const t = norm(el.innerText || el.textContent || '');
+              if (t === 'VER DETALLE' || t.includes('VER DETALLE')) {
+                try {
+                  el.scrollIntoView({ behavior: 'instant', block: 'center' });
+                  el.click();
+                  el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+                  break;
+                } catch (_) {}
+              }
+            }
+          }
+          clickVerDetalle(document);
+          document.querySelectorAll('iframe').forEach(function(fr) {
+            try { if (fr.contentDocument) clickVerDetalle(fr.contentDocument); } catch (_) {}
+          });
+        })();
+      ''');
+
+      // Polling reactivo hasta 2.0s para esperar que Angular renderice mat-dialog-container
+      for (int attempt = 0; attempt < 8; attempt++) {
+        await Future.delayed(const Duration(milliseconds: 250));
+        final readyRaw = await _controller.runJavaScriptReturningResult(r'''
+          (function() {
+            function norm(s) {
+              return (s || '').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            }
+            const t = norm(document.body ? document.body.innerText : '');
+            if (t.includes('CATEGORIAS DE LA LICENCIA') ||
+                (t.includes('FECHA VENCIMIENTO') && /\b(A1|A2|B1|B2|B3|C1|C2|C3)\b/.test(t))) {
+              return 'READY';
+            }
+            return 'WAIT';
+          })();
+        ''');
+        if (readyRaw.toString().contains('READY')) break;
+      }
 
       const scraperJs = r'''
         (function() {
@@ -187,8 +246,14 @@ class _RuntDriverLicenseWebViewScreenState
               out.raw_text += (out.raw_text ? '\n' : '') + textChunk;
             }
 
+            // Capturar overlays/diálogos de Angular Material explícitamente si no están en flujo normal
+            doc.querySelectorAll('mat-dialog-container, .cdk-overlay-container .mat-mdc-dialog-surface, .modal-content').forEach(function(dlg) {
+              const dt = textOf(dlg);
+              if (dt) out.raw_text += '\n' + dt;
+            });
+
             const tables = [...doc.querySelectorAll('table, mat-table, [role="table"]')];
-            // Primera pasada: capturar tabla principal "Licencia(s) de conducción" (Estado ACTIVA, Nro licencia, OT Expide)
+            // Primera pasada: capturar tabla principal "Licencia(s) de conducción"
             for (const t of tables) {
               const tUp = upper(textOf(t));
               if (!tUp.includes('OT EXPIDE') && !tUp.includes('NRO LICENCIA') && !tUp.includes('RETENCION')) continue;
@@ -200,22 +265,30 @@ class _RuntDriverLicenseWebViewScreenState
                 headers.forEach((h, idx) => {
                   const val = cols[idx] || '';
                   if (!val) return;
-                  if ((h.includes('NRO LICENCIA') || h === 'NUMERO DE LICENCIA') && !parentNum) parentNum = val;
+                  if ((h.includes('NRO') || h.includes('NUMERO')) && h.includes('LICENCIA') && !parentNum) parentNum = val;
                   if (h === 'ESTADO' && !parentEstado) parentEstado = val;
                   if ((h.includes('OT EXPIDE') || h.includes('ORGANISMO')) && !parentOrg) parentOrg = val;
                 });
               }
             }
 
-            // Segunda pasada: capturar popup "Categorías de la licencia" (Categoría, Fecha expedición, Fecha vencimiento)
+            // Segunda pasada: capturar tabla "Categorías de la licencia" (con headers O posicional en móvil)
+            const catPattern = /^(A1|A2|B1|B2|B3|C1|C2|C3)$/;
+            const datePattern = /\b(\d{2}[\/\-]\d{2}[\/\-]\d{4}|\d{4}[\/\-]\d{2}[\/\-]\d{2})\b/;
             for (const t of tables) {
               const tUp = upper(textOf(t));
-              if (!tUp.includes('CATEGORIA') || !tUp.includes('VENCIMIENTO')) continue;
+              const looksLikeCategoryTable =
+                (tUp.includes('CATEGORIA') && (tUp.includes('VENCIMIENTO') || tUp.includes('EXPEDICION'))) ||
+                (datePattern.test(tUp) && /\b(A1|A2|B1|B2|B3|C1|C2|C3)\b/.test(tUp));
+              if (!looksLikeCategoryTable) continue;
+
               const headers = [...t.querySelectorAll('thead th, tr:first-child th, mat-header-cell, [role="columnheader"]')].map(h => upper(textOf(h)));
               const bodyRows = [...t.querySelectorAll('tbody tr, mat-row, [role="row"]')];
               for (const r of bodyRows) {
-                const cols = [...r.querySelectorAll('td, mat-cell, [role="cell"]')].map(c => norm(textOf(c)));
+                const cellNodes = [...r.querySelectorAll('td, mat-cell, [role="cell"]')];
+                const cols = cellNodes.map(c => norm(textOf(c)));
                 if (cols.length < 2) continue;
+
                 const rec = {
                   numero_licencia: parentNum,
                   categoria: '',
@@ -224,14 +297,30 @@ class _RuntDriverLicenseWebViewScreenState
                   fecha_vencimiento: '',
                   organismo_transito: parentOrg
                 };
-                headers.forEach((h, idx) => {
-                  const val = cols[idx] || '';
-                  if (!val) return;
-                  if (h === 'CATEGORIA' || (h.includes('CATEGORIA') && !h.includes('ANTIGUA'))) rec.categoria = val;
-                  else if (h.includes('EXPEDICION')) rec.fecha_expedicion = val;
-                  else if (h.includes('VENCIMIENTO') || h.includes('VIGENCIA')) rec.fecha_vencimiento = val;
-                  else if (h === 'ESTADO') rec.estado = val;
-                });
+
+                if (headers.length >= 2) {
+                  headers.forEach((h, idx) => {
+                    const val = cols[idx] || '';
+                    if (!val) return;
+                    if (h === 'CATEGORIA' || (h.includes('CATEGORIA') && !h.includes('ANTIGUA'))) rec.categoria = val;
+                    else if (h.includes('EXPEDICION')) rec.fecha_expedicion = val;
+                    else if (h.includes('VENCIMIENTO') || h.includes('VIGENCIA')) rec.fecha_vencimiento = val;
+                    else if (h === 'ESTADO') rec.estado = val;
+                  });
+                }
+
+                // Fallback si la tabla móvil oculta <thead> o usa columnas posicionales
+                if (!rec.categoria && catPattern.test(upper(cols[0]))) {
+                  rec.categoria = upper(cols[0]);
+                  const dates = cols.slice(1).filter(c => datePattern.test(c));
+                  if (dates.length >= 2) {
+                    rec.fecha_expedicion = dates[0];
+                    rec.fecha_vencimiento = dates[1];
+                  } else if (dates.length == 1) {
+                    rec.fecha_vencimiento = dates[0];
+                  }
+                }
+
                 if (rec.categoria && (rec.fecha_vencimiento || rec.fecha_expedicion)) {
                   out.licencias.push(rec);
                 }
@@ -252,10 +341,18 @@ class _RuntDriverLicenseWebViewScreenState
 
       if (parsed == null || parsed.licencias.isEmpty) {
         if (mounted) {
+          final hasPersonaVisible = parsed != null &&
+              (parsed.estadoConductor.isNotEmpty ||
+                  parsed.nombreConductor.isNotEmpty ||
+                  parsed.numeroInscripcion.isNotEmpty);
+          final msg = hasPersonaVisible
+              ? 'Conductor detectado (${parsed.nombreConductor.isNotEmpty ? parsed.nombreConductor : parsed.numeroDocumento}). Desplaza abajo, abre "Licencia(s) de conducción" → toca "Ver Detalle" y vuelve a presionar Extraer.'
+              : 'Completa primero la consulta en RUNT (documento, apellido, CAPTCHA y Consultar) hasta ver tu licencia.';
           AppSnackBar.show(
             context,
-            'Completa primero la consulta en RUNT (documento, apellido, CAPTCHA y Consultar) hasta ver tu licencia.',
+            msg,
             backgroundColor: Colors.orange,
+            duration: const Duration(seconds: 5),
           );
         }
         return;

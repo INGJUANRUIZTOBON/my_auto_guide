@@ -3,6 +3,7 @@
 // =============================================================================
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math' as math;
 import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
@@ -27,6 +28,7 @@ import '../../../core/services/navigation_service.dart';
 import '../../../core/services/voice_navigation_service.dart';
 import '../../../core/services/secure_storage_service.dart'; // VULN-01: almacenamiento cifrado
 import 'domain/models/navigation_telemetry.dart';
+import '../../../core/logic/gps_kalman_filter.dart';
 import 'logic/map_tile_config.dart';
 import 'logic/telemetry_calculator.dart';
 import 'presentation/controllers/navigation_controller.dart';
@@ -65,10 +67,18 @@ class _RutasScreenState extends State<RutasScreen>
   bool _isLoadingRoute = false;
   bool _isStartingNav = false;
   bool _autoFollow = true;
+  bool _followHeading = true;
   MapStyle? _mapStyle;
   String? _vehicleImagePath;
   PicoYPlacaStatus? _picoStatus;
-  
+
+  final GpsKalmanFilter _fgKalman = GpsKalmanFilter();
+  late AnimationController _markerGlideCtrl;
+  LatLng? _glideFromPos;
+  LatLng? _glideToPos;
+  double _glideFromHeading = 0.0;
+  double _glideToHeading = 0.0;
+
   List<NominatimPlace> _searchResults = [];
   bool _isSearching = false;
   Timer? _searchDebounce;
@@ -78,6 +88,10 @@ class _RutasScreenState extends State<RutasScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _markerGlideCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 850),
+    );
     _controller = NavigationController(
       vehicleId: widget.vehiculoId,
       vehicleModel: 'Vehículo',
@@ -85,7 +99,7 @@ class _RutasScreenState extends State<RutasScreen>
     );
     _controller.addListener(_onControllerStateUpdate);
     _obtenerUbicacionInicial();
-    _iniciarSeguimientoIdle();
+    _iniciarSeguimientoForeground();
     _cargarInfoVehiculo();
     CameraRadarService().startRadar();
     WazeCommunityAlertsService().initRealtimeAlerts();
@@ -99,12 +113,26 @@ class _RutasScreenState extends State<RutasScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.hidden) {
+      // Al suspender pantalla o pasar a segundo plano, el Foreground Service dedicado
+      // toma el control exclusivo del GPS para máxima autonomía y cero duplicidad.
+      final navState = _controller.state;
+      if (navState == NavigationState.navigating || navState == NavigationState.freeTracking) {
+        _idlePositionSubscription?.cancel();
+        _idlePositionSubscription = null;
+      }
+    } else if (state == AppLifecycleState.resumed) {
+      final navState = _controller.state;
+      final isActiveTrip =
+          navState == NavigationState.navigating || navState == NavigationState.freeTracking;
       unawaited(() async {
         await _controller.syncFromBackgroundStorage();
-        final pos = _controller.telemetry.currentPos;
-        if (mounted && _autoFollow && pos != null) {
-          _mapCtrl.move(pos, _mapCtrl.camera.zoom);
+        if (mounted) {
+          _iniciarSeguimientoForeground(isActiveTrip: isActiveTrip);
+          final pos = _controller.telemetry.currentPos;
+          if (_autoFollow && pos != null) {
+            _moveCameraWaze(pos, _controller.telemetry);
+          }
         }
       }());
     }
@@ -112,24 +140,74 @@ class _RutasScreenState extends State<RutasScreen>
 
   bool _isFinalizing = false;
 
-  void _onControllerStateUpdate() {
-    if (mounted) {
-      // Si la navegación finalizó automáticamente por arribo al destino (< 40m)
-      if (_controller.state == NavigationState.completed && !_isFinalizing) {
-        _finalizarRuta();
-      } else if (_autoFollow &&
-          (_controller.state == NavigationState.navigating ||
-              _controller.state == NavigationState.freeTracking) &&
-          _controller.telemetry.currentPos != null) {
-        _mapCtrl.move(_controller.telemetry.currentPos!, _mapCtrl.camera.zoom);
-      }
-      setState(() {});
+  LatLng? get _interpolatedPos {
+    final target = _controller.telemetry.currentPos;
+    if (_glideFromPos != null && _glideToPos != null) {
+      final curved = Curves.easeOutCubic.transform(_markerGlideCtrl.value);
+      return GpsMotionMath.lerpLatLng(_glideFromPos!, _glideToPos!, curved);
     }
+    return target;
+  }
+
+  double get _interpolatedHeading {
+    final curved = Curves.easeOutCubic.transform(_markerGlideCtrl.value);
+    return GpsMotionMath.lerpAngleDegrees(_glideFromHeading, _glideToHeading, curved);
+  }
+
+  void _moveCameraWaze(LatLng pos, NavigationTelemetry t) {
+    final activeTrip = _controller.state == NavigationState.navigating ||
+        _controller.state == NavigationState.freeTracking;
+    final targetZoom = activeTrip
+        ? math.max(_mapCtrl.camera.zoom, GpsMotionMath.recommendedZoomForSpeed(t.currentSpeedKmH))
+            .clamp(14.5, 17.6)
+            .toDouble()
+        : _mapCtrl.camera.zoom;
+
+    if (activeTrip && _followHeading && t.currentSpeedKmH >= 5.0) {
+      _mapCtrl.moveAndRotate(pos, targetZoom, -t.headingDegrees);
+    } else if (activeTrip && !_followHeading) {
+      _mapCtrl.moveAndRotate(pos, targetZoom, 0.0);
+    } else {
+      _mapCtrl.move(pos, _mapCtrl.camera.zoom);
+    }
+  }
+
+  void _onControllerStateUpdate() {
+    if (!mounted) return;
+    final t = _controller.telemetry;
+    final newPos = t.currentPos;
+
+    if (newPos != null) {
+      final prevPos = _interpolatedPos ?? newPos;
+      final prevHeading = _interpolatedHeading;
+      if (_glideToPos == null ||
+          prevPos.latitude != newPos.latitude ||
+          prevPos.longitude != newPos.longitude ||
+          (t.headingDegrees - _glideToHeading).abs() > 0.5) {
+        _glideFromPos = prevPos;
+        _glideToPos = newPos;
+        _glideFromHeading = prevHeading;
+        _glideToHeading = t.headingDegrees;
+        _markerGlideCtrl.forward(from: 0.0);
+      }
+    }
+
+    // Si la navegación finalizó automáticamente por arribo al destino (< 40m)
+    if (_controller.state == NavigationState.completed && !_isFinalizing) {
+      _finalizarRuta();
+    } else if (_autoFollow &&
+        (_controller.state == NavigationState.navigating ||
+            _controller.state == NavigationState.freeTracking) &&
+        newPos != null) {
+      _moveCameraWaze(newPos, t);
+    }
+    setState(() {});
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _markerGlideCtrl.dispose();
     _searchDebounce?.cancel();
     CameraRadarService().stopRadar();
     _controller.removeListener(_onControllerStateUpdate);
@@ -290,33 +368,61 @@ class _RutasScreenState extends State<RutasScreen>
     }
   }
 
-  void _iniciarSeguimientoIdle() {
+  void _iniciarSeguimientoForeground({bool isActiveTrip = false}) {
     _idlePositionSubscription?.cancel();
     late LocationSettings settings;
+    final distFilter = isActiveTrip ? 2 : 3;
+    final accuracy = isActiveTrip ? LocationAccuracy.bestForNavigation : LocationAccuracy.high;
+
     if (defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.macOS) {
       settings = AppleSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: 3,
+        accuracy: accuracy,
+        distanceFilter: distFilter,
         pauseLocationUpdatesAutomatically: false,
         allowBackgroundLocationUpdates: true,
         showBackgroundLocationIndicator: true,
       );
     } else if (defaultTargetPlatform == TargetPlatform.android) {
       settings = AndroidSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: 3,
-        intervalDuration: const Duration(seconds: 2),
+        accuracy: accuracy,
+        distanceFilter: distFilter,
+        forceLocationManager: false,
+        intervalDuration: Duration(seconds: isActiveTrip ? 1 : 2),
       );
     } else {
-      settings = const LocationSettings(accuracy: LocationAccuracy.high, distanceFilter: 3);
+      settings = LocationSettings(accuracy: accuracy, distanceFilter: distFilter);
     }
 
     _idlePositionSubscription = Geolocator.getPositionStream(
       locationSettings: settings,
-    ).listen((Position position) {
-      final latLng = LatLng(position.latitude, position.longitude);
-      _controller.updateCurrentPosition(latLng, speedMs: position.speed);
-    });
+    ).listen(
+      (Position position) {
+        final rawPos = LatLng(position.latitude, position.longitude);
+        final prevPos = _controller.telemetry.currentPos;
+        if (!TelemetryCalculator.isValidGpsSample(
+          accuracyMeters: position.accuracy,
+          previousPoint: prevPos,
+          nextPoint: rawPos,
+        )) {
+          return;
+        }
+        final smoothed = _fgKalman.process(
+          lat: rawPos.latitude,
+          lng: rawPos.longitude,
+          accuracyMeters: position.accuracy,
+          timestampMs: position.timestamp.millisecondsSinceEpoch,
+          speedMs: position.speed >= 0 ? position.speed : 0.0,
+        );
+        _controller.updateCurrentPosition(
+          smoothed,
+          speedMs: position.speed,
+          headingDegrees: position.heading,
+        );
+      },
+      onError: (Object error) {
+        debugPrint('[FG_GPS] Error temporal en stream GPS: $error');
+      },
+    );
   }
 
   // ─── ACCIONES DE BÚSQUEDA Y MAPA TÁCTIL ─────────────────
@@ -601,9 +707,7 @@ class _RutasScreenState extends State<RutasScreen>
       final canStart = await _ensureBackgroundLocationPermissions();
       if (!canStart || !mounted) return;
 
-      // Evitar listeners duplicados mientras corre el servicio en segundo plano
-      await _idlePositionSubscription?.cancel();
-      _idlePositionSubscription = null;
+      _fgKalman.reset();
 
       await BackgroundNavService.resetRouteStorage(
         initialPoint: _controller.telemetry.currentPos,
@@ -621,15 +725,24 @@ class _RutasScreenState extends State<RutasScreen>
 
       if (!(await service.isRunning())) {
         await service.startService();
-        await Future.delayed(const Duration(milliseconds: 600));
+        await Future.delayed(const Duration(milliseconds: 500));
       }
+      service.invoke('setAsForeground');
 
       _autoFollow = true;
       _controller.startNavigation(isFree: isFree);
 
+      // Stream activo de alta frecuencia (1s + Kalman) en primer plano para movimiento fluido
+      // inmediato aunque el sistema restrinja eventos IPC del Isolate en segundo plano.
+      _iniciarSeguimientoForeground(isActiveTrip: true);
+
       final curPos = _controller.telemetry.currentPos;
       if (curPos != null) {
-        _mapCtrl.move(curPos, 16.5);
+        _mapCtrl.moveAndRotate(
+          curPos,
+          16.8,
+          _followHeading ? -_controller.telemetry.headingDegrees : 0.0,
+        );
       }
     } finally {
       _isStartingNav = false;
@@ -756,7 +869,8 @@ class _RutasScreenState extends State<RutasScreen>
     }
 
     _controller.clearRouteAndReset();
-    _iniciarSeguimientoIdle();
+    _fgKalman.reset();
+    _iniciarSeguimientoForeground(isActiveTrip: false);
     _isFinalizing = false;
   }
 
@@ -764,7 +878,7 @@ class _RutasScreenState extends State<RutasScreen>
     setState(() => _autoFollow = true);
     final curPos = _controller.telemetry.currentPos;
     if (curPos != null) {
-      _mapCtrl.move(curPos, 16.5);
+      _moveCameraWaze(curPos, _controller.telemetry);
     }
   }
 
@@ -998,6 +1112,32 @@ class _RutasScreenState extends State<RutasScreen>
                     ),
                     const SizedBox(height: 10),
                     FloatingActionButton.small(
+                      heroTag: 'btn_heading_mode',
+                      tooltip: _followHeading ? 'Modo Brújula Waze' : 'Norte Arriba',
+                      backgroundColor: const Color(0xFF1C1C1E).withOpacity(0.9),
+                      onPressed: () {
+                        setState(() {
+                          _followHeading = !_followHeading;
+                          _autoFollow = true;
+                        });
+                        final curPos = _controller.telemetry.currentPos;
+                        if (curPos != null) {
+                          _moveCameraWaze(curPos, _controller.telemetry);
+                        }
+                        AppSnackBar.show(
+                          context,
+                          _followHeading ? 'Cámara Waze (rumbo arriba)' : 'Cámara Norte fijo',
+                          duration: const Duration(seconds: 2),
+                        );
+                      },
+                      child: Icon(
+                        Icons.explore_rounded,
+                        color: _followHeading ? const Color(0xFF00E5FF) : Colors.white54,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    FloatingActionButton.small(
                       heroTag: 'btn_recenter_map',
                       backgroundColor: const Color(0xFF1C1C1E).withOpacity(0.9),
                       onPressed: _recenterMap,
@@ -1089,32 +1229,52 @@ class _RutasScreenState extends State<RutasScreen>
               color: const Color(0xFF00FF87),
             ),
           ]),
-        MarkerLayer(markers: [
-          if (_controller.destination != null)
-            Marker(
-              point: _controller.destination!,
-              width: 48,
-              height: 48,
-              child: const Icon(
-                Icons.location_on,
-                color: Colors.redAccent,
-                size: 44,
-                shadows: [
-                  Shadow(
-                    color: Colors.black45,
-                    blurRadius: 8,
-                    offset: Offset(0, 4),
+        MarkerLayer(
+          rotate: true,
+          markers: [
+            if (_controller.destination != null)
+              Marker(
+                point: _controller.destination!,
+                width: 48,
+                height: 48,
+                child: const Icon(
+                  Icons.location_on,
+                  color: Colors.redAccent,
+                  size: 44,
+                  shadows: [
+                    Shadow(
+                      color: Colors.black45,
+                      blurRadius: 8,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+        if (t.currentPos != null)
+          AnimatedBuilder(
+            animation: _markerGlideCtrl,
+            builder: (context, _) {
+              final animatedPos = _interpolatedPos ?? t.currentPos!;
+              final animatedHeading = _interpolatedHeading;
+              final isMoving = t.currentSpeedKmH >= 3.0;
+              return MarkerLayer(
+                markers: [
+                  Marker(
+                    point: animatedPos,
+                    width: 64,
+                    height: 64,
+                    child: PulsingLocationMarker(
+                      imagePath: _vehicleImagePath,
+                      headingDegrees: animatedHeading,
+                      isMoving: isMoving,
+                    ),
                   ),
                 ],
-              ),
-            ),
-          Marker(
-            point: t.currentPos!,
-            width: 45,
-            height: 45,
-            child: PulsingLocationMarker(imagePath: _vehicleImagePath),
+              );
+            },
           ),
-        ]),
         StreamBuilder<List<WazeIncidentReport>>(
           stream: WazeCommunityAlertsService().incidentsStream,
           initialData: WazeCommunityAlertsService().currentIncidents,
@@ -1209,7 +1369,7 @@ class _RutasScreenState extends State<RutasScreen>
               );
             }).toList();
 
-            return MarkerLayer(markers: markers);
+            return MarkerLayer(rotate: true, markers: markers);
           },
         ),
       ],
@@ -1703,7 +1863,16 @@ class _RutasScreenState extends State<RutasScreen>
 
 class PulsingLocationMarker extends StatefulWidget {
   final String? imagePath;
-  const PulsingLocationMarker({super.key, this.imagePath});
+  final double headingDegrees;
+  final bool isMoving;
+
+  const PulsingLocationMarker({
+    super.key,
+    this.imagePath,
+    this.headingDegrees = 0.0,
+    this.isMoving = false,
+  });
+
   @override
   State<PulsingLocationMarker> createState() => _PulsingLocationMarkerState();
 }
@@ -1728,6 +1897,7 @@ class _PulsingLocationMarkerState extends State<PulsingLocationMarker> with Sing
 
   @override
   Widget build(BuildContext context) {
+    final headingRad = widget.headingDegrees * math.pi / 180.0;
     return AnimatedBuilder(
       animation: _animCtrl,
       builder: (context, child) {
@@ -1735,26 +1905,51 @@ class _PulsingLocationMarkerState extends State<PulsingLocationMarker> with Sing
           alignment: Alignment.center,
           children: [
             Container(
-              width: 44 * _animCtrl.value,
-              height: 44 * _animCtrl.value,
+              width: 50 * _animCtrl.value,
+              height: 50 * _animCtrl.value,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF00C6FF).withOpacity(1.0 - _animCtrl.value),
+                color: const Color(0xFF00E5FF).withOpacity((1.0 - _animCtrl.value) * 0.65),
+              ),
+            ),
+            Transform.rotate(
+              angle: headingRad,
+              child: SizedBox(
+                width: 60,
+                height: 60,
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: Icon(
+                    Icons.navigation_rounded,
+                    size: widget.isMoving ? 18 : 14,
+                    color: widget.isMoving
+                        ? const Color(0xFF00FF87)
+                        : const Color(0xFF00E5FF),
+                    shadows: const [
+                      Shadow(color: Colors.black87, blurRadius: 6),
+                    ],
+                  ),
+                ),
               ),
             ),
             Container(
-              width: 32,
-              height: 32,
+              width: 34,
+              height: 34,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: Colors.white,
-                border: Border.all(color: const Color(0xFF00C6FF), width: 1.5),
+                border: Border.all(
+                  color: widget.isMoving
+                      ? const Color(0xFF00FF87)
+                      : const Color(0xFF00C6FF),
+                  width: 2.0,
+                ),
                 boxShadow: const [
                   BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 4,
+                    color: Colors.black38,
+                    blurRadius: 6,
                     offset: Offset(0, 2),
-                  )
+                  ),
                 ],
               ),
               child: ClipOval(

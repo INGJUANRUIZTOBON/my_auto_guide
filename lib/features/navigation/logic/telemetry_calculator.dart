@@ -99,7 +99,7 @@ class TelemetryCalculator {
     LatLng? previousPoint,
     required LatLng nextPoint,
   }) {
-    if (previousPoint != null && accuracyMeters > 35.0) {
+    if (previousPoint != null && accuracyMeters > 65.0) {
       return false;
     }
     if (previousPoint != null) {
