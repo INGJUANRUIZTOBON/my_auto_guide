@@ -226,11 +226,14 @@ class AppWidgetLogic {
   static Future<void> backgroundCallback(Uri? uri) async {
     if (uri?.host == 'toggle_tracking') {
       final service = FlutterBackgroundService();
+      final prefs = await SharedPreferences.getInstance();
       bool running = await service.isRunning();
       
       if (running) {
+        await prefs.setBool('is_navigating', false);
         service.invoke('stopService');
       } else {
+        await prefs.setBool('is_navigating', true);
         await service.startService();
       }
     }

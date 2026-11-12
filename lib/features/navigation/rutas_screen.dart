@@ -214,6 +214,16 @@ class _RutasScreenState extends State<RutasScreen>
     _idlePositionSubscription?.cancel();
     _searchCtrl.dispose();
     _searchFocusNode.dispose();
+
+    // Detener servicio en segundo plano y limpiar notificación persistente al salir de la pantalla
+    try {
+      final service = FlutterBackgroundService();
+      service.invoke('stopService');
+      SharedPreferences.getInstance().then((prefs) {
+        prefs.setBool('is_navigating', false);
+      });
+    } catch (_) {}
+
     super.dispose();
   }
 

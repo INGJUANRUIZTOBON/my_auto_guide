@@ -78,15 +78,14 @@ Future<void> main() async {
       await BackgroundNavService.initializeService();
       await AppWidgetLogic.initializeWidgetInteraction();
       
-      // Detener servicio en segundo plano si quedó activo sin navegación en curso para no dejar la notificación fija
+      // Detener y limpiar cualquier servicio residual de GPS al arrancar para evitar notificaciones fijas
       try {
+        final prefs = await SharedPreferences.getInstance();
+        final isNavigating = prefs.getBool('is_navigating') ?? false;
         final service = FlutterBackgroundService();
-        if (await service.isRunning()) {
-          final prefs = await SharedPreferences.getInstance();
-          final isNavigating = prefs.getBool('is_navigating') ?? false;
-          if (!isNavigating) {
-            service.invoke('stopService');
-          }
+        if (!isNavigating || await service.isRunning()) {
+          await prefs.setBool('is_navigating', false);
+          service.invoke('stopService');
         }
       } catch (_) {}
 

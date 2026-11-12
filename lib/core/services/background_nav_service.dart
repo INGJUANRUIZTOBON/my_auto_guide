@@ -46,7 +46,7 @@ class BackgroundNavService {
       androidConfiguration: AndroidConfiguration(
         onStart: onStart,
         autoStart: false,
-        isForegroundMode: true,
+        isForegroundMode: false,
         notificationChannelId: channelId,
         initialNotificationTitle: notificationTitle,
         initialNotificationContent: 'Preparando seguimiento GPS...',
@@ -70,12 +70,29 @@ class BackgroundNavService {
     WidgetsFlutterBinding.ensureInitialized();
     DartPluginRegistrant.ensureInitialized();
 
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.reload();
+    final isNavigating = prefs.getBool('is_navigating') ?? false;
+
+    // Si el servicio fue invocado o reiniciado por el sistema sin navegación activa,
+    // abortar inmediatamente y no mostrar ninguna notificación persistente.
+    if (!isNavigating) {
+      if (kDebugMode) {
+        debugPrint('[BG_NAV] Servicio arrancado sin navegación activa. Auto-deteniendo.');
+      }
+      if (service is AndroidServiceInstance) {
+        try {
+          service.setAsBackgroundService();
+        } catch (_) {}
+      }
+      service.stopSelf();
+      return;
+    }
+
     StreamSubscription<Position>? gpsSubscription;
 
     if (service is AndroidServiceInstance) {
       try {
-        // Promover inmediatamente a Foreground Service para que Android 13/14/15
-        // no suspenda el GPS al apagar pantalla o bloquear el teléfono.
         service.setAsForegroundService();
       } catch (e) {
         debugPrint('[BG_NAV] Aviso promoviendo a Foreground: $e');
@@ -93,6 +110,11 @@ class BackgroundNavService {
     service.on('stopService').listen((event) async {
       await gpsSubscription?.cancel();
       gpsSubscription = null;
+      if (service is AndroidServiceInstance) {
+        try {
+          service.setAsBackgroundService();
+        } catch (_) {}
+      }
       AppWidgetLogic.updateWidget(distance: 0, isTracking: false);
       service.stopSelf();
     });
