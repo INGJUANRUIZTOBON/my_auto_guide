@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'cinematic_painters.dart';
+import 'smart_vehicle_image.dart';
 
 /// Snapshot ligero en caché para mostrar marca/tipo/foto real del usuario desde el frame 0 al abrir la app.
 class BootVehicleSnapshot {
@@ -388,27 +389,13 @@ class _CinematicVehicleLoaderState extends State<CinematicVehicleLoader>
   }
 
   Widget _buildTinyAvatar(String path, bool isCar) {
-    if (path.startsWith('http://') || path.startsWith('https://')) {
-      return Image.network(
-        path,
-        fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) =>
-            Icon(isCar ? Icons.directions_car : Icons.two_wheeler, size: 14, color: Colors.white),
-      );
-    }
-    if (path.startsWith('assets/')) {
-      return Image.asset(
-        path,
-        fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) =>
-            Icon(isCar ? Icons.directions_car : Icons.two_wheeler, size: 14, color: Colors.white),
-      );
-    }
-    return Image.file(
-      File(path),
+    return SmartVehicleImage(
+      imagePath: path,
+      isCar: isCar,
+      width: 18,
+      height: 18,
       fit: BoxFit.cover,
-      errorBuilder: (_, __, ___) =>
-          Icon(isCar ? Icons.directions_car : Icons.two_wheeler, size: 14, color: Colors.white),
+      fallbackColor: Colors.white70,
     );
   }
 
