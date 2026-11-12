@@ -420,14 +420,18 @@ class _VehicleRegistrationViewState extends State<VehicleRegistrationView> {
                                       setState(() => indexModelo = i),
                                   itemBuilder: (context, i) {
                                     final img = modelosDeMarca[i]['img']!;
-                                    return Hero(
-                                      tag: 'vehicle_main_image',
-                                      child: SmartVehicleImage(
-                                        imagePath: img,
-                                        fit: BoxFit.contain,
-                                        isCar: widget.kind == VehicleKind.carro,
-                                      ),
+                                    final imageWidget = SmartVehicleImage(
+                                      imagePath: img,
+                                      fit: BoxFit.contain,
+                                      isCar: widget.kind == VehicleKind.carro,
                                     );
+                                    // Solo el modelo activo porta el Hero tag para evitar conflicto en el PageView
+                                    return i == indexModelo
+                                        ? Hero(
+                                            tag: 'vehicle_main_image',
+                                            child: imageWidget,
+                                          )
+                                        : imageWidget;
                                   },
                                 ),
                         ),

@@ -78,16 +78,40 @@ class SmartVehicleImage extends StatelessWidget {
         height: height,
         fit: fit,
         cacheWidth: cacheWidth ?? 800,
-        errorBuilder: (context, error, stackTrace) => _buildFallback(),
+        errorBuilder: (context, error, stackTrace) =>
+            _buildRemoteFallback(raw),
       );
     }
 
-    // Si no coincide con ninguno, intenta asset como última opción o fallback
+    // Si no coincide con ninguno, intenta asset como última opción o fallback OTA
+    final fallbackAsset = 'assets/$raw';
     return Image.asset(
-      'assets/$raw',
+      fallbackAsset,
       width: width,
       height: height,
       fit: fit,
+      errorBuilder: (context, error, stackTrace) =>
+          _buildRemoteFallback(fallbackAsset),
+    );
+  }
+
+  /// Fallback Over-The-Air (OTA) resiliente:
+  /// Si el asset local no existe en el APK instalado (ej. versión previa o actualización en caliente),
+  /// lo descargamos directamente del CDN de Supabase Storage.
+  Widget _buildRemoteFallback(String assetPath) {
+    final cleanPath = assetPath.startsWith('/') ? assetPath.substring(1) : assetPath;
+    final remoteUrl =
+        'https://iqdobggghorpuepuquhb.supabase.co/storage/v1/object/public/catalog-assets/$cleanPath';
+    return Image.network(
+      remoteUrl,
+      width: width,
+      height: height,
+      fit: fit,
+      cacheWidth: cacheWidth ?? 800,
+      frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+        if (wasSynchronouslyLoaded || frame != null) return child;
+        return _buildLoadingPlaceholder();
+      },
       errorBuilder: (context, error, stackTrace) => _buildFallback(),
     );
   }

@@ -135,22 +135,6 @@ flutter:
     - assets/furgon.png
     - assets/lineasfondo.png
     - assets/logos/
-    - assets/motos/akt/
-    - assets/motos/bajaj/
-    - assets/motos/bmw/
-    - assets/motos/hero/
-    - assets/motos/honda/
-    - assets/motos/kawasaki/
-    - assets/motos/ktm/
-    - assets/motos/suzuki/
-    - assets/motos/tvs/
-    - assets/motos/victori/
-    - assets/motos/yamaha/
-    - assets/carros/chevrolet/
-    - assets/carros/kia/
-    - assets/carros/mazda/
-    - assets/carros/renault/
-    - assets/carros/toyota/
 
 flutter_launcher_icons:
   android: true
