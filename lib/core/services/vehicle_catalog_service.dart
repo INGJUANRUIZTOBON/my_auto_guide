@@ -93,7 +93,8 @@ class VehicleCatalogService {
       {'modelo': 'GRAND VITARA', 'img': 'assets/carros/suzuki/suzuki_grand_vitara.png'},
       {'modelo': 'BALENO', 'img': 'assets/carros/suzuki/suzuki_baleno.png'},
       {'modelo': 'FRONX', 'img': 'assets/carros/suzuki/suzuki_fronx.png'},
-    ],
+          {'modelo': 'UR110', 'img': 'assets/motos/suzuki/suzuki_ur110.png'},
+],
     'VOLKSWAGEN': [
       {'modelo': 'GOL', 'img': 'assets/carros/volkswagen/gol.png'},
       {'modelo': 'T-CROSS', 'img': 'assets/carros/volkswagen/tcross.png'},
@@ -214,7 +215,9 @@ class VehicleCatalogService {
     'HONDA': [
       {'modelo': 'CR-V', 'img': 'assets/carros/honda/honda_cr_v.png'},
       {'modelo': 'HR-V', 'img': 'assets/carros/honda/honda_hr_v.png'},
-    ],
+          {'modelo': 'Dio DLX 2 0', 'img': 'assets/motos/honda/honda_dio_dlx_2_0.png'},
+      {'modelo': 'Cb 125F', 'img': 'assets/motos/honda/honda_cb_125f.png'},
+],
     'JMC': [
       {'modelo': 'JMEV EV3', 'img': 'assets/carros/jmc/jmc_jmev_ev3.png'},
     ],
@@ -253,6 +256,56 @@ class VehicleCatalogService {
 
   // --- MOTO CATALOG ---
   final Map<String, List<Map<String, String>>> _motoCatalog = {
+    'BENELLI': [
+      {'modelo': 'TRK 251', 'img': 'assets/motos/benelli/benelli_trk_251.png'},
+      {'modelo': 'TNT 25N', 'img': 'assets/motos/benelli/benelli_tnt_25n.png'},
+      {'modelo': 'TNT 135', 'img': 'assets/motos/benelli/benelli_tnt_135.png'},
+      {'modelo': '180 S', 'img': 'assets/motos/benelli/benelli_180_s.png'},
+    ],
+    'FRATELLI': [
+      {'modelo': 'Veloce 125', 'img': 'assets/motos/fratelli/fratelli_veloce_125.png'},
+    ],
+    'KYMCO': [
+      {'modelo': 'Agility Fusion TK', 'img': 'assets/motos/kymco/kymco_agility_fusion_tk.png'},
+      {'modelo': 'Agility Digital 3.0 AT', 'img': 'assets/motos/kymco/kymco_agility_digital_3_0_at.png'},
+      {'modelo': 'Agility RS Naked', 'img': 'assets/motos/kymco/kymco_agility_rs_naked.png'},
+      {'modelo': 'Twist', 'img': 'assets/motos/kymco/kymco_twist.png'},
+    ],
+    'ROYAL ENFIELD': [
+      {'modelo': 'Hntr 350', 'img': 'assets/motos/royal_enfield/royal_enfield_hntr_350.png'},
+    ],
+    'SYM': [
+      {'modelo': 'XC15WX', 'img': 'assets/motos/sym/sym_xc15wx.png'},
+    ],
+    'VICTORY': [
+      {'modelo': 'Combat 100', 'img': 'assets/motos/victory/victory_combat_100.png'},
+      {'modelo': 'MRX150 CBS TK', 'img': 'assets/motos/victory/victory_mrx150_cbs_tk.png'},
+      {'modelo': 'MRX125 S TK', 'img': 'assets/motos/victory/victory_mrx125_s_tk.png'},
+      {'modelo': 'MRX125 S TK F', 'img': 'assets/motos/victory/victory_mrx125_s_tk_f.png'},
+      {'modelo': 'Nitro 125 Facelift TK', 'img': 'assets/motos/victory/victory_nitro_125_facelift_tk.png'},
+      {'modelo': 'One ST 100', 'img': 'assets/motos/victory/victory_one_st_100.png'},
+      {'modelo': 'MRX 125 S', 'img': 'assets/motos/victory/victory_mrx_125_s.png'},
+      {'modelo': 'Hunter 150', 'img': 'assets/motos/victory/victory_hunter_150.png'},
+      {'modelo': 'Advance X1', 'img': 'assets/motos/victory/victory_advance_x1.png'},
+      {'modelo': 'MRX 200', 'img': 'assets/motos/victory/victory_mrx_200.png'},
+      {'modelo': 'Bomber 125', 'img': 'assets/motos/victory/victory_bomber_125.png'},
+      {'modelo': 'MRX125 TK', 'img': 'assets/motos/victory/victory_mrx125_tk.png'},
+      {'modelo': 'One MP', 'img': 'assets/motos/victory/victory_one_mp.png'},
+      {'modelo': 'MRX200 Fox TK', 'img': 'assets/motos/victory/victory_mrx200_fox_tk.png'},
+      {'modelo': 'One MP TK', 'img': 'assets/motos/victory/victory_one_mp_tk.png'},
+      {'modelo': 'MRX150 Fox TK', 'img': 'assets/motos/victory/victory_mrx150_fox_tk.png'},
+      {'modelo': 'New Life 125 TK', 'img': 'assets/motos/victory/victory_new_life_125_tk.png'},
+      {'modelo': 'MRX 125 Camo', 'img': 'assets/motos/victory/victory_mrx_125_camo.png'},
+      {'modelo': 'Bomber 125 TK MT', 'img': 'assets/motos/victory/victory_bomber_125_tk_mt.png'},
+      {'modelo': 'Life 125', 'img': 'assets/motos/victory/victory_life_125.png'},
+      {'modelo': 'MRX 125', 'img': 'assets/motos/victory/victory_mrx_125.png'},
+      {'modelo': 'Black', 'img': 'assets/motos/victory/victory_black.png'},
+      {'modelo': 'MRX Arizona Xplore', 'img': 'assets/motos/victory/victory_mrx_arizona_xplore.png'},
+      {'modelo': 'New Black', 'img': 'assets/motos/victory/victory_new_black.png'},
+      {'modelo': 'One ST 100 Silver', 'img': 'assets/motos/victory/victory_one_st_100_silver.png'},
+      {'modelo': 'Bomber 250', 'img': 'assets/motos/victory/victory_bomber_250.png'},
+    ],
+
     'YAMAHA': [
       {'modelo': 'BWS FI 125', 'img': 'assets/motos/yamaha/bws125.png'},
       {'modelo': 'N-MAX', 'img': 'assets/motos/yamaha/nmax.png'},
@@ -301,7 +354,8 @@ class VehicleCatalogService {
       {'modelo': 'Z 400', 'img': 'assets/motos/kawasaki/z400.png'},
       {'modelo': 'Z 500', 'img': 'assets/motos/kawasaki/z500.png'},
       {'modelo': 'Z 900', 'img': 'assets/motos/kawasaki/z900.png'},
-    ],
+          {'modelo': 'ER400D', 'img': 'assets/motos/kawasaki/kawasaki_er400d.png'},
+],
     'BAJAJ': [
       {'modelo': 'BOXER CT 100 KS', 'img': 'assets/motos/bajaj/boxer-ct100-ks.png'},
       {'modelo': 'BOXER CT 100 ES', 'img': 'assets/motos/bajaj/boxer-ct100.png'},
@@ -325,7 +379,8 @@ class VehicleCatalogService {
       {'modelo': 'PULSARMANIA', 'img': 'assets/motos/bajaj/pulsarmania.png'},
       {'modelo': 'PULSAR P150', 'img': 'assets/motos/bajaj/Pulsar-p150.png'},
       {'modelo': 'PULSAR RS 200', 'img': 'assets/motos/bajaj/pulsar-rs200.png'},
-    ],
+          {'modelo': 'Ct 100 Es Spoke', 'img': 'assets/motos/bajaj/bajaj_ct_100_es_spoke.png'},
+],
     'HERO': [
       {'modelo': 'HUNK 125 R', 'img': 'assets/motos/hero/Hunk125r.png'},
       {'modelo': 'HUNK 150 XT', 'img': 'assets/motos/hero/Hunk150xt.png'},
@@ -343,7 +398,16 @@ class VehicleCatalogService {
       {'modelo': 'X PULSE 200 4V', 'img': 'assets/motos/hero/Xpulse2004v.png'},
       {'modelo': 'X PULSE PRO 200 4V', 'img': 'assets/motos/hero/XpulsePro2004v.png'},
       {'modelo': 'X PULSE RALLY', 'img': 'assets/motos/hero/XpulseRally.png'},
-    ],
+          {'modelo': 'Hunk 160 Stealth RS', 'img': 'assets/motos/hero/hero_hunk_160_stealth_rs.png'},
+      {'modelo': 'Hunk 160 4V', 'img': 'assets/motos/hero/hero_hunk_160_4v.png'},
+      {'modelo': 'Eco 100', 'img': 'assets/motos/hero/hero_eco_100.png'},
+      {'modelo': 'Ignitor 5S MT', 'img': 'assets/motos/hero/hero_ignitor_5s_mt.png'},
+      {'modelo': 'Eco Deluxe CW MT', 'img': 'assets/motos/hero/hero_eco_deluxe_cw_mt.png'},
+      {'modelo': 'XPulse 200 FI OC', 'img': 'assets/motos/hero/hero_xpulse_200_fi_oc.png'},
+      {'modelo': 'Dash FI Ev', 'img': 'assets/motos/hero/hero_dash_fi_ev.png'},
+      {'modelo': 'Thriller Pro', 'img': 'assets/motos/hero/hero_thriller_pro.png'},
+      {'modelo': 'XPulse 200T FI OC', 'img': 'assets/motos/hero/hero_xpulse_200t_fi_oc.png'},
+],
     'AKT': [
       {'modelo': 'NKD 125', 'img': 'assets/motos/akt/NKD.png'},
       {'modelo': 'CR4 150', 'img': 'assets/motos/akt/CR4_150.png'},
@@ -355,7 +419,10 @@ class VehicleCatalogService {
       {'modelo': 'DINAMIC PRO', 'img': 'assets/motos/akt/dinamicpro.png'},
       {'modelo': 'MAWI 125', 'img': 'assets/motos/akt/mawi.png'},
       {'modelo': 'AKT 190', 'img': 'assets/motos/akt/AKT19O.png'},
-    ],
+          {'modelo': 'AK200DS EIII', 'img': 'assets/motos/akt/akt_ak200ds_eiii.png'},
+      {'modelo': 'Ak 250RX3', 'img': 'assets/motos/akt/akt_ak_250rx3.png'},
+      {'modelo': 'Sc-r', 'img': 'assets/motos/akt/akt_sc_r.png'},
+],
     'KTM': [
       {'modelo': 'DUKE 200', 'img': 'assets/motos/ktm/DUKE-200.png'},
       {'modelo': 'DUKE 250', 'img': 'assets/motos/ktm/KTM-250-DUKE.png'},
@@ -365,7 +432,8 @@ class VehicleCatalogService {
       {'modelo': 'ADVENTURE 250', 'img': 'assets/motos/ktm/KTM-250-Adventure.png'},
       {'modelo': 'ADVENTURE 390', 'img': 'assets/motos/ktm/KTM-390-adv.png'},
       {'modelo': 'ADVENTURE 390 SW', 'img': 'assets/motos/ktm/KTM-390-adventure.png'},
-    ],
+          {'modelo': 'SX 250', 'img': 'assets/motos/ktm/ktm_sx_250.png'},
+],
     'VICTORI': [
       {'modelo': 'VENOM 150', 'img': 'assets/motos/victori/victori_venom_150.png'},
       {'modelo': 'ONE MP', 'img': 'assets/motos/victori/victori_one_mp.png'},
@@ -377,7 +445,14 @@ class VehicleCatalogService {
       {'modelo': 'APACHE RTR 200 4V', 'img': 'assets/motos/tvs/apache200.png'},
       {'modelo': 'APACHE RTR 310', 'img': 'assets/motos/tvs/apache310.png'},
       {'modelo': 'RONIN 225', 'img': 'assets/motos/tvs/ronin225.png'},
-    ],
+          {'modelo': 'Sport 110 FI', 'img': 'assets/motos/tvs/tvs_sport_110_fi.png'},
+      {'modelo': 'Sport 100 ELS', 'img': 'assets/motos/tvs/tvs_sport_100_els.png'},
+      {'modelo': 'Sport ELS As TK', 'img': 'assets/motos/tvs/tvs_sport_els_as_tk.png'},
+      {'modelo': 'Neo 125 FI', 'img': 'assets/motos/tvs/tvs_neo_125_fi.png'},
+      {'modelo': 'Neo Nx 110', 'img': 'assets/motos/tvs/tvs_neo_nx_110.png'},
+      {'modelo': 'Sport 110 FI TK', 'img': 'assets/motos/tvs/tvs_sport_110_fi_tk.png'},
+      {'modelo': 'Sport KLS Spoke', 'img': 'assets/motos/tvs/tvs_sport_kls_spoke.png'},
+],
     'HONDA': [
       {'modelo': 'XR 150L', 'img': 'assets/motos/honda/xr150l.png'},
       {'modelo': 'XR 190L', 'img': 'assets/motos/honda/xr190l.png'},
@@ -389,6 +464,13 @@ class VehicleCatalogService {
   };
 
   final Map<String, String> _motoLogos = {
+    'BENELLI': 'assets/logos/benelli.png',
+    'FRATELLI': 'assets/logos/fratelli.png',
+    'KYMCO': 'assets/logos/kymco.png',
+    'SYM': 'assets/logos/sym.png',
+    'ROYAL ENFIELD': 'assets/logos/royal_enfield.png',
+    'VICTORY': 'assets/logos/victori_logo.png',
+
     'YAMAHA': 'assets/logos/yamaha_logo.png',
     'SUZUKI': 'assets/logos/suzuki_logo.png',
     'BMW': 'assets/logos/bmw_logo.png',
@@ -404,6 +486,19 @@ class VehicleCatalogService {
 
   // --- BRAND COLORS (Shared) ---
   final Map<String, Color> _brandColors = {
+    'CHANGAN': const Color(0xFF003087),
+    'CHERY': const Color(0xFFC8102E),
+    'DEEPAL': const Color(0xFF007A87),
+    'HAVAL': const Color(0xFFD22630),
+    'JMC': const Color(0xFF003A70),
+    'OPEL': const Color(0xFFFFD100),
+    'BENELLI': const Color(0xFF005C30),
+    'FRATELLI': const Color(0xFFC41230),
+    'KYMCO': const Color(0xFFE60012),
+    'SYM': const Color(0xFF005BAC),
+    'ROYAL ENFIELD': const Color(0xFF8B1E1E),
+    'VICTORY': const Color(0xFFCBA73D),
+
     'VOLVO': const Color(0xFF003057),
     'TESLA': const Color(0xFFE82127),
     'SUBARU': const Color(0xFF013C74),

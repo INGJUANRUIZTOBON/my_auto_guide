@@ -1,0 +1,622 @@
+[
+  {
+    "marca": "Hero",
+    "linea": "Hunk",
+    "modelo": "Hunk 160 Stealth RS",
+    "full_name": "Hero Hunk 160 Stealth RS",
+    "ano": 2025,
+    "cc": 163,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Hero\\Hunk 160 Stealth RS 2025_04aa669e9dc1\\Hero Hunk 160 Stealth RS 2025.jpg",
+    "row_id": "04aa669e9dc1"
+  },
+  {
+    "marca": "Hero",
+    "linea": "Hunk",
+    "modelo": "Hunk 160 4V",
+    "full_name": "Hero Hunk 160 4V",
+    "ano": 2025,
+    "cc": 163,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Hero\\Hunk 160 4V 2025_cb20ad9cb186\\Hero Hunk 160 4V 2025.jpg",
+    "row_id": "cb20ad9cb186"
+  },
+  {
+    "marca": "Royal Enfield",
+    "linea": "Hntr",
+    "modelo": "Hntr 350",
+    "full_name": "Royal Enfield Hntr 350",
+    "ano": 2025,
+    "cc": 349,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Royal Enfield\\Hntr 350 2025_528356d4a2d6\\Royal Enfield Hntr 350 2025.jpg",
+    "row_id": "528356d4a2d6"
+  },
+  {
+    "marca": "TVS",
+    "linea": "Sport",
+    "modelo": "Sport 110 FI",
+    "full_name": "TVS Sport 110 FI",
+    "ano": 2027,
+    "cc": 110,
+    "img_disk": "D:\\Descargas\\motai\\motai\\TVS\\Sport 110 FI 2027_6fe2a20a6ed3\\TVS Sport 110 FI 2027.jpg",
+    "row_id": "6fe2a20a6ed3"
+  },
+  {
+    "marca": "TVS",
+    "linea": "Sport",
+    "modelo": "Sport 100 ELS",
+    "full_name": "TVS Sport 100 ELS",
+    "ano": 2027,
+    "cc": 99,
+    "img_disk": "D:\\Descargas\\motai\\motai\\TVS\\Sport 100 ELS 2027_4bebfd0102dc\\TVS Sport 100 ELS 2027.jpg",
+    "row_id": "4bebfd0102dc"
+  },
+  {
+    "marca": "TVS",
+    "linea": "Sport",
+    "modelo": "Sport ELS As TK",
+    "full_name": "TVS Sport ELS As TK",
+    "ano": 2027,
+    "cc": 100,
+    "img_disk": "D:\\Descargas\\motai\\motai\\TVS\\Sport ELS As TK 2027_a10a74137e57\\TVS Sport ELS As TK 2027.jpg",
+    "row_id": "a10a74137e57"
+  },
+  {
+    "marca": "Fratelli",
+    "linea": "Veloce",
+    "modelo": "Veloce 125",
+    "full_name": "Fratelli Veloce 125",
+    "ano": 2027,
+    "cc": 124,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Fratelli\\Veloce 125 2027_715f4e498bc7\\Fratelli Veloce 125 2027.jpg",
+    "row_id": "715f4e498bc7"
+  },
+  {
+    "marca": "TVS",
+    "linea": "Neo",
+    "modelo": "Neo 125 FI",
+    "full_name": "TVS Neo 125 FI",
+    "ano": 2027,
+    "cc": 124,
+    "img_disk": "D:\\Descargas\\motai\\motai\\TVS\\Neo 125 FI 2027_a31814263e51\\TVS Neo 125 FI 2027.jpg",
+    "row_id": "a31814263e51"
+  },
+  {
+    "marca": "TVS",
+    "linea": "Neo",
+    "modelo": "Neo Nx 110",
+    "full_name": "TVS Neo Nx 110",
+    "ano": 2027,
+    "cc": 109,
+    "img_disk": "D:\\Descargas\\motai\\motai\\TVS\\Neo Nx 110 2027_c62006a9052a\\TVS Neo Nx 110 2027.jpg",
+    "row_id": "c62006a9052a"
+  },
+  {
+    "marca": "TVS",
+    "linea": "Sport",
+    "modelo": "Sport 110 FI TK",
+    "full_name": "TVS Sport 110 FI TK",
+    "ano": 2027,
+    "cc": 109,
+    "img_disk": "D:\\Descargas\\motai\\motai\\TVS\\Sport 110 FI TK 2027_7b1f1a6442cf\\TVS Sport 110 FI TK 2027.jpg",
+    "row_id": "7b1f1a6442cf"
+  },
+  {
+    "marca": "Kawasaki",
+    "linea": "ER400D",
+    "modelo": "ER400D",
+    "full_name": "Kawasaki ER400D",
+    "ano": 2022,
+    "cc": 399,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Kawasaki\\ER400D 2022_b74441208124\\Kawasaki ER400D 2022.jpg",
+    "row_id": "b74441208124"
+  },
+  {
+    "marca": "Victory",
+    "linea": "Combat",
+    "modelo": "Combat 100",
+    "full_name": "Victory Combat 100",
+    "ano": 2025,
+    "cc": 99,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Victory\\Combat 100 2025_0190c70d7208\\Victory Combat 100 2025.jpg",
+    "row_id": "0190c70d7208"
+  },
+  {
+    "marca": "Hero",
+    "linea": "Eco",
+    "modelo": "Eco 100",
+    "full_name": "Hero Eco 100",
+    "ano": 2025,
+    "cc": 98,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Hero\\Eco 100 2025_b3f179e60d3d\\Hero Eco 100 2025.jpg",
+    "row_id": "b3f179e60d3d"
+  },
+  {
+    "marca": "Victory",
+    "linea": "MRX150",
+    "modelo": "MRX150 CBS TK",
+    "full_name": "Victory MRX150 CBS TK",
+    "ano": 2027,
+    "cc": 149,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Victory\\MRX150 CBS TK 2027_da019b487d02\\Victory MRX150 CBS TK 2027.jpg",
+    "row_id": "da019b487d02"
+  },
+  {
+    "marca": "Victory",
+    "linea": "MRX125",
+    "modelo": "MRX125 S TK",
+    "full_name": "Victory MRX125 S TK",
+    "ano": 2026,
+    "cc": 125,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Victory\\MRX125 S TK 2026_26033f373bfa\\Victory MRX125 S TK 2026.jpg",
+    "row_id": "26033f373bfa"
+  },
+  {
+    "marca": "Victory",
+    "linea": "MRX125",
+    "modelo": "MRX125 S TK F",
+    "full_name": "Victory MRX125 S TK F",
+    "ano": 2027,
+    "cc": 124,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Victory\\MRX125 S TK F 2027_4c9b861372c2\\Victory MRX125 S TK F 2027.jpg",
+    "row_id": "4c9b861372c2"
+  },
+  {
+    "marca": "Victory",
+    "linea": "Nitro",
+    "modelo": "Nitro 125 Facelift TK",
+    "full_name": "Victory Nitro 125 Facelift TK",
+    "ano": 2027,
+    "cc": 124,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Victory\\Nitro 125 Facelift TK 2027_99b2e5a0a3e4\\Victory Nitro 125 Facelift TK 2027.jpg",
+    "row_id": "99b2e5a0a3e4"
+  },
+  {
+    "marca": "Kymco",
+    "linea": "Agility",
+    "modelo": "Agility Fusion TK",
+    "full_name": "Kymco Agility Fusion TK",
+    "ano": 2027,
+    "cc": 124,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Kymco\\Agility Fusion TK 2027_27d163ec4f68\\Kymco Agility Fusion TK 2027.jpg",
+    "row_id": "27d163ec4f68"
+  },
+  {
+    "marca": "Victory",
+    "linea": "One",
+    "modelo": "One ST 100",
+    "full_name": "Victory One ST 100",
+    "ano": 2023,
+    "cc": 100,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Victory\\One ST 100 2023_27cbd983b849\\Victory One ST 100 2023.jpg",
+    "row_id": "27cbd983b849"
+  },
+  {
+    "marca": "Victory",
+    "linea": "MRX",
+    "modelo": "MRX 125 S",
+    "full_name": "Victory MRX 125 S",
+    "ano": 2027,
+    "cc": 125,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Victory\\MRX 125 S 2027_9359e2ed39a7\\Victory MRX 125 S 2027.jpg",
+    "row_id": "9359e2ed39a7"
+  },
+  {
+    "marca": "Honda",
+    "linea": "Dio",
+    "modelo": "Dio DLX 2 0",
+    "full_name": "Honda Dio DLX 2 0",
+    "ano": 2025,
+    "cc": 110,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Honda\\Dio DLX 2 0 2025_59af3e7889e8\\Honda Dio DLX 2 0 2025.jpg",
+    "row_id": "59af3e7889e8"
+  },
+  {
+    "marca": "Victory",
+    "linea": "Hunter",
+    "modelo": "Hunter 150",
+    "full_name": "Victory Hunter 150",
+    "ano": 2025,
+    "cc": 149,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Victory\\Hunter 150 2025_a68be39da1d4\\Victory Hunter 150 2025.jpg",
+    "row_id": "a68be39da1d4"
+  },
+  {
+    "marca": "Victory",
+    "linea": "Advance",
+    "modelo": "Advance X1",
+    "full_name": "Victory Advance X1",
+    "ano": 2024,
+    "cc": 125,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Victory\\Advance X1 2024_b125f43897bd\\Victory Advance X1 2024.jpg",
+    "row_id": "b125f43897bd"
+  },
+  {
+    "marca": "Victory",
+    "linea": "MRX",
+    "modelo": "MRX 200",
+    "full_name": "Victory MRX 200",
+    "ano": 2025,
+    "cc": 199,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Victory\\MRX 200 2025_08dd65e0bef7\\Victory MRX 200 2025.jpg",
+    "row_id": "08dd65e0bef7"
+  },
+  {
+    "marca": "Kymco",
+    "linea": "Agility",
+    "modelo": "Agility Digital 3.0 AT",
+    "full_name": "Kymco Agility Digital 3.0 AT",
+    "ano": 2021,
+    "cc": 124,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Kymco\\Agility Digital 3.0 AT 2021_edae702cff3d\\Kymco Agility Digital 3.0 AT 2021.jpg",
+    "row_id": "edae702cff3d"
+  },
+  {
+    "marca": "Victory",
+    "linea": "Bomber",
+    "modelo": "Bomber 125",
+    "full_name": "Victory Bomber 125",
+    "ano": 2025,
+    "cc": 124,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Victory\\Bomber 125 2025_f53073ffef4e\\Victory Bomber 125 2025.jpg",
+    "row_id": "f53073ffef4e"
+  },
+  {
+    "marca": "Victory",
+    "linea": "MRX125",
+    "modelo": "MRX125 TK",
+    "full_name": "Victory MRX125 TK",
+    "ano": 2025,
+    "cc": 124,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Victory\\MRX125 TK 2025_ac390779c936\\Victory MRX125 TK 2025.jpg",
+    "row_id": "ac390779c936"
+  },
+  {
+    "marca": "Hero",
+    "linea": "Ignitor",
+    "modelo": "Ignitor 5S MT",
+    "full_name": "Hero Ignitor 5S MT",
+    "ano": 2025,
+    "cc": 125,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Hero\\Ignitor 5S MT 2025_4fc9728deec8\\Hero Ignitor 5S MT 2025.jpg",
+    "row_id": "4fc9728deec8"
+  },
+  {
+    "marca": "Benelli",
+    "linea": "TRK",
+    "modelo": "TRK 251",
+    "full_name": "Benelli TRK 251",
+    "ano": 2022,
+    "cc": 249,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Benelli\\TRK 251 2022_ec0bd32c884f\\Benelli TRK 251 2022.jpg",
+    "row_id": "ec0bd32c884f"
+  },
+  {
+    "marca": "Victory",
+    "linea": "One",
+    "modelo": "One MP",
+    "full_name": "Victory One MP",
+    "ano": 2023,
+    "cc": 110,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Victory\\One MP 2023_e764afb4e38e\\Victory One MP 2023.jpg",
+    "row_id": "e764afb4e38e"
+  },
+  {
+    "marca": "Victory",
+    "linea": "MRX200",
+    "modelo": "MRX200 Fox TK",
+    "full_name": "Victory MRX200 Fox TK",
+    "ano": 2026,
+    "cc": 199,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Victory\\MRX200 Fox TK 2026_8aee71b2e268\\Victory MRX200 Fox TK 2026.jpg",
+    "row_id": "8aee71b2e268"
+  },
+  {
+    "marca": "TVS",
+    "linea": "Sport",
+    "modelo": "Sport KLS Spoke",
+    "full_name": "TVS Sport KLS Spoke",
+    "ano": 2025,
+    "cc": 100,
+    "img_disk": "D:\\Descargas\\motai\\motai\\TVS\\Sport KLS Spoke 2025_eadf2866f8f3\\TVS Sport KLS Spoke 2025.jpg",
+    "row_id": "eadf2866f8f3"
+  },
+  {
+    "marca": "Hero",
+    "linea": "Eco",
+    "modelo": "Eco Deluxe CW MT",
+    "full_name": "Hero Eco Deluxe CW MT",
+    "ano": 2025,
+    "cc": 100,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Hero\\Eco Deluxe CW MT 2025_38829ffdb5e6\\Hero Eco Deluxe CW MT 2025.jpg",
+    "row_id": "38829ffdb5e6"
+  },
+  {
+    "marca": "Victory",
+    "linea": "One",
+    "modelo": "One MP TK",
+    "full_name": "Victory One MP TK",
+    "ano": 2024,
+    "cc": 100,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Victory\\One MP TK 2024_41a106ee6fb8\\Victory One MP TK 2024.jpg",
+    "row_id": "41a106ee6fb8"
+  },
+  {
+    "marca": "AKT",
+    "linea": "AK200DS",
+    "modelo": "AK200DS EIII",
+    "full_name": "AKT AK200DS EIII",
+    "ano": 2024,
+    "cc": 197,
+    "img_disk": "D:\\Descargas\\motai\\motai\\AKT\\AK200DS EIII 2024_84c890015a95\\AKT AK200DS EIII 2024.jpg",
+    "row_id": "84c890015a95"
+  },
+  {
+    "marca": "Victory",
+    "linea": "MRX150",
+    "modelo": "MRX150 Fox TK",
+    "full_name": "Victory MRX150 Fox TK",
+    "ano": 2026,
+    "cc": 149,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Victory\\MRX150 Fox TK 2026_f75158550584\\Victory MRX150 Fox TK 2026.jpg",
+    "row_id": "f75158550584"
+  },
+  {
+    "marca": "Victory",
+    "linea": "New",
+    "modelo": "New Life 125 TK",
+    "full_name": "Victory New Life 125 TK",
+    "ano": 2024,
+    "cc": 124,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Victory\\New Life 125 TK 2024_2916cfa2274b\\Victory New Life 125 TK 2024.jpg",
+    "row_id": "2916cfa2274b"
+  },
+  {
+    "marca": "Hero",
+    "linea": "XPulse",
+    "modelo": "XPulse 200 FI OC",
+    "full_name": "Hero XPulse 200 FI OC",
+    "ano": 2024,
+    "cc": 199,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Hero\\XPulse 200 FI OC 2024_a931c798e697\\Hero XPulse 200 FI OC 2024.jpg",
+    "row_id": "a931c798e697"
+  },
+  {
+    "marca": "AKT",
+    "linea": "Ak",
+    "modelo": "Ak 250RX3",
+    "full_name": "AKT Ak 250RX3",
+    "ano": 2021,
+    "cc": 249,
+    "img_disk": "D:\\Descargas\\motai\\motai\\AKT\\Ak 250RX3 2021_db8ee741d31e\\AKT Ak 250RX3 2021.jpg",
+    "row_id": "db8ee741d31e"
+  },
+  {
+    "marca": "Benelli",
+    "linea": "TNT",
+    "modelo": "TNT 25N",
+    "full_name": "Benelli TNT 25N",
+    "ano": 2023,
+    "cc": 249,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Benelli\\TNT 25N 2023_8e423c37e55e\\Benelli TNT 25N 2023.jpg",
+    "row_id": "8e423c37e55e"
+  },
+  {
+    "marca": "Kymco",
+    "linea": "Agility",
+    "modelo": "Agility RS Naked",
+    "full_name": "Kymco Agility RS Naked",
+    "ano": 2016,
+    "cc": 124,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Kymco\\Agility RS Naked 2016_4d206ce793bd\\Kymco Agility RS Naked 2016.jpg",
+    "row_id": "4d206ce793bd"
+  },
+  {
+    "marca": "SYM",
+    "linea": "XC15WX",
+    "modelo": "XC15WX",
+    "full_name": "SYM XC15WX",
+    "ano": 2025,
+    "cc": 149,
+    "img_disk": "D:\\Descargas\\motai\\motai\\SYM\\XC15WX 2025_560c32959ee7\\SYM XC15WX 2025.jpg",
+    "row_id": "560c32959ee7"
+  },
+  {
+    "marca": "Honda",
+    "linea": "Cb",
+    "modelo": "Cb 125F",
+    "full_name": "Honda Cb 125F",
+    "ano": 2021,
+    "cc": 124,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Honda\\Cb 125F 2021_610ca8f6a60d\\Honda Cb 125F 2021.jpg",
+    "row_id": "610ca8f6a60d"
+  },
+  {
+    "marca": "Victory",
+    "linea": "MRX",
+    "modelo": "MRX 125 Camo",
+    "full_name": "Victory MRX 125 Camo",
+    "ano": 2022,
+    "cc": 125,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Victory\\MRX 125 Camo 2022_ebc92a35f2db\\Victory MRX 125 Camo 2022.jpg",
+    "row_id": "ebc92a35f2db"
+  },
+  {
+    "marca": "Victory",
+    "linea": "Bomber",
+    "modelo": "Bomber 125 TK MT",
+    "full_name": "Victory Bomber 125 TK MT",
+    "ano": 2026,
+    "cc": 124,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Victory\\Bomber 125 TK MT 2026_dd525d5f5be8\\Victory Bomber 125 TK MT 2026.jpg",
+    "row_id": "dd525d5f5be8"
+  },
+  {
+    "marca": "AKT",
+    "linea": "Sc-r",
+    "modelo": "Sc-r",
+    "full_name": "AKT Sc-r",
+    "ano": 2020,
+    "cc": 125,
+    "img_disk": "D:\\Descargas\\motai\\motai\\AKT\\Sc-r 2020_8b0404eee4f8\\AKT Sc-r 2020.jpg",
+    "row_id": "8b0404eee4f8"
+  },
+  {
+    "marca": "Victory",
+    "linea": "Life",
+    "modelo": "Life 125",
+    "full_name": "Victory Life 125",
+    "ano": 2024,
+    "cc": 124,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Victory\\Life 125 2024_d362b5bffb73\\Victory Life 125 2024.jpg",
+    "row_id": "d362b5bffb73"
+  },
+  {
+    "marca": "Bajaj",
+    "linea": "Ct",
+    "modelo": "Ct 100 Es Spoke",
+    "full_name": "Bajaj Ct 100 Es Spoke",
+    "ano": 2027,
+    "cc": 102,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Bajaj\\Ct 100 Es Spoke 2027_873bd0ba483f\\Bajaj Ct 100 Es Spoke 2027.jpg",
+    "row_id": "873bd0ba483f"
+  },
+  {
+    "marca": "Victory",
+    "linea": "MRX",
+    "modelo": "MRX 125",
+    "full_name": "Victory MRX 125",
+    "ano": 2024,
+    "cc": 124,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Victory\\MRX 125 2024_6ac8454d1957\\Victory MRX 125 2024.jpg",
+    "row_id": "6ac8454d1957"
+  },
+  {
+    "marca": "Victory",
+    "linea": "Black",
+    "modelo": "Black",
+    "full_name": "Victory Black",
+    "ano": 2023,
+    "cc": 171,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Victory\\Black 2023_dcbee202f37b\\Victory Black 2023.jpg",
+    "row_id": "dcbee202f37b"
+  },
+  {
+    "marca": "Hero",
+    "linea": "Dash",
+    "modelo": "Dash FI Ev",
+    "full_name": "Hero Dash FI Ev",
+    "ano": 2025,
+    "cc": 125,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Hero\\Dash FI Ev 2025_96396b7cef86\\Hero Dash FI Ev 2025.jpg",
+    "row_id": "96396b7cef86"
+  },
+  {
+    "marca": "Benelli",
+    "linea": "TNT",
+    "modelo": "TNT 135",
+    "full_name": "Benelli TNT 135",
+    "ano": 2022,
+    "cc": 135,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Benelli\\TNT 135 2022_5f66b8e7dadf\\Benelli TNT 135 2022.jpg",
+    "row_id": "5f66b8e7dadf"
+  },
+  {
+    "marca": "Victory",
+    "linea": "MRX",
+    "modelo": "MRX Arizona Xplore",
+    "full_name": "Victory MRX Arizona Xplore",
+    "ano": 2025,
+    "cc": 200,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Victory\\MRX Arizona Xplore 2025_9e64e25d5625\\Victory MRX Arizona Xplore 2025.jpg",
+    "row_id": "9e64e25d5625"
+  },
+  {
+    "marca": "Victory",
+    "linea": "New",
+    "modelo": "New Black",
+    "full_name": "Victory New Black",
+    "ano": 2024,
+    "cc": 171,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Victory\\New Black 2024_8396fd35cf8e\\Victory New Black 2024.jpg",
+    "row_id": "8396fd35cf8e"
+  },
+  {
+    "marca": "Suzuki",
+    "linea": "UR110",
+    "modelo": "UR110",
+    "full_name": "Suzuki UR110",
+    "ano": 2017,
+    "cc": 112,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Suzuki\\UR110 2017_60465640f054\\Suzuki UR110 2017.jpg",
+    "row_id": "60465640f054"
+  },
+  {
+    "marca": "Kymco",
+    "linea": "Twist",
+    "modelo": "Twist",
+    "full_name": "Kymco Twist",
+    "ano": 2026,
+    "cc": 125,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Kymco\\Twist 2026_99c5cbe47f4c\\Kymco Twist 2026.jpg",
+    "row_id": "99c5cbe47f4c"
+  },
+  {
+    "marca": "KTM",
+    "linea": "SX",
+    "modelo": "SX 250",
+    "full_name": "KTM SX 250",
+    "ano": 2019,
+    "cc": 250,
+    "img_disk": "D:\\Descargas\\motai\\motai\\KTM\\SX 250 2019_020e042d5d29\\KTM SX 250 2019.jpg",
+    "row_id": "020e042d5d29"
+  },
+  {
+    "marca": "Victory",
+    "linea": "One",
+    "modelo": "One ST 100 Silver",
+    "full_name": "Victory One ST 100 Silver",
+    "ano": 2021,
+    "cc": 99,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Victory\\One ST 100 Silver 2021_b638f5ecd763\\Victory One ST 100 Silver 2021.jpg",
+    "row_id": "b638f5ecd763"
+  },
+  {
+    "marca": "Hero",
+    "linea": "Thriller",
+    "modelo": "Thriller Pro",
+    "full_name": "Hero Thriller Pro",
+    "ano": 2024,
+    "cc": 150,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Hero\\Thriller Pro 2024_f7d15d3c4803\\Hero Thriller Pro 2024.jpg",
+    "row_id": "f7d15d3c4803"
+  },
+  {
+    "marca": "Benelli",
+    "linea": "180",
+    "modelo": "180 S",
+    "full_name": "Benelli 180 S",
+    "ano": 2023,
+    "cc": 175,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Benelli\\180 S 2023_258d91cff352\\Benelli 180 S 2023.jpg",
+    "row_id": "258d91cff352"
+  },
+  {
+    "marca": "Victory",
+    "linea": "Bomber",
+    "modelo": "Bomber 250",
+    "full_name": "Victory Bomber 250",
+    "ano": 2022,
+    "cc": 250,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Victory\\Bomber 250 2022_e199ab378c9b\\Victory Bomber 250 2022.jpg",
+    "row_id": "e199ab378c9b"
+  },
+  {
+    "marca": "Hero",
+    "linea": "XPulse",
+    "modelo": "XPulse 200T FI OC",
+    "full_name": "Hero XPulse 200T FI OC",
+    "ano": 2025,
+    "cc": 199,
+    "img_disk": "D:\\Descargas\\motai\\motai\\Hero\\XPulse 200T FI OC 2025_04df613bedb8\\Hero XPulse 200T FI OC 2025.jpg",
+    "row_id": "04df613bedb8"
+  }
+]
