@@ -39,7 +39,7 @@ const BRAND_LOGOS = [
   { id: 'akt', file: 'assets/logos/akt_logo.png', dest: 'logos/akt.png' },
   { id: 'suzuki', file: 'assets/logos/suzuki_logo.png', dest: 'logos/suzuki.png' },
   { id: 'honda', file: 'assets/logos/honda_logo.png', dest: 'logos/honda.png' },
-  { id: 'tvs', file: 'assets/logos/tvs_logo.svg', dest: 'logos/tvs.svg' },
+  { id: 'tvs', file: 'assets/logos/tvs_logo.png', dest: 'logos/tvs.png' },
   { id: 'hero', file: 'assets/logos/hero_logo.png', dest: 'logos/hero.png' },
   { id: 'ktm', file: 'assets/logos/ktm_logo.png', dest: 'logos/ktm.png' },
   { id: 'victory', file: 'assets/logos/victori_logo.png', dest: 'logos/victory.png' },

@@ -91,7 +91,7 @@ INSERT INTO public.catalogo_marcas (id, nombre, tipo, logo_url, color_hex, pais_
     ('akt', 'AKT Motos', 'moto', 'assets/logos/akt_logo.png', '#E31E24', 'Colombia', 98),
     ('suzuki', 'Suzuki', 'ambos', 'assets/logos/suzuki_logo.png', '#E30613', 'Japón', 96),
     ('honda', 'Honda', 'ambos', 'assets/logos/honda_logo.png', '#CC0000', 'Japón', 95),
-    ('tvs', 'TVS', 'moto', 'assets/logos/tvs_logo.svg', '#002B49', 'India', 94),
+    ('tvs', 'TVS', 'moto', 'assets/logos/tvs_logo.png', '#002B49', 'India', 94),
     ('hero', 'Hero MotoCorp', 'moto', 'assets/logos/hero_logo.png', '#ED1C24', 'India', 92),
     ('ktm', 'KTM', 'moto', 'assets/logos/ktm_logo.png', '#FF6600', 'Austria', 90),
     ('victory', 'Victory', 'moto', 'assets/logos/victori_logo.png', '#FFCC00', 'Colombia', 88),

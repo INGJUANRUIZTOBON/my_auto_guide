@@ -32,10 +32,18 @@ class VehicleCatalogService {
       {'modelo': 'BLAZER EV RS', 'img': 'assets/carros/chevrolet/BLAZEREV.png'},
       {'modelo': 'EQUINOX RS', 'img': 'assets/carros/chevrolet/equinox-rs-blazer-rs.png'},
       {'modelo': 'TRAVERSE RS', 'img': 'assets/carros/chevrolet/traverse.png'},
-      {'modelo': 'BLAZER RS', 'img': 'assets/carros/chevrolet/blazerrs.png'},
+      {'modelo': 'BLAZER RS', 'img': 'assets/carros/chevrolet/blazers.png'},
       {'modelo': 'MONTANA', 'img': 'assets/carros/chevrolet/Montana.png'},
       {'modelo': 'COLORADO RS', 'img': 'assets/carros/chevrolet/colorado.png'},
       {'modelo': 'SILVERADO', 'img': 'assets/carros/chevrolet/silverado.png'},
+    ],
+    'RENAULT': [
+      {'modelo': 'DUSTER', 'img': 'assets/carros/renault/duster.png'},
+      {'modelo': 'SANDERO / STEPWAY', 'img': 'assets/carros/renault/sandero.png'},
+      {'modelo': 'KWID', 'img': 'assets/carros/renault/kwid.png'},
+    ],
+    'KIA': [
+      {'modelo': 'PICANTO', 'img': 'assets/carros/kia/picanto.png'},
     ],
   };
 
@@ -43,6 +51,8 @@ class VehicleCatalogService {
     'TOYOTA': 'assets/logos/toyota_logo.png',
     'MAZDA': 'assets/logos/mazda_logo.png',
     'CHEVROLET': 'assets/logos/chevrolet_logo.png',
+    'RENAULT': 'assets/logos/renault_logo.png',
+    'KIA': 'assets/logos/kia_logo.png',
   };
 
   // --- MOTO CATALOG ---
@@ -146,6 +156,14 @@ class VehicleCatalogService {
     'VICTORI': [
       {'modelo': 'VENOM 150', 'img': 'assets/motos/victori/victori_venom_150.png'},
     ],
+    'TVS': [
+      {'modelo': 'RAIDER 125', 'img': 'assets/motos/tvs/raider125.png'},
+      {'modelo': 'APACHE RTR 160 4V', 'img': 'assets/motos/tvs/apache160.png'},
+    ],
+    'HONDA': [
+      {'modelo': 'CB 125F', 'img': 'assets/motos/honda/cb125f.png'},
+      {'modelo': 'CB 160F', 'img': 'assets/motos/honda/cb160f.png'},
+    ],
   };
 
   final Map<String, String> _motoLogos = {
@@ -158,6 +176,8 @@ class VehicleCatalogService {
     'HERO': 'assets/logos/hero_logo.png',
     'AKT': 'assets/logos/akt_logo.png',
     'VICTORI': 'assets/logos/victori_logo.png',
+    'TVS': 'assets/logos/tvs_logo.png',
+    'HONDA': 'assets/logos/honda_logo.png',
   };
 
   // --- BRAND COLORS (Shared) ---
@@ -165,6 +185,8 @@ class VehicleCatalogService {
     'TOYOTA': const Color(0xFFEB0A1E),
     'MAZDA': const Color(0xFF1B1B1B),
     'CHEVROLET': const Color(0xFFFFC107),
+    'RENAULT': const Color(0xFFFFCC00),
+    'KIA': const Color(0xFF05141F),
     'YAMAHA': const Color(0xFF0055CC),
     'SUZUKI': const Color(0xFFE30613),
     'BMW': const Color(0xFF2A2A2A),
@@ -174,6 +196,8 @@ class VehicleCatalogService {
     'HERO': Colors.black,
     'AKT': const Color.fromARGB(255, 21, 54, 172),
     'VICTORI': const Color.fromARGB(255, 203, 167, 61),
+    'TVS': const Color(0xFF002B49),
+    'HONDA': const Color(0xFFCC0000),
   };
 
   // Getters
