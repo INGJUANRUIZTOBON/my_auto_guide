@@ -301,9 +301,9 @@ class RuntVehicleProfile {
         modeloAno = v;
       } else if (k == 'COLOR' && color.isEmpty) {
         color = v;
-      } else if (k.contains('CLASE DE VEHICULO') && clase.isEmpty) {
+      } else if ((k == 'CLASE' || k.startsWith('CLASE') || k.contains('CLASE') || k.contains('TIPO DE VEHICULO')) && clase.isEmpty) {
         clase = v;
-      } else if (k.contains('TIPO DE SERVICIO') && servicio.isEmpty) {
+      } else if ((k == 'SERVICIO' || k.startsWith('SERVICIO') || k.contains('SERVICIO') || k.contains('MODALIDAD')) && servicio.isEmpty) {
         servicio = v;
       } else if (k.contains('ESTADO DEL VEHICULO') && estadoVehiculo.isEmpty) {
         estadoVehiculo = v;
@@ -328,15 +328,22 @@ class RuntVehicleProfile {
       final line = lines[i];
       final up = normalizeKey(line);
 
-      if (up.contains('POLIZA SOAT') || up == 'SOAT' || up.startsWith('SOAT ')) {
+      if (up.contains('POLIZA SOAT') || up.contains('SOAT') || up.contains('SEGURO OBLIGATORIO')) {
         section = 'SOAT';
-      } else if (up.contains('TECNICO MECANICA') || up.contains('TECNICO-MECANICA') || up.contains('RTM')) {
+      } else if (up.contains('TECNICO MECANICA') ||
+          up.contains('TECNICOMECANICA') ||
+          up.contains('TECNICO-MECANICA') ||
+          up.contains('RTM') ||
+          up.contains('REVISION TECNICA')) {
         section = 'RTM';
-      } else if (up.contains('INFORMACION GENERAL') || up.contains('DATOS TECNICOS') || up.contains('LIMITACIONES')) {
+      } else if (up.contains('INFORMACION GENERAL') ||
+          up.contains('DATOS TECNICOS') ||
+          up.contains('DATOS GENERALES') ||
+          up.contains('LIMITACIONES')) {
         section = 'GENERAL';
       }
 
-      // Caso A: Par en la misma línea ("Marca: BAJAJ" o "Línea: PULSAR NS 200 FI")
+      // Caso A: Par en la misma línea ("Marca: BAJAJ", "Clase: AUTOMÓVIL")
       final colonIdx = line.indexOf(':');
       if (colonIdx > 0 && colonIdx < line.length - 1) {
         final labelPart = line.substring(0, colonIdx);
@@ -348,7 +355,61 @@ class RuntVehicleProfile {
       // Caso B: Etiqueta termina en ":" y el valor viene en la línea siguiente
       if (line.endsWith(':') && i + 1 < lines.length) {
         assign(line, lines[i + 1]);
+        continue;
       }
+
+      // Caso C: Filas tabulares o bloques de texto con fechas (DD/MM/AAAA o AAAA-MM-DD)
+      final dateMatches = RegExp(r'\b(\d{1,2}[/\-]\d{1,2}[/\-]\d{4}|\d{4}[/\-]\d{1,2}[/\-]\d{1,2})\b')
+          .allMatches(line)
+          .map((m) => m.group(0)!)
+          .toList();
+
+      if (dateMatches.isNotEmpty) {
+        if (section == 'SOAT') {
+          if (soatVencimiento.isEmpty || up.contains('VIGENTE') || up.contains('ACTIVA')) {
+            if (dateMatches.length >= 2) {
+              if (soatInicioVigencia.isEmpty) soatInicioVigencia = dateMatches[0];
+              soatVencimiento = dateMatches[dateMatches.length - 1];
+            } else if (soatVencimiento.isEmpty) {
+              soatVencimiento = dateMatches[0];
+            }
+          }
+          if (up.contains('VIGENTE') && soatEstado.isEmpty) soatEstado = 'VIGENTE';
+        } else if (section == 'RTM') {
+          if (tecnoVencimiento.isEmpty || up.contains('VIGENTE') || up.contains('ACTIVA')) {
+            if (dateMatches.length >= 2) {
+              if (tecnoInicioVigencia.isEmpty) tecnoInicioVigencia = dateMatches[0];
+              tecnoVencimiento = dateMatches[dateMatches.length - 1];
+            } else if (tecnoVencimiento.isEmpty) {
+              tecnoVencimiento = dateMatches[0];
+            }
+          }
+          if (up.contains('VIGENTE') && tecnoEstado.isEmpty) tecnoEstado = 'VIGENTE';
+        }
+      }
+    }
+
+    // Barrido global de seguridad por expresiones regulares si algún campo crítico quedó vacío
+    if (clase.isEmpty) {
+      final m = RegExp(r'\b(?:CLASE|CLASE\s+DE\s+VEHICULO|CLASE\s+DEL\s+VEHICULO|TIPO\s+DE\s+VEHICULO)\s*[:\-]?\s*([A-Za-zÁÉÍÓÚáéíóúñÑ\s]{3,30})\b', caseSensitive: false).firstMatch(rawText);
+      if (m != null) clase = m.group(1)!.trim();
+    }
+
+    if (servicio.isEmpty) {
+      final m = RegExp(r'\b(?:TIPO\s+DE\s+SERVICIO|SERVICIO|MODALIDAD\s+DE\s+SERVICIO)\s*[:\-]?\s*([A-Za-zÁÉÍÓÚáéíóúñÑ\s]{3,30})\b', caseSensitive: false).firstMatch(rawText);
+      if (m != null) servicio = m.group(1)!.trim();
+    }
+
+    if (soatVencimiento.isEmpty) {
+      // Buscar en todo el texto cualquier fecha cercana a la palabra SOAT
+      final m = RegExp(r'SOAT[^\n\r]{0,120}?(\d{1,2}[/\-]\d{1,2}[/\-]\d{4}|\d{4}[/\-]\d{1,2}[/\-]\d{1,2})', caseSensitive: false).firstMatch(rawText);
+      if (m != null) soatVencimiento = m.group(1)!.trim();
+    }
+
+    if (tecnoVencimiento.isEmpty) {
+      // Buscar en todo el texto cualquier fecha cercana a RTM o TECNICOMECANICA
+      final m = RegExp(r'(?:RTM|TECNICO|MECANICA|REVISION)[^\n\r]{0,120}?(\d{1,2}[/\-]\d{1,2}[/\-]\d{4}|\d{4}[/\-]\d{1,2}[/\-]\d{1,2})', caseSensitive: false).firstMatch(rawText);
+      if (m != null) tecnoVencimiento = m.group(1)!.trim();
     }
 
     return RuntVehicleProfile(

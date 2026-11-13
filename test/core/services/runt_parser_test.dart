@@ -103,5 +103,38 @@ void main() {
       expect(RuntVehicleProfile.sanitizeField('check_circle VIGENTE'), 'VIGENTE');
       expect(RuntVehicleProfile.sanitizeField('car_crash • Vence: 12/06/2027'), 'Vence: 12/06/2027');
     });
+
+    test('Extracts clase, servicio, SOAT and RTM with alternate headers and tabular dates without colons', () {
+      const alternateRuntText = '''
+        Información del Automotor
+        Placa: XYZ123
+        Clase: AUTOMOVIL
+        Servicio: PARTICULAR
+        Marca: MAZDA
+        Línea: CX-30
+        Modelo: 2024
+        
+        SEGURO OBLIGATORIO (SOAT)
+        Nro Poliza   Aseguradora             Fecha Inicio  Fecha Vencimiento  Estado
+        882910291    SEGUROS DEL ESTADO      20/05/2024    20/05/2025         VIGENTE
+
+        REVISION TECNICOMECANICA Y DE EMISIONES
+        Certificado  CDA                     Expedicion    Vencimiento        Estado
+        9948210      CDA DEL NORTE S.A.S.    15/01/2024    15/01/2025         VIGENTE
+      ''';
+
+      final profile = RuntVehicleProfile.parseFromRawText(alternateRuntText);
+
+      expect(profile.clase, 'AUTOMOVIL');
+      expect(profile.servicio, 'PARTICULAR');
+      expect(profile.marca, 'MAZDA');
+      expect(profile.linea, 'CX-30');
+      expect(profile.soatVencimiento, '20/05/2025');
+      expect(profile.soatInicioVigencia, '20/05/2024');
+      expect(profile.soatEstado, 'VIGENTE');
+      expect(profile.tecnoVencimiento, '15/01/2025');
+      expect(profile.tecnoInicioVigencia, '15/01/2024');
+      expect(profile.tecnoEstado, 'VIGENTE');
+    });
   });
 }

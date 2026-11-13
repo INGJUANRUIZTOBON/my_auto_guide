@@ -122,34 +122,51 @@ class _RuntWebViewScreenState extends State<RuntWebViewScreen> {
     });
 
     try {
-      // 1. Expandir acordeones/paneles colapsados (Bootstrap y Angular Material RUNTPRO)
+      // 1. Expandir acordeones/paneles colapsados (Bootstrap y Angular Material RUNTPRO) sin colapsar los ya abiertos
       await _controller.runJavaScript('''
         (function() {
           function expandInDoc(doc) {
             const triggers = doc.querySelectorAll(
-              '[data-toggle="collapse"], [data-bs-toggle="collapse"], .panel-heading a, .accordion-button, mat-expansion-panel-header, [role="button"][aria-expanded]'
+              '[data-toggle="collapse"], [data-bs-toggle="collapse"], .panel-heading, .panel-heading a, .accordion-button, .accordion-toggle, mat-expansion-panel-header, [role="button"][aria-expanded], button.mat-expansion-panel-header, .mat-expansion-panel-header-title, a[href*="collapse"]'
             );
             triggers.forEach(function(el) {
               const txt = (el.innerText || el.textContent || '').toUpperCase();
               if (
                 txt.includes('SOAT') ||
+                txt.includes('PÓLIZA') ||
+                txt.includes('POLIZA') ||
+                txt.includes('SEGURO') ||
                 txt.includes('REVISI') ||
                 txt.includes('TÉCNIC') ||
                 txt.includes('TECNIC') ||
                 txt.includes('RTM') ||
                 txt.includes('DATOS') ||
                 txt.includes('INFORMACI') ||
-                txt.includes('GENERAL') ||
-                txt.includes('LIMITA') ||
-                txt.includes('GRAV') ||
-                txt.includes('PÓLIZA') ||
-                txt.includes('POLIZA') ||
-                txt.includes('GARANT')
+                txt.includes('GENERAL')
               ) {
-                const expanded = el.getAttribute('aria-expanded');
-                if (expanded !== 'true') {
-                  try { el.click(); } catch (_) {}
+                const header = el.closest('mat-expansion-panel-header') || el;
+                const panel = el.closest('mat-expansion-panel, .panel, .accordion-item');
+                const isExpanded = header.getAttribute('aria-expanded') === 'true' ||
+                                   header.classList.contains('mat-expanded') ||
+                                   (panel && (panel.classList.contains('mat-expanded') || panel.querySelector('.collapse.in, .collapse.show, .show')));
+                if (!isExpanded) {
+                  try {
+                    header.scrollIntoView({ behavior: 'instant', block: 'center' });
+                    header.click();
+                    header.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+                  } catch (_) {}
                 }
+              }
+            });
+
+            // Expandir sub-botones "Ver detalle" si existen
+            doc.querySelectorAll('button, a, span').forEach(function(btn) {
+              const bTxt = (btn.innerText || btn.textContent || '').toUpperCase().trim();
+              if (bTxt === 'VER DETALLE' || bTxt === 'DETALLE' || bTxt === '+' || bTxt === 'VER MAS') {
+                try {
+                  btn.click();
+                  btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+                } catch (_) {}
               }
             });
           }
@@ -160,7 +177,8 @@ class _RuntWebViewScreenState extends State<RuntWebViewScreen> {
         })();
       ''');
 
-      await Future.delayed(const Duration(milliseconds: 900));
+      // Dar tiempo suficiente (1.8s) a los servicios AJAX asíncronos de RUNT para retornar las pólizas y CDA
+      await Future.delayed(const Duration(milliseconds: 1800));
 
       // 2. Extraer campos DOM, tablas HTML/Angular Material y raw_text para fallback multipaso
       const scraperJs = r'''
@@ -201,20 +219,20 @@ class _RuntWebViewScreenState extends State<RuntWebViewScreen> {
             const v = norm(rawVal);
             if (!k || !v || v.endsWith(':') || v.length > 140) return;
 
-            if (!out.marca && (k === 'MARCA' || k.startsWith('MARCA:'))) out.marca = v;
+            if (!out.marca && (k === 'MARCA' || k.startsWith('MARCA:') || k.includes('MARCA'))) out.marca = v;
             else if (!out.linea && (k === 'LINEA' || k.includes('LINEA'))) out.linea = v;
-            else if (!out.modelo_ano && (k === 'MODELO' || k === 'ANO MODELO')) out.modelo_ano = v;
+            else if (!out.modelo_ano && (k === 'MODELO' || k === 'ANO MODELO' || k.includes('MODELO'))) out.modelo_ano = v;
             else if (!out.color && k.includes('COLOR')) out.color = v;
-            else if (!out.clase && k.includes('CLASE DE VEHICULO')) out.clase = v;
-            else if (!out.servicio && k.includes('TIPO DE SERVICIO')) out.servicio = v;
-            else if (!out.estado_vehiculo && k.includes('ESTADO DEL VEHICULO')) out.estado_vehiculo = v;
+            else if (!out.clase && (k === 'CLASE' || k.startsWith('CLASE') || k.includes('CLASE') || k.includes('TIPO DE VEHICULO'))) out.clase = v;
+            else if (!out.servicio && (k === 'SERVICIO' || k.startsWith('SERVICIO') || k.includes('SERVICIO') || k.includes('MODALIDAD'))) out.servicio = v;
+            else if (!out.estado_vehiculo && (k.includes('ESTADO') && (k.includes('VEHICULO') || k.includes('AUTOMOTOR')))) out.estado_vehiculo = v;
             else if (!out.cilindraje && k.includes('CILINDRA')) out.cilindraje = v;
             else if (!out.combustible && k.includes('COMBUSTIBLE')) out.combustible = v;
-            else if (!out.vin && k.includes('VIN')) out.vin = v;
-            else if (!out.numero_motor && k.includes('NUMERO DE MOTOR')) out.numero_motor = v;
-            else if (!out.numero_chasis && (k.includes('NUMERO DE CHASIS') || k.includes('CHASIS'))) out.numero_chasis = v;
-            else if (!out.gravamenes && (k.includes('GRAVAMENES') || k.includes('PRENDAS') || k.includes('LIMITACIONES'))) out.gravamenes = v;
-            else if (!out.organismo_transito && k.includes('ORGANISMO DE TRANSITO')) out.organismo_transito = v;
+            else if (!out.vin && (k === 'VIN' || k.includes('VIN'))) out.vin = v;
+            else if (!out.numero_motor && (k.includes('MOTOR') || k.includes('NUMERO DE MOTOR'))) out.numero_motor = v;
+            else if (!out.numero_chasis && (k.includes('CHASIS') || k.includes('SERIE') || k.includes('NUMERO DE CHASIS'))) out.numero_chasis = v;
+            else if (!out.gravamenes && (k.includes('GRAVAMEN') || k.includes('PRENDA') || k.includes('LIMITACION'))) out.gravamenes = v;
+            else if (!out.organismo_transito && (k.includes('ORGANISMO') || k.includes('SECRETARIA') || k.includes('TRANSITO'))) out.organismo_transito = v;
           }
 
           function scrapeDoc(doc) {
@@ -258,12 +276,32 @@ class _RuntWebViewScreenState extends State<RuntWebViewScreen> {
                 }
               }
 
-              const headers = [...t.querySelectorAll('thead th, tr:first-child th, mat-header-cell, [role="columnheader"]')].map(h => upper(textOf(h)));
+              let headerEls = [...t.querySelectorAll('thead th, thead td, mat-header-cell, [role="columnheader"]')];
+              if (headerEls.length === 0 && rows.length > 0) {
+                headerEls = [...rows[0].querySelectorAll('th, td')];
+              }
+              const headers = headerEls.map(h => upper(textOf(h)));
               const bodyRows = [...t.querySelectorAll('tbody tr, mat-row')];
-              const firstRow = bodyRows.length > 0 ? bodyRows[0] : (rows.length > 1 ? rows[1] : null);
 
-              if ((tableText.includes('SOAT') || tableText.includes('POLIZA')) && firstRow) {
-                const cols = [...firstRow.querySelectorAll('td, mat-cell, [role="cell"]')].map(c => norm(textOf(c)));
+              // Identificar la fila VIGENTE o más reciente
+              let targetSoatRow = null;
+              let targetTecnoRow = null;
+              const candidateRows = bodyRows.length > 0 ? bodyRows : (rows.length > 1 ? rows.slice(1) : rows);
+
+              for (const r of candidateRows) {
+                const rTxt = upper(textOf(r));
+                if ((rTxt.includes('VIGENTE') || rTxt.includes('ACTIVA')) && !targetSoatRow) {
+                  targetSoatRow = r;
+                }
+                if ((rTxt.includes('VIGENTE') || rTxt.includes('ACTIVA')) && !targetTecnoRow) {
+                  targetTecnoRow = r;
+                }
+              }
+              if (!targetSoatRow && candidateRows.length > 0) targetSoatRow = candidateRows[0];
+              if (!targetTecnoRow && candidateRows.length > 0) targetTecnoRow = candidateRows[0];
+
+              if ((tableText.includes('SOAT') || tableText.includes('POLIZA')) && targetSoatRow) {
+                const cols = [...targetSoatRow.querySelectorAll('td, mat-cell, [role="cell"]')].map(c => norm(textOf(c)));
                 headers.forEach((h, idx) => {
                   const val = cols[idx] || '';
                   if (!val) return;
@@ -275,9 +313,9 @@ class _RuntWebViewScreenState extends State<RuntWebViewScreen> {
                   else if ((h.includes('FIN VIGENCIA') || h.includes('FIN DE VIGENCIA') || h.includes('VENCIMIENTO') || h.includes('HASTA')) && !out.soat_vencimiento) out.soat_vencimiento = val;
                 });
                 if (!out.soat_vencimiento) {
-                  for (const r of rows) {
-                    const rTxt = upper(r.innerText);
-                    const dates = rTxt.match(/\b(\d{2}[\/\-]\d{2}[\/\-]\d{4}|\d{4}[\/\-]\d{2}[\/\-]\d{2})\b/g);
+                  for (const r of candidateRows) {
+                    const rTxt = upper(textOf(r));
+                    const dates = rTxt.match(/\b(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}|\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2})\b/g);
                     if (dates && dates.length > 0 && (rTxt.includes('FIN') || rTxt.includes('VENCIMIENTO') || rTxt.includes('HASTA') || rTxt.includes('VIGENTE'))) {
                       if (!out.soat_inicio_vigencia && dates.length >= 2) out.soat_inicio_vigencia = dates[0];
                       out.soat_vencimiento = dates[dates.length - 1];
@@ -287,8 +325,8 @@ class _RuntWebViewScreenState extends State<RuntWebViewScreen> {
                 }
               }
 
-              if ((tableText.includes('RTM') || tableText.includes('TECNICO') || tableText.includes('REVISION')) && firstRow) {
-                const cols = [...firstRow.querySelectorAll('td, mat-cell, [role="cell"]')].map(c => norm(c.innerText));
+              if ((tableText.includes('RTM') || tableText.includes('TECNICO') || tableText.includes('REVISION') || tableText.includes('TECNICOMECANICA')) && targetTecnoRow) {
+                const cols = [...targetTecnoRow.querySelectorAll('td, mat-cell, [role="cell"]')].map(c => norm(textOf(c)));
                 headers.forEach((h, idx) => {
                   const val = cols[idx] || '';
                   if (!val) return;
@@ -300,9 +338,9 @@ class _RuntWebViewScreenState extends State<RuntWebViewScreen> {
                   else if ((h.includes('FIN DE VIGENCIA') || h.includes('FIN VIGENCIA') || h.includes('VIGENTE') || h.includes('VIGENCIA') || h.includes('VENCIMIENTO') || h.includes('HASTA')) && !out.tecno_vencimiento) out.tecno_vencimiento = val;
                 });
                 if (!out.tecno_vencimiento) {
-                  for (const r of rows) {
-                    const rTxt = upper(r.innerText);
-                    const dates = rTxt.match(/\b(\d{2}[\/\-]\d{2}[\/\-]\d{4}|\d{4}[\/\-]\d{2}[\/\-]\d{2})\b/g);
+                  for (const r of candidateRows) {
+                    const rTxt = upper(textOf(r));
+                    const dates = rTxt.match(/\b(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}|\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2})\b/g);
                     if (dates && dates.length > 0 && (rTxt.includes('VENCIMIENTO') || rTxt.includes('HASTA') || rTxt.includes('VIGENTE'))) {
                       if (!out.tecno_inicio_vigencia && dates.length >= 2) out.tecno_inicio_vigencia = dates[0];
                       out.tecno_vencimiento = dates[dates.length - 1];
@@ -312,6 +350,31 @@ class _RuntWebViewScreenState extends State<RuntWebViewScreen> {
                 }
               }
             }
+
+            // 2D. Búsqueda en tarjetas/bloques expansibles si RUNT no usó <table>
+            doc.querySelectorAll('.mat-expansion-panel, .panel, .card, mat-card, .accordion-item, div[id*="soat" i], div[id*="rtm" i], div[id*="tecno" i]').forEach(function(card) {
+              const cText = upper(textOf(card));
+              const isSoat = cText.includes('SOAT') || cText.includes('POLIZA');
+              const isTecno = cText.includes('TECNICO') || cText.includes('TECNICOMECANICA') || cText.includes('RTM') || cText.includes('REVISION');
+
+              if (isSoat && !out.soat_vencimiento) {
+                const dates = cText.match(/\b(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}|\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2})\b/g);
+                if (dates && dates.length > 0) {
+                  if (dates.length >= 2 && !out.soat_inicio_vigencia) out.soat_inicio_vigencia = dates[0];
+                  out.soat_vencimiento = dates[dates.length - 1];
+                  if (cText.includes('VIGENTE') && !out.soat_estado) out.soat_estado = 'VIGENTE';
+                }
+              }
+
+              if (isTecno && !out.tecno_vencimiento) {
+                const dates = cText.match(/\b(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}|\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2})\b/g);
+                if (dates && dates.length > 0) {
+                  if (dates.length >= 2 && !out.tecno_inicio_vigencia) out.tecno_inicio_vigencia = dates[0];
+                  out.tecno_vencimiento = dates[dates.length - 1];
+                  if (cText.includes('VIGENTE') && !out.tecno_estado) out.tecno_estado = 'VIGENTE';
+                }
+              }
+            });
           }
 
           scrapeDoc(document);
