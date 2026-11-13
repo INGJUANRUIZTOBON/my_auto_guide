@@ -31,6 +31,7 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
@@ -144,6 +145,7 @@ class _InicioAppState extends State<InicioApp> {
   double _pctSoat = 0.0;
   double _pctTecno = 0.0;
   DateTime? _lastCadena, _lastFiltro, _lastAceite, _lastSoat, _lastTecno;
+  List<CustomMaintenanceItem> _customMaintenancesList = [];
 
   String? _soatPath, _tecnoPath, _seguroPath, _propPath;
   String? _soatSigned, _tecnoSigned, _seguroSigned, _propSigned;
@@ -262,66 +264,198 @@ class _InicioAppState extends State<InicioApp> {
         context: context,
         barrierDismissible: false,
         builder: (ctx) {
-          return AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            title: const Row(
-              children: [
-                Icon(Icons.speed, color: Colors.blueAccent),
-                SizedBox(width: 10),
-                Text('Actualizar Kilometraje'),
-              ],
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Por favor, ingresa el kilometraje actual de tu vehículo para mantener los mantenimientos al día:',
-                  style: TextStyle(fontSize: 13, color: Colors.grey),
+          final isDark = Theme.of(ctx).brightness == Brightness.dark;
+          return Dialog(
+            backgroundColor: Colors.transparent,
+            insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Container(
+              padding: const EdgeInsets.all(22),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF0D111D) : Colors.white,
+                borderRadius: BorderRadius.circular(26),
+                border: Border.all(
+                  color: const Color(0xFF00E5FF).withValues(alpha: 0.35),
+                  width: 1.4,
                 ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: kmController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Kilómetros actuales',
-                    suffixText: 'KM',
-                    border: OutlineInputBorder(),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF00E5FF).withValues(alpha: 0.18),
+                    blurRadius: 28,
+                    spreadRadius: 1,
                   ),
-                ),
-              ],
+                  if (isDark)
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.7),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF00E5FF).withValues(alpha: 0.15),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: const Color(0xFF00E5FF).withValues(alpha: 0.35),
+                            width: 1.2,
+                          ),
+                        ),
+                        child: const Icon(Icons.speed_rounded,
+                            color: Color(0xFF00E5FF), size: 24),
+                      ),
+                      const SizedBox(width: 12),
+                      const Expanded(
+                        child: Text(
+                          'Actualizar Kilometraje',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.3,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  Text(
+                    'Por favor, ingresa el kilometraje actual de tu vehículo para mantener los mantenimientos al día:',
+                    style: TextStyle(
+                      fontSize: 13,
+                      height: 1.4,
+                      color: isDark ? Colors.white70 : Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  TextField(
+                    controller: kmController,
+                    keyboardType: TextInputType.number,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.2,
+                    ),
+                    decoration: InputDecoration(
+                      labelText: 'Kilómetros actuales',
+                      suffixText: 'KM',
+                      suffixStyle: const TextStyle(
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF00E5FF),
+                      ),
+                      filled: true,
+                      fillColor: isDark
+                          ? const Color(0xFF06090F)
+                          : Colors.grey.shade100,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(
+                          color: isDark ? Colors.white12 : Colors.black12,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: const BorderSide(
+                          color: Color(0xFF00E5FF),
+                          width: 1.5,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 22),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () async {
+                            HapticFeedback.lightImpact();
+                            final nextAsk = DateTime.now().subtract(const Duration(hours: 19));
+                            await prefs.setString('last_km_check_$vehicleId', nextAsk.toIso8601String());
+                            if (ctx.mounted) Navigator.pop(ctx);
+                          },
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: isDark ? Colors.white70 : Colors.black87,
+                            side: BorderSide(
+                              color: isDark ? Colors.white24 : Colors.black12,
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                          child: const Text(
+                            'Más tarde',
+                            style: TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Container(
+                          height: 48,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(14),
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF00E5FF), Color(0xFF0072FF)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF00E5FF).withValues(alpha: 0.3),
+                                blurRadius: 16,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              HapticFeedback.mediumImpact();
+                              final newKms = int.tryParse(kmController.text) ?? currentKms;
+                              if (newKms >= currentKms) {
+                                await SupabaseService().updateVehicleKms(vehicleId, newKms);
+                                await OdometerHistoryService().recordOdometerReading(vehicleId, newKms);
+                                await prefs.setString('last_km_check_$vehicleId', DateTime.now().toIso8601String());
+                                setState(() {
+                                  _cachedVehicleData = null;
+                                });
+                                if (ctx.mounted) Navigator.pop(ctx);
+                              } else {
+                                AppSnackBar.show(
+                                  context,
+                                  'El kilometraje no puede ser menor al actual.',
+                                  backgroundColor: Colors.orange,
+                                );
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.transparent,
+                              shadowColor: Colors.transparent,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                            child: const Text(
+                              'Actualizar',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w800,
+                                fontSize: 15,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-            actions: [
-              TextButton(
-                onPressed: () async {
-                  final nextAsk = DateTime.now().subtract(const Duration(hours: 20));
-                  await prefs.setString('last_km_check_$vehicleId', nextAsk.toIso8601String());
-                  if (ctx.mounted) Navigator.pop(ctx);
-                },
-                child: const Text('Más tarde'),
-              ),
-              FilledButton(
-                onPressed: () async {
-                  final newKms = int.tryParse(kmController.text) ?? currentKms;
-                  if (newKms >= currentKms) {
-                    await SupabaseService().updateVehicleKms(vehicleId, newKms);
-                    await OdometerHistoryService().recordOdometerReading(vehicleId, newKms);
-                    await prefs.setString('last_km_check_$vehicleId', DateTime.now().toIso8601String());
-                    setState(() {
-                      _cachedVehicleData = null;
-                    });
-                    if (ctx.mounted) Navigator.pop(ctx);
-                  } else {
-                    AppSnackBar.show(
-                      context,
-                      'El kilometraje no puede ser menor al actual.',
-                      backgroundColor: Colors.orange,
-                    );
-                  }
-                },
-                child: const Text('Actualizar'),
-              ),
-            ],
           );
         },
       );
@@ -530,6 +664,9 @@ class _InicioAppState extends State<InicioApp> {
           .single();
       _cachedVehicleData = row;
       _aplicarDatosVehiculo(row);
+      try {
+        _customMaintenancesList = await CustomMaintenanceService().getItems(widget.vehiculoId);
+      } catch (_) {}
       unawaited(
         BootVehicleSnapshot.save(
           marca: (row['marca'] as String? ?? ''),
@@ -2478,6 +2615,18 @@ class _InicioAppState extends State<InicioApp> {
                               onTap: _abrirSimit,
                             ),
                             const SizedBox(width: 12),
+                            ..._customMaintenancesList.map((item) {
+                              final kmsNum = double.tryParse(kms) ?? 0.0;
+                              final pct = item.healthPercentage(kmsNum).clamp(0.0, 1.0);
+                              return Padding(
+                                padding: const EdgeInsets.only(right: 12),
+                                child: IndicatorTile(
+                                  title: item.nombre,
+                                  value: pct,
+                                  color: _colorFor(pct),
+                                ),
+                              );
+                            }),
                           ],
                         ),
                       ),
@@ -2496,6 +2645,16 @@ class _InicioAppState extends State<InicioApp> {
                   currentKms: double.tryParse(kms) ?? 0.0,
                   isCar: _isCarForScanner(v),
                   brandTheme: bTheme,
+                  onUpdated: () async {
+                    try {
+                      final items = await CustomMaintenanceService().getItems(widget.vehiculoId);
+                      if (mounted) {
+                        setState(() {
+                          _customMaintenancesList = items;
+                        });
+                      }
+                    } catch (_) {}
+                  },
                 ),
                 const SizedBox(height: 24),
                 _StaggeredFadeIn(

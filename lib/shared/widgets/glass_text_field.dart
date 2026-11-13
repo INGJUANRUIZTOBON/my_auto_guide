@@ -19,6 +19,7 @@ class GlassTextField extends StatelessWidget {
   final IconData icon;
   final bool obscureText;
   final TextInputType? keyboardType;
+  final bool enabled;
 
   const GlassTextField({
     super.key,
@@ -27,6 +28,7 @@ class GlassTextField extends StatelessWidget {
     required this.icon,
     this.obscureText = false,
     this.keyboardType,
+    this.enabled = true,
   });
 
   @override
@@ -57,6 +59,7 @@ class GlassTextField extends StatelessWidget {
         ),
         child: TextField(
           controller: controller,
+          enabled: enabled,
           obscureText: obscureText,
           keyboardType: keyboardType,
           style: TextStyle(color: isDark ? Colors.white : Colors.black87),

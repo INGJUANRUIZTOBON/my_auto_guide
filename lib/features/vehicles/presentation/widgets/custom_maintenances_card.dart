@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../../core/services/custom_maintenance_service.dart';
 import '../../../../core/theme/brand_theme.dart';
 import '../../../../shared/widgets/app_snack_bar.dart';
@@ -8,6 +9,7 @@ class CustomMaintenancesCard extends StatefulWidget {
   final double currentKms;
   final bool isCar;
   final BrandTheme brandTheme;
+  final VoidCallback? onUpdated;
 
   const CustomMaintenancesCard({
     super.key,
@@ -15,6 +17,7 @@ class CustomMaintenancesCard extends StatefulWidget {
     required this.currentKms,
     required this.isCar,
     required this.brandTheme,
+    this.onUpdated,
   });
 
   @override
@@ -48,6 +51,7 @@ class _CustomMaintenancesCardState extends State<CustomMaintenancesCard> {
         _items = rows;
         _loading = false;
       });
+      widget.onUpdated?.call();
     }
   }
 
@@ -56,84 +60,264 @@ class _CustomMaintenancesCardState extends State<CustomMaintenancesCard> {
     final diasCtrl = TextEditingController(text: '180');
     final kmsCtrl = TextEditingController(text: '10000');
     final presets = CustomMaintenanceService.presetsForVehicle(isCar: widget.isCar);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final ok = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.fromLTRB(
-          20,
-          20,
-          20,
-          MediaQuery.of(ctx).viewInsets.bottom + 24,
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Text(
-                'Nuevo Mantenimiento Personalizado',
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final dias = int.tryParse(diasCtrl.text) ?? 180;
+            final meses = (dias / 30).toStringAsFixed(1);
+
+            return Container(
+              padding: EdgeInsets.fromLTRB(
+                22,
+                16,
+                22,
+                MediaQuery.of(ctx).viewInsets.bottom + 26,
               ),
-              const SizedBox(height: 10),
-              Wrap(
-                spacing: 8,
-                runSpacing: 6,
-                children: presets.map((p) {
-                  return ActionChip(
-                    label: Text(p['nombre'].toString()),
-                    onPressed: () {
-                      nameCtrl.text = p['nombre'].toString();
-                      diasCtrl.text = p['dias'].toString();
-                      kmsCtrl.text = p['kms'].toString();
-                    },
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: nameCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Nombre del mantenimiento',
-                  border: OutlineInputBorder(),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF0D111D) : Colors.white,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+                border: Border.all(
+                  color: const Color(0xFF00E5FF).withValues(alpha: 0.28),
+                  width: 1.2,
                 ),
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: diasCtrl,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Ciclo (días)',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: TextField(
-                      controller: kmsCtrl,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Ciclo (Km)',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.6),
+                    blurRadius: 30,
+                    offset: const Offset(0, -6),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(ctx, true),
-                child: const Text('Guardar mantenimiento'),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 44,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.white24,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF00E5FF).withValues(alpha: 0.15),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.build_circle_rounded,
+                              color: Color(0xFF00E5FF), size: 22),
+                        ),
+                        const SizedBox(width: 12),
+                        const Expanded(
+                          child: Text(
+                            'Nuevo Mantenimiento Personalizado',
+                            style: TextStyle(
+                              fontSize: 16.5,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -0.2,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    Text(
+                      'Sugerencias rápidas para ${widget.isCar ? "tu carro" : "tu moto"}:',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark ? Colors.white60 : Colors.black54,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 6,
+                      children: presets.map((p) {
+                        return InkWell(
+                          onTap: () {
+                            HapticFeedback.selectionClick();
+                            setModalState(() {
+                              nameCtrl.text = p['nombre'].toString();
+                              diasCtrl.text = p['dias'].toString();
+                              kmsCtrl.text = p['kms'].toString();
+                            });
+                          },
+                          borderRadius: BorderRadius.circular(20),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? const Color(0xFF141A29)
+                                  : Colors.blue.shade50,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: const Color(0xFF00E5FF)
+                                    .withValues(alpha: 0.35),
+                                width: 0.8,
+                              ),
+                            ),
+                            child: Text(
+                              p['nombre'].toString(),
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: isDark
+                                    ? const Color(0xFF00E5FF)
+                                    : const Color(0xFF0072FF),
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: nameCtrl,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                      decoration: InputDecoration(
+                        labelText: 'Nombre del mantenimiento',
+                        hintText: 'Ej: Pastillas de freno delanteras',
+                        filled: true,
+                        fillColor: isDark
+                            ? const Color(0xFF06090F)
+                            : Colors.grey.shade100,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide(
+                            color: isDark ? Colors.white12 : Colors.black12,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: const BorderSide(
+                            color: Color(0xFF00E5FF),
+                            width: 1.4,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: diasCtrl,
+                            keyboardType: TextInputType.number,
+                            onChanged: (_) => setModalState(() {}),
+                            decoration: InputDecoration(
+                              labelText: 'Ciclo (días)',
+                              helperText: 'Aprox. ~$meses meses',
+                              filled: true,
+                              fillColor: isDark
+                                  ? const Color(0xFF06090F)
+                                  : Colors.grey.shade100,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: BorderSide(
+                                  color: isDark ? Colors.white12 : Colors.black12,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFF00E5FF),
+                                  width: 1.4,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextField(
+                            controller: kmsCtrl,
+                            keyboardType: TextInputType.number,
+                            decoration: InputDecoration(
+                              labelText: 'Ciclo (Km)',
+                              suffixText: 'KM',
+                              filled: true,
+                              fillColor: isDark
+                                  ? const Color(0xFF06090F)
+                                  : Colors.grey.shade100,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: BorderSide(
+                                  color: isDark ? Colors.white12 : Colors.black12,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFF00E5FF),
+                                  width: 1.4,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    Container(
+                      height: 50,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF00E5FF), Color(0xFF0072FF)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF00E5FF).withValues(alpha: 0.3),
+                            blurRadius: 18,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(ctx, true),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: const Text(
+                          'Guardar Mantenimiento',
+                          style: TextStyle(
+                            fontSize: 15.5,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ],
-          ),
-        ),
-      ),
+            );
+          },
+        );
+      },
     );
 
     final nombre = nameCtrl.text.trim();
@@ -154,22 +338,39 @@ class _CustomMaintenancesCardState extends State<CustomMaintenancesCard> {
     );
     await _load();
     if (mounted) {
-      AppSnackBar.show(context, 'Agregado: $nombre');
+      AppSnackBar.show(context, 'Mantenimiento registrado: $nombre');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    const accent = Color(0xFF00E5FF);
+
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-        borderRadius: BorderRadius.circular(22),
+        color: isDark ? const Color(0xFF0A0E1A) : Colors.white,
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.08),
+          color: accent.withValues(alpha: 0.28),
+          width: 1.4,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: accent.withValues(alpha: 0.1),
+            blurRadius: 20,
+            spreadRadius: 0,
+            offset: const Offset(0, 6),
+          ),
+          if (isDark)
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.6),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
+            ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -177,46 +378,129 @@ class _CustomMaintenancesCardState extends State<CustomMaintenancesCard> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Expanded(
-                child: Text(
-                  'Mantenimientos Personalizados',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
-                ),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: accent.withValues(alpha: 0.14),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: accent.withValues(alpha: 0.3),
+                        width: 1,
+                      ),
+                    ),
+                    child: const Icon(Icons.build_circle_rounded,
+                        color: accent, size: 20),
+                  ),
+                  const SizedBox(width: 10),
+                  const Text(
+                    'Mantenimientos Personalizados',
+                    style: TextStyle(
+                      fontSize: 15.5,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                ],
               ),
-              TextButton.icon(
-                onPressed: _openAddModal,
-                icon: const Icon(Icons.add_circle_outline_rounded, size: 18),
-                label: const Text('Agregar'),
+              InkWell(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  _openAddModal();
+                },
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: accent.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: accent.withValues(alpha: 0.4),
+                      width: 1,
+                    ),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.add_rounded, size: 16, color: accent),
+                      SizedBox(width: 4),
+                      Text(
+                        'Agregar',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: accent,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ],
           ),
+          const SizedBox(height: 12),
           if (_loading)
             const Padding(
-              padding: EdgeInsets.symmetric(vertical: 8),
-              child: LinearProgressIndicator(),
+              padding: EdgeInsets.symmetric(vertical: 12),
+              child: Center(
+                child: SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: accent,
+                  ),
+                ),
+              ),
             )
           else if (_items.isEmpty)
-            Text(
-              widget.isCar
-                  ? 'Agrega frenos, rotación de llantas, batería, refrigerante o correa de distribución.'
-                  : 'Agrega pastillas de freno, llantas, bujía, líquido de frenos o batería.',
-              style: TextStyle(
-                fontSize: 12.5,
-                color: isDark ? Colors.white60 : Colors.black54,
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.03)
+                    : Colors.black.withValues(alpha: 0.02),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.05)
+                      : Colors.black.withValues(alpha: 0.04),
+                ),
+              ),
+              child: Text(
+                widget.isCar
+                    ? 'Agrega pastillas de freno, rotación de llantas, batería, bujías o líquido de frenos.'
+                    : 'Agrega pastillas de freno, llantas, bujía, líquido de frenos o batería.',
+                style: TextStyle(
+                  fontSize: 12.5,
+                  height: 1.35,
+                  color: isDark ? Colors.white60 : Colors.black54,
+                ),
               ),
             )
           else
             ..._items.map((item) {
               final pct = item.healthPercentage(widget.currentKms).clamp(0.0, 1.0);
               final color = pct > 0.5
-                  ? Colors.green
-                  : (pct > 0.25 ? Colors.orange : Colors.redAccent);
+                  ? const Color(0xFF00E676)
+                  : (pct > 0.25
+                      ? const Color(0xFFFFB300)
+                      : const Color(0xFFFF3366));
               return Container(
                 margin: const EdgeInsets.only(top: 10),
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: isDark ? Colors.white.withValues(alpha: 0.04) : Colors.grey.shade50,
-                  borderRadius: BorderRadius.circular(14),
+                  color: isDark
+                      ? const Color(0xFF0F1422)
+                      : Colors.grey.shade50,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: color.withValues(alpha: 0.28),
+                    width: 1,
+                  ),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -226,53 +510,112 @@ class _CustomMaintenancesCardState extends State<CustomMaintenancesCard> {
                         Expanded(
                           child: Text(
                             item.nombre,
-                            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 14,
+                            ),
                           ),
                         ),
-                        Text(
-                          '${(pct * 100).round()}%',
-                          style: TextStyle(fontWeight: FontWeight.w800, color: color),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: color.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            '${(pct * 100).round()}%',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 12,
+                              color: color,
+                            ),
+                          ),
                         ),
-                        IconButton(
-                          tooltip: 'Registrar realizado hoy',
-                          icon: const Icon(Icons.check_circle_outline, size: 19),
-                          onPressed: () async {
-                            final messenger = context;
-                            await _service.markDoneToday(
-                              item,
-                              widget.currentKms,
-                            );
-                            await _load();
-                            if (!mounted || !messenger.mounted) return;
-                            AppSnackBar.show(messenger, '${item.nombre} renovado al 100%.');
-                          },
+                        const SizedBox(width: 6),
+                        Tooltip(
+                          message: 'Renovar hoy al 100%',
+                          child: InkWell(
+                            onTap: () async {
+                              HapticFeedback.mediumImpact();
+                              final messenger = context;
+                              await _service.markDoneToday(
+                                item,
+                                widget.currentKms,
+                              );
+                              await _load();
+                              if (!mounted || !messenger.mounted) return;
+                              AppSnackBar.show(
+                                messenger,
+                                '${item.nombre} renovado al 100%.',
+                              );
+                            },
+                            borderRadius: BorderRadius.circular(10),
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF00E676)
+                                    .withValues(alpha: 0.12),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.check_rounded,
+                                  size: 16, color: Color(0xFF00E676)),
+                            ),
+                          ),
                         ),
-                        IconButton(
-                          tooltip: 'Eliminar',
-                          icon: const Icon(Icons.delete_outline, size: 19),
-                          onPressed: () async {
-                            await _service.deleteItem(item);
-                            await _load();
-                          },
+                        const SizedBox(width: 4),
+                        Tooltip(
+                          message: 'Eliminar',
+                          child: InkWell(
+                            onTap: () async {
+                              HapticFeedback.lightImpact();
+                              await _service.deleteItem(item);
+                              await _load();
+                            },
+                            borderRadius: BorderRadius.circular(10),
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: Colors.redAccent.withValues(alpha: 0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.delete_outline_rounded,
+                                  size: 16, color: Colors.redAccent),
+                            ),
+                          ),
                         ),
                       ],
                     ),
+                    const SizedBox(height: 8),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(6),
                       child: LinearProgressIndicator(
                         value: pct,
-                        minHeight: 6,
+                        minHeight: 6.5,
                         color: color,
                         backgroundColor: color.withValues(alpha: 0.15),
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Cada ${item.cicloDias} días o ${item.cicloKms} Km • Último: ${item.ultimoKm.round()} Km',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: isDark ? Colors.white54 : Colors.black54,
-                      ),
+                    const SizedBox(height: 6),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Ciclo: ${item.cicloKms} Km / ${item.cicloDias} días',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: isDark ? Colors.white54 : Colors.black54,
+                          ),
+                        ),
+                        Text(
+                          'Último: ${item.ultimoKm.round()} Km',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: isDark ? Colors.white70 : Colors.black87,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
