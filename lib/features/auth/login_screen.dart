@@ -21,6 +21,7 @@
 // =============================================================================
 
 import 'dart:async';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -105,7 +106,7 @@ class _CarRentalLoginScreenState extends State<CarRentalLoginScreen> {
     _checkingAutoLogin = _auth.currentUser != null;
     try {
       final update = await _updateService.checkForUpdate();
-      if (update != null && mounted) {
+      if (!kIsWeb && update != null && mounted) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => AppUpdateLockScreen(updateInfo: update)),

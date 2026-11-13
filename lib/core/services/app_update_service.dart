@@ -9,6 +9,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:archive/archive.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AppUpdateInfo {
   final int versionCode;
@@ -46,13 +47,7 @@ class AppUpdateService {
 
   /// Consulta en Supabase si existe una versión superior a la instalada.
   Future<AppUpdateInfo?> checkForUpdate() async {
-    // Solo Android nativo soporta actualización OTA mediante APK
-    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return null;
-
     try {
-      final packageInfo = await PackageInfo.fromPlatform();
-      final currentBuildNumber = int.tryParse(packageInfo.buildNumber) ?? 0;
-
       final client = Supabase.instance.client;
       final response = await client
           .from('app_versions')
@@ -65,18 +60,57 @@ class AppUpdateService {
 
       final updateInfo = AppUpdateInfo.fromMap(response);
 
-      if (updateInfo.versionCode > currentBuildNumber && updateInfo.zipUrl.isNotEmpty) {
-        if (kDebugMode) {
-          debugPrint('[OTA Update] Nueva versión detectada: ${updateInfo.versionName} (${updateInfo.versionCode}) vs Actual: ${packageInfo.version} ($currentBuildNumber)');
+      // En Web: Comparamos contra el último código de versión visto en localStorage
+      if (kIsWeb) {
+        final prefs = await SharedPreferences.getInstance();
+        final lastSeenCode = prefs.getInt('web_last_seen_version_code') ?? 0;
+        if (updateInfo.versionCode > lastSeenCode) {
+          return updateInfo;
         }
-        return updateInfo;
+        return null;
+      }
+
+      // En Android Nativo: Comparamos contra el buildNumber de la app instalada
+      if (defaultTargetPlatform == TargetPlatform.android) {
+        final packageInfo = await PackageInfo.fromPlatform();
+        final currentBuildNumber = int.tryParse(packageInfo.buildNumber) ?? 0;
+        if (updateInfo.versionCode > currentBuildNumber && updateInfo.zipUrl.isNotEmpty) {
+          if (kDebugMode) {
+            debugPrint('[OTA Update] Nueva versión detectada: ${updateInfo.versionName} (${updateInfo.versionCode}) vs Actual: ${packageInfo.version} ($currentBuildNumber)');
+          }
+          return updateInfo;
+        }
       }
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('[OTA Update] Error consultando actualización: $e');
+        debugPrint('[UpdateService] Error consultando actualización: $e');
       }
     }
     return null;
+  }
+
+  /// Registra que el usuario ya vio las novedades de esta versión en Web
+  Future<void> markWebVersionAsSeen(int versionCode) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('web_last_seen_version_code', versionCode);
+  }
+
+  /// Consulta la versión más reciente y sus notas para mostrar en cualquier momento
+  Future<AppUpdateInfo?> getLatestVersionInfo() async {
+    try {
+      final client = Supabase.instance.client;
+      final response = await client
+          .from('app_versions')
+          .select()
+          .order('version_code', ascending: false)
+          .limit(1)
+          .maybeSingle();
+
+      if (response == null) return null;
+      return AppUpdateInfo.fromMap(response);
+    } catch (_) {
+      return null;
+    }
   }
 
   /// Descarga el archivo ZIP desde Supabase Storage y descomprime el APK en segundo plano.

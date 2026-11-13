@@ -53,6 +53,7 @@ import '../../../core/services/notification_service.dart';
 import '../../../core/services/email_service.dart'; // [NUEVO] Alertas mecánicas por correo
 import '../../../core/services/app_update_service.dart';
 import '../../updater/presentation/app_update_lock_screen.dart';
+import '../../updater/presentation/release_notes_dialog.dart';
 import '../../../core/services/vehicle_storage_service.dart';
 import '../../../core/logic/app_widget_logic.dart';
 import '../../../core/logic/vehicle_health_logic.dart';
@@ -1849,13 +1850,26 @@ class _InicioAppState extends State<InicioApp> {
       unawaited(_syncHealthWidget());
       unawaited(_verificarYEnviarAlertasMantenimiento());
 
-      // Verificar si hay actualización OTA obligatoria pendiente
+      // Verificar si hay actualización OTA obligatoria (Móvil) o Novedades (Web)
       final update = await AppUpdateService().checkForUpdate();
       if (update != null && mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => AppUpdateLockScreen(updateInfo: update)),
-        );
+        if (kIsWeb) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              ReleaseNotesDialog.show(
+                context,
+                updateInfo: update,
+                isAutomaticNotice: true,
+              );
+            }
+          });
+        } else {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+                builder: (_) => AppUpdateLockScreen(updateInfo: update)),
+          );
+        }
       }
     }
 
@@ -2723,6 +2737,14 @@ class _InicioAppState extends State<InicioApp> {
                 _generarYAccionarPdf(modo: 'imprimir');
               }
             },
+            onShowReleaseNotes: () async {
+              final latest = await AppUpdateService().getLatestVersionInfo();
+              if (latest != null && context.mounted) {
+                ReleaseNotesDialog.show(context, updateInfo: latest);
+              } else if (context.mounted) {
+                AppSnackBar.show(context, 'Estás en la versión más reciente.');
+              }
+            },
             onChangePassword: () => ChangePasswordSheet.show(context),
             onLogout: _cerrarSesion,
             appBar: AppBar(
@@ -2733,6 +2755,21 @@ class _InicioAppState extends State<InicioApp> {
                   icon: const Icon(Icons.satellite_alt_rounded,
                       color: Color(0xFF00E5FF)),
                   onPressed: openLiveTelemetry,
+                ),
+                IconButton(
+                  tooltip: 'Novedades de la actualización',
+                  icon: const Icon(Icons.auto_awesome_motion_rounded,
+                      color: Color(0xFF30D158)),
+                  onPressed: () async {
+                    final latest =
+                        await AppUpdateService().getLatestVersionInfo();
+                    if (latest != null && context.mounted) {
+                      ReleaseNotesDialog.show(context, updateInfo: latest);
+                    } else if (context.mounted) {
+                      AppSnackBar.show(
+                          context, 'Estás en la versión más reciente.');
+                    }
+                  },
                 ),
                 IconButton(
                   tooltip: 'Compartir vehículo',

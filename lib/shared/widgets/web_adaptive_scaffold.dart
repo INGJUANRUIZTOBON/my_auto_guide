@@ -17,6 +17,7 @@ class WebAdaptiveScaffold extends StatefulWidget {
   final VoidCallback onOpenTelemetry;
   final VoidCallback onOpenAiChat;
   final VoidCallback onGenerateReport;
+  final VoidCallback onShowReleaseNotes;
   final VoidCallback onChangePassword;
   final VoidCallback onLogout;
 
@@ -34,6 +35,7 @@ class WebAdaptiveScaffold extends StatefulWidget {
     required this.onOpenTelemetry,
     required this.onOpenAiChat,
     required this.onGenerateReport,
+    required this.onShowReleaseNotes,
     required this.onChangePassword,
     required this.onLogout,
   });
@@ -238,6 +240,13 @@ class _WebAdaptiveScaffoldState extends State<WebAdaptiveScaffold> {
                             label: 'Reporte PDF',
                             isSelected: false,
                             onTap: widget.onGenerateReport,
+                          ),
+                          _buildNavItem(
+                            icon: Icons.auto_awesome_motion_rounded,
+                            label: 'Novedades',
+                            isSelected: false,
+                            accentColor: const Color(0xFF30D158),
+                            onTap: widget.onShowReleaseNotes,
                           ),
                           _buildNavItem(
                             icon: Icons.lock_reset_rounded,
