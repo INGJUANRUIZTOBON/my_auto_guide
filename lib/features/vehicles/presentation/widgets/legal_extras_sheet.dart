@@ -61,16 +61,32 @@ class _LegalExtrasSheetState extends State<LegalExtrasSheet> {
     final licStr = remoteLic ?? prefs.getString('extra_lic_${widget.vehiculoId}');
     final impStr = remoteImp ?? prefs.getString('extra_imp_${widget.vehiculoId}');
     final extStr = extStrOrNull(remoteExt ?? prefs.getString('extra_ext_${widget.vehiculoId}'));
-    final rawDriver = prefs.getString('runt_driver_license_profile_${widget.vehiculoId}') ??
-        prefs.getString('runt_driver_license_profile_global');
+
+    // 1. Cargar perfil de licencias RUNT desde Supabase si viene en vehicleData
+    RuntDriverProfile? driverProfile;
+    final remoteDriver = widget.vehicleData['driver_license_data'];
+    if (remoteDriver is Map) {
+      driverProfile = RuntDriverProfile.fromMap(Map<String, dynamic>.from(remoteDriver));
+    } else if (remoteDriver is String && remoteDriver.trim().isNotEmpty) {
+      driverProfile = RuntDriverProfile.tryDecodeWebViewResult(remoteDriver);
+    }
+
+    // 2. Fallback a SharedPreferences local si no venía en el map remoto
+    if (driverProfile == null) {
+      final rawDriver = prefs.getString('runt_driver_license_profile_${widget.vehiculoId}') ??
+          prefs.getString('runt_driver_license_profile_global');
+      if (rawDriver != null && rawDriver.isNotEmpty) {
+        driverProfile = RuntDriverProfile.tryDecodeWebViewResult(rawDriver);
+      }
+    }
 
     if (mounted) {
       setState(() {
         _licenciaVence = licStr != null ? DateTime.tryParse(licStr) : null;
         _impuestoVence = impStr != null ? DateTime.tryParse(impStr) : null;
         _extintorVence = extStr != null ? DateTime.tryParse(extStr) : null;
-        if (rawDriver != null && rawDriver.isNotEmpty) {
-          _driverProfile = RuntDriverProfile.tryDecodeWebViewResult(rawDriver);
+        if (driverProfile != null && driverProfile.licencias.isNotEmpty) {
+          _driverProfile = driverProfile;
         }
       });
     }
@@ -79,7 +95,11 @@ class _LegalExtrasSheetState extends State<LegalExtrasSheet> {
   String? extStrOrNull(String? val) => (val == null || val.isEmpty) ? null : val;
 
   Future<void> _consultarLicenciaEnRunt() async {
-    final cedula = (widget.vehicleData['cedula'] ?? '').toString().trim();
+    String cedula = (widget.vehicleData['cedula'] ?? '').toString().trim();
+    if (!RegExp(r'^\d{4,15}$').hasMatch(cedula) && _driverProfile != null && _driverProfile!.numeroDocumento.isNotEmpty) {
+      cedula = _driverProfile!.numeroDocumento;
+    }
+
     final res = await Navigator.push<RuntDriverProfile>(
       context,
       MaterialPageRoute(
@@ -156,6 +176,7 @@ class _LegalExtrasSheetState extends State<LegalExtrasSheet> {
                 if (licIso != null) 'licencia_vencimiento': licIso,
                 if (impIso != null) 'impuesto_vencimiento': impIso,
                 if (extIso != null) 'extintor_vencimiento': extIso,
+                if (_driverProfile != null) 'driver_license_data': _driverProfile!.toJson(),
               })
               .eq('id', widget.vehiculoId)
               .eq('user_id', uid);

@@ -96,6 +96,59 @@ class _RuntDriverLicenseWebViewScreenState
 
   Future<void> _loadLocalCache() async {
     try {
+      final client = Supabase.instance.client;
+      final uid = client.auth.currentUser?.id;
+
+      // 1. Intentar cargar desde el vehículo actual en Supabase
+      if (uid != null && widget.vehiculoId.isNotEmpty) {
+        final vRow = await client
+            .from('vehiculos')
+            .select('driver_license_data')
+            .eq('id', widget.vehiculoId)
+            .eq('user_id', uid)
+            .maybeSingle();
+        final vData = vRow?['driver_license_data'];
+        if (vData != null) {
+          final parsed = vData is Map
+              ? RuntDriverProfile.fromMap(Map<String, dynamic>.from(vData))
+              : RuntDriverProfile.tryDecodeWebViewResult(vData.toString());
+          if (mounted && parsed != null && parsed.licencias.isNotEmpty) {
+            setState(() => _profile = parsed);
+            // Sincronizar en caché local
+            final prefs = await SharedPreferences.getInstance();
+            final encoded = jsonEncode(parsed.toJson());
+            await prefs.setString('runt_driver_license_profile_${widget.vehiculoId}', encoded);
+            await prefs.setString('runt_driver_license_profile_global', encoded);
+            return;
+          }
+        }
+      }
+
+      // 2. Intentar cargar desde el perfil del usuario (porque la licencia es del conductor)
+      if (uid != null) {
+        final pRow = await client
+            .from('profiles')
+            .select('driver_license_data')
+            .eq('id', uid)
+            .maybeSingle();
+        final pData = pRow?['driver_license_data'];
+        if (pData != null) {
+          final parsed = pData is Map
+              ? RuntDriverProfile.fromMap(Map<String, dynamic>.from(pData))
+              : RuntDriverProfile.tryDecodeWebViewResult(pData.toString());
+          if (mounted && parsed != null && parsed.licencias.isNotEmpty) {
+            setState(() => _profile = parsed);
+            // Sincronizar en caché local
+            final prefs = await SharedPreferences.getInstance();
+            final encoded = jsonEncode(parsed.toJson());
+            await prefs.setString('runt_driver_license_profile_${widget.vehiculoId}', encoded);
+            await prefs.setString('runt_driver_license_profile_global', encoded);
+            return;
+          }
+        }
+      }
+
+      // 3. Fallback a SharedPreferences local si está offline o no hay registro remoto
       final prefs = await SharedPreferences.getInstance();
       final raw = prefs.getString('runt_driver_license_profile_${widget.vehiculoId}') ??
           prefs.getString('runt_driver_license_profile_global');
@@ -419,27 +472,67 @@ class _RuntDriverLicenseWebViewScreenState
       );
     }
 
+    bool savedInCloud = false;
     try {
       final client = Supabase.instance.client;
       final uid = client.auth.currentUser?.id;
-      if (uid != null && licIso != null) {
-        await client
-            .from('vehiculos')
-            .update({'licencia_vencimiento': licIso})
-            .eq('id', widget.vehiculoId)
-            .eq('user_id', uid);
+      if (uid != null) {
+        // 1. Guardar en public.vehiculos (asociado al vehículo actual)
+        try {
+          await client
+              .from('vehiculos')
+              .update({
+                'driver_license_data': profile.toJson(),
+                if (licIso != null) 'licencia_vencimiento': licIso,
+              })
+              .eq('id', widget.vehiculoId)
+              .eq('user_id', uid);
+          savedInCloud = true;
+        } on PostgrestException catch (e) {
+          debugPrint('[RUNT_LICENCIA] Fallback vehiculos (columna driver_license_data pendiente): $e');
+          if (licIso != null) {
+            await client
+                .from('vehiculos')
+                .update({'licencia_vencimiento': licIso})
+                .eq('id', widget.vehiculoId)
+                .eq('user_id', uid);
+          }
+        }
+
+        // 2. Guardar a nivel de Usuario Conductor en public.profiles
+        try {
+          await client
+              .from('profiles')
+              .update({
+                'driver_license_data': profile.toJson(),
+                if (profile.numeroDocumento.isNotEmpty) 'cedula': profile.numeroDocumento,
+              })
+              .eq('id', uid);
+          savedInCloud = true;
+        } catch (e) {
+          debugPrint('[RUNT_LICENCIA] Fallback profiles: $e');
+        }
       }
     } catch (e) {
-      debugPrint('[RUNT_LICENCIA] Guardado local (remoto pendiente): $e');
+      debugPrint('[RUNT_LICENCIA] Guardado remoto error: $e');
     }
 
     if (mounted) {
       final vigentesCount = profile.vigentes.length;
-      AppSnackBar.show(
-        context,
-        'Licencias RUNT guardadas ($vigentesCount vigentes de ${profile.licencias.length}).',
-        backgroundColor: const Color(0xFF059669),
-      );
+      if (savedInCloud) {
+        AppSnackBar.show(
+          context,
+          'Licencias RUNT sincronizadas en la nube ($vigentesCount vigentes de ${profile.licencias.length}).',
+          backgroundColor: const Color(0xFF059669),
+        );
+      } else {
+        AppSnackBar.show(
+          context,
+          'Licencias guardadas localmente. Ejecuta el script SQL en Supabase para sincronizarlas en todos tus celulares.',
+          backgroundColor: Colors.orange,
+          duration: const Duration(seconds: 4),
+        );
+      }
     }
   }
 

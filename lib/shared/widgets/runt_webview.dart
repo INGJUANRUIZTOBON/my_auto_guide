@@ -389,6 +389,7 @@ class _RuntWebViewScreenState extends State<RuntWebViewScreen> {
       'runt_last_check': DateTime.now().toIso8601String(),
     };
 
+    bool savedRemoteRunt = false;
     try {
       try {
         await supabase
@@ -396,6 +397,7 @@ class _RuntWebViewScreenState extends State<RuntWebViewScreen> {
             .update(fullUpdate)
             .eq('id', widget.vehiculoId)
             .eq('user_id', userId);
+        savedRemoteRunt = true;
       } on PostgrestException catch (e) {
         // Fallback automático si el usuario aún no agregó la columna JSONB runt_data
         debugPrint('Aviso RUNT fallback a columnas base: ${e.message}');
@@ -432,11 +434,20 @@ class _RuntWebViewScreenState extends State<RuntWebViewScreen> {
       );
 
       if (mounted) {
-        AppSnackBar.show(
-          context,
-          'Ficha completa del RUNT guardada en tu vehículo',
-          backgroundColor: const Color(0xFF059669),
-        );
+        if (savedRemoteRunt) {
+          AppSnackBar.show(
+            context,
+            'Ficha RUNT guardada y sincronizada en la nube',
+            backgroundColor: const Color(0xFF059669),
+          );
+        } else {
+          AppSnackBar.show(
+            context,
+            'Fechas guardadas. Ejecuta la migración SQL en Supabase para sincronizar la ficha completa en todos tus celulares.',
+            backgroundColor: Colors.orange,
+            duration: const Duration(seconds: 4),
+          );
+        }
         Navigator.pop(context, true);
       }
     } catch (e) {
@@ -447,6 +458,35 @@ class _RuntWebViewScreenState extends State<RuntWebViewScreen> {
 
   Future<void> _loadLocalRuntCache() async {
     try {
+      // 1. Intentar cargar desde Supabase si hay conexión y sesión activa
+      final supabase = Supabase.instance.client;
+      final userId = supabase.auth.currentUser?.id;
+      if (userId != null && widget.vehiculoId.isNotEmpty) {
+        final res = await supabase
+            .from('vehiculos')
+            .select('runt_data, runt_last_check')
+            .eq('id', widget.vehiculoId)
+            .eq('user_id', userId)
+            .maybeSingle();
+        final remoteData = res?['runt_data'];
+        if (remoteData != null) {
+          final p = remoteData is Map
+              ? RuntVehicleProfile.fromMap(Map<String, dynamic>.from(remoteData))
+              : RuntVehicleProfile.tryDecodeWebViewResult(remoteData.toString());
+          if (mounted && p != null && p.hasAnyData) {
+            setState(() {
+              _extractedProfile = p;
+              _cachedSoat = p.soatVencimiento.isNotEmpty ? p.soatVencimiento : null;
+              _cachedTecno = p.tecnoVencimiento.isNotEmpty ? p.tecnoVencimiento : null;
+              _cachedDate = res?['runt_last_check']?.toString();
+              _hasOfflineCache = true;
+            });
+            return;
+          }
+        }
+      }
+
+      // 2. Fallback a SharedPreferences local si está offline
       final prefs = await SharedPreferences.getInstance();
       final soat = prefs.getString('runt_cached_soat_${widget.vehiculoId}');
       final tecno = prefs.getString('runt_cached_tecno_${widget.vehiculoId}');

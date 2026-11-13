@@ -525,9 +525,7 @@ class _InicioAppState extends State<InicioApp> {
     try {
       final row = await supabase
           .from('vehiculos')
-          .select(
-            'marca, modelo, apodo, kms, image_path, last_cadena, last_filtro, last_aceite, last_soat, last_tecno, soat_path, tecno_path, seguro_path, propiedad_path, kms_last_cadena, kms_last_filtro, kms_last_aceite, placa, cedula, aseguradora_id, simit_status, simit_fines_data, simit_last_check, has_360_view, images_360_urls',
-          )
+          .select()
           .eq('id', widget.vehiculoId)
           .single();
       _cachedVehicleData = row;
