@@ -105,7 +105,7 @@ INSERT INTO public.app_versions (
 VALUES (
     32,
     '1.2.14',
-    'https://github.com/INGJUANRUIZTOBON/my_auto_guide/releases/download/1.2.14/app-release.apk',
+    'https://github.com/INGJUANRUIZTOBON/my_auto_guide/releases/download/1.1.0/app-release.apk',
     '• Nuevo Diseño Obsidian Cyberpunk Glassmorphism en Pico y Placa con alertas cromáticas dinámicas (Rojo, Ámbar, Cian).
 • Mantenimientos Personalizados integrados al carrusel principal superior junto a Aceite, Cadena, SOAT y Tecno.
 • Nuevo Modal de Odómetro Digital para actualización de kilometraje en Dark Obsidian con recordatorio inteligente a las 4-5 horas.
