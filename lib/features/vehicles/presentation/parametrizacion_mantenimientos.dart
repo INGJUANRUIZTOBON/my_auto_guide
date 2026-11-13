@@ -13,6 +13,7 @@
 
 import 'dart:io';
 import 'dart:ui';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -159,6 +160,14 @@ class _ParametrizacionMantenimientosScreenState
 
   Future<void> _escanearDocumento(
       String nombreDoc, void Function(DateTime) onFound) async {
+    if (kIsWeb) {
+      AppSnackBar.show(
+        context,
+        'El escaneo OCR con cámara está disponible en la app móvil.',
+        backgroundColor: const Color(0xFF3B82F6),
+      );
+      return;
+    }
     try {
       final XFile? photo = await _picker.pickImage(
         source: ImageSource.camera,

@@ -42,6 +42,8 @@ import 'package:http/http.dart' as http;
 import 'package:printing/printing.dart';
 import 'dart:io';
 import 'dart:async';
+import 'dart:typed_data';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 import '../../../core/services/insurance_catalog_service.dart';
 import '../../../core/services/runt_parser.dart';
@@ -68,6 +70,8 @@ import '../../navigation/presentation/historial_rutas_screen.dart';
 import '../../marketplace/presentation/marketplace_talleres_screen.dart';
 import '../../manuals/manuales.dart';
 import '../../../core/services/vehicle_pdf_report_service.dart';
+import '../../telemetry/presentation/live_telemetry_screen.dart';
+import '../../../shared/widgets/web_adaptive_scaffold.dart';
 import '../../../core/services/calendar_sync_service.dart';
 import '../../expenses/presentation/bitacora_tanqueo_screen.dart';
 import '../../../shared/widgets/simit_webview.dart';
@@ -1244,7 +1248,7 @@ class _InicioAppState extends State<InicioApp> {
       if (result == null || result.files.isEmpty) return null;
 
       final f = result.files.single;
-      final bytes = f.bytes ?? await File(f.path!).readAsBytes();
+      final bytes = f.bytes ?? (kIsWeb ? Uint8List(0) : await File(f.path!).readAsBytes());
       final ext = (f.extension ?? 'bin').toLowerCase();
       final ts = DateTime.now().millisecondsSinceEpoch;
       final folder = _folderPath(type);
@@ -2210,9 +2214,12 @@ class _InicioAppState extends State<InicioApp> {
 
           final mainContent = SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1280),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                 StaggeredFadeIn(
                   delay: const Duration(milliseconds: 100),
                   child: _MainHero(
@@ -2682,26 +2689,58 @@ class _InicioAppState extends State<InicioApp> {
                 const SizedBox(height: 40),
               ],
             ),
-          );
+          ),
+        ),
+      );
 
-          return Scaffold(
+          void openLiveTelemetry() {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => LiveTelemetryScreen(
+                  vehicleId: widget.vehiculoId,
+                  placa: v['placa']?.toString() ?? 'SIN_PLACA',
+                  marca: marca,
+                  modelo: modelo,
+                  imagePath: imagePath,
+                ),
+              ),
+            );
+          }
+
+          return WebAdaptiveScaffold(
+            vehiclePlate: v['placa']?.toString(),
+            vehicleBrand: marca,
+            vehicleModel: modelo,
+            onOpenGaraje: _abrirGarajeSelector,
+            onOpenTelemetry: openLiveTelemetry,
+            onOpenAiChat: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const AIChatScreen()),
+            ),
+            onGenerateReport: () {
+              if (_cachedVehicleData != null) {
+                _generarYAccionarPdf(modo: 'imprimir');
+              }
+            },
+            onChangePassword: () => ChangePasswordSheet.show(context),
+            onLogout: _cerrarSesion,
             appBar: AppBar(
               title: const Text('Inicio'),
               actions: [
+                IconButton(
+                  tooltip: 'Telemetría GPS en Vivo',
+                  icon: const Icon(Icons.satellite_alt_rounded,
+                      color: Color(0xFF00E5FF)),
+                  onPressed: openLiveTelemetry,
+                ),
                 IconButton(
                   tooltip: 'Compartir vehículo',
                   icon: const Icon(Icons.share_rounded),
                   onPressed: () {
                     if (_cachedVehicleData != null) {
-                      final double currentHealthIndex =
-                          VehicleHealthLogic.calculateHealthIndex(
-                        pctCadena: _pctCadena,
-                        pctFiltro: _pctFiltro,
-                        pctAceite: _pctAceite,
-                        pctSoat: _pctSoat,
-                        pctTecno: _pctTecno,
-                      );
-                      _compartirVehiculo(_cachedVehicleData!, currentHealthIndex);
+                      _compartirVehiculo(
+                          _cachedVehicleData!, currentHealthIndex);
                     }
                   },
                 ),
@@ -3095,17 +3134,24 @@ class DocumentViewerScreen extends StatefulWidget {
 }
 
 class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
+  Uint8List? _bytes;
   File? _localFile;
   bool _isLoading = true;
   String? _error;
+
   Future<void> _prepareFile() async {
     try {
       final res = await http.get(Uri.parse(widget.url));
-      final dir = await getTemporaryDirectory();
-      final file = File('${dir.path}/${widget.fileName ?? "tempfile"}');
-      await file.writeAsBytes(res.bodyBytes);
+      final bytes = res.bodyBytes;
+      File? file;
+      if (!kIsWeb) {
+        final dir = await getTemporaryDirectory();
+        file = File('${dir.path}/${widget.fileName ?? "tempfile"}');
+        await file.writeAsBytes(bytes);
+      }
       if (mounted) {
         setState(() {
+          _bytes = bytes;
           _localFile = file;
           _isLoading = false;
         });
@@ -3135,7 +3181,11 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
         IconButton(
             icon: const Icon(Icons.open_in_new),
             onPressed: () async {
-              if (_localFile != null) OpenFilex.open(_localFile!.path);
+              if (kIsWeb) {
+                launchUrl(Uri.parse(widget.url));
+              } else if (_localFile != null) {
+                OpenFilex.open(_localFile!.path);
+              }
             })
       ]),
       body: _isLoading
@@ -3143,8 +3193,12 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
           : (_error != null
               ? Center(child: Text(_error!))
               : (isImage
-                  ? PhotoView(imageProvider: FileImage(_localFile!))
-                  : SfPdfViewer.file(_localFile!))),
+                  ? (_bytes != null
+                      ? PhotoView(imageProvider: MemoryImage(_bytes!))
+                      : const SizedBox())
+                  : (_bytes != null
+                      ? SfPdfViewer.memory(_bytes!)
+                      : const SizedBox()))),
     );
   }
 }

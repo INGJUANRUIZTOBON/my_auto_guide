@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -37,6 +38,7 @@ class GuideStorageRepository {
 
   /// Carga las rutas de archivos de fotos guardadas
   Future<List<File>> loadEvidencePhotos(String protocolId) async {
+    if (kIsWeb) return [];
     try {
       final prefs = await SharedPreferences.getInstance();
       final savedPaths = prefs.getStringList('$_prefixPhotos$protocolId') ??
@@ -59,6 +61,7 @@ class GuideStorageRepository {
 
   /// Guarda una nueva foto en el directorio de documentos de la app y persiste la ruta
   Future<File?> saveEvidencePhoto(String protocolId, XFile pickedFile) async {
+    if (kIsWeb) return null;
     try {
       final appDir = await getApplicationDocumentsDirectory();
       final fileName = 'evidence_${protocolId}_${DateTime.now().millisecondsSinceEpoch}.jpg';
@@ -80,6 +83,7 @@ class GuideStorageRepository {
 
   /// Elimina una foto específica del disco y del registro de SharedPreferences
   Future<void> deleteEvidencePhoto(String protocolId, List<File> currentPhotos, int index) async {
+    if (kIsWeb) return;
     try {
       if (index >= 0 && index < currentPhotos.length) {
         final fileToDelete = currentPhotos[index];

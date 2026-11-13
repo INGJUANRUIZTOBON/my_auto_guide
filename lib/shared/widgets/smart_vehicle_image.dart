@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'vehicle_hologram_loader.dart';
@@ -50,10 +51,11 @@ class SmartVehicleImage extends StatelessWidget {
       return _buildNetworkImage(raw, effectiveCacheWidth);
     }
 
-    // 2. Archivo local en almacenamiento del teléfono (Cámara / Galería)
-    if (raw.startsWith('file://') ||
-        raw.startsWith('/') ||
-        RegExp(r'^[a-zA-Z]:[\\/]').hasMatch(raw)) {
+    // 2. Archivo local en almacenamiento del teléfono (Cámara / Galería - solo móvil/desktop)
+    if (!kIsWeb &&
+        (raw.startsWith('file://') ||
+            raw.startsWith('/') ||
+            RegExp(r'^[a-zA-Z]:[\\/]').hasMatch(raw))) {
       final cleanPath = raw.startsWith('file://') ? raw.replaceFirst('file://', '') : raw;
       final file = File(cleanPath);
       if (file.existsSync()) {

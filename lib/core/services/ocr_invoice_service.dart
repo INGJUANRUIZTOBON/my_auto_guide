@@ -45,6 +45,9 @@ class OcrInvoiceService {
   static final TextRecognizer _textRecognizer = TextRecognizer();
 
   static Future<ExtractedInvoiceData> scanInvoice(String imagePath) async {
+    if (kIsWeb) {
+      return ExtractedInvoiceData.empty();
+    }
     try {
       // 1. INTENTO ON-DEVICE CON GOOGLE ML KIT (Gratis, ultra-rápido)
       final inputImage = InputImage.fromFilePath(imagePath);

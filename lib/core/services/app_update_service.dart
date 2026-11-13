@@ -46,8 +46,8 @@ class AppUpdateService {
 
   /// Consulta en Supabase si existe una versión superior a la instalada.
   Future<AppUpdateInfo?> checkForUpdate() async {
-    // Solo Android soporta actualización OTA mediante APK
-    if (!Platform.isAndroid) return null;
+    // Solo Android nativo soporta actualización OTA mediante APK
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return null;
 
     try {
       final packageInfo = await PackageInfo.fromPlatform();

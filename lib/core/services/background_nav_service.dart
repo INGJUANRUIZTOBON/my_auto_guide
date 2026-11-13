@@ -282,13 +282,19 @@ class BackgroundNavService {
             distance: totalDistanceKm,
             isTracking: true,
           );
-          supabaseChannel?.track({
+          final trackingPayload = {
             'lat': currentPos.latitude,
             'lng': currentPos.longitude,
             'dist': totalDistanceKm,
             'ts': DateTime.now().millisecondsSinceEpoch,
-            'speed': position.speed,
-          });
+            'speed': speedKmH,
+            'heading': position.heading,
+          };
+          supabaseChannel?.track(trackingPayload);
+          supabaseChannel?.sendBroadcastMessage(
+            event: 'location_update',
+            payload: trackingPayload,
+          );
         } catch (e) {
           debugPrint('Fallo secundario en background: $e');
         }

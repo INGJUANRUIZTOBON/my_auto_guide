@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:http/http.dart' as http;
@@ -567,9 +566,11 @@ class VehiclePdfReportService {
         }
         return null;
       }
-      final file = File(path);
-      if (await file.exists()) {
-        return await file.readAsBytes();
+      if (!kIsWeb) {
+        final file = File(path);
+        if (await file.exists()) {
+          return await file.readAsBytes();
+        }
       }
       final data = await rootBundle.load(path);
       return data.buffer.asUint8List();

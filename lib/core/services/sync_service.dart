@@ -47,6 +47,10 @@ class SyncService {
           results.isNotEmpty ? results.first : ConnectivityResult.none;
       if (result == ConnectivityResult.none) return false;
 
+      if (kIsWeb) {
+        return true;
+      }
+
       // Verificar conectividad real haciendo un ping DNS rápido sin llamadas HTTP a Supabase
       final lookup = await InternetAddress.lookup('google.com')
           .timeout(const Duration(seconds: 3));
@@ -58,6 +62,8 @@ class SyncService {
   }
 
   Future<void> syncPendingData() async {
+    if (kIsWeb) return;
+
     if (_isSyncing) {
       debugPrint('SyncService: Ya hay una sincronización en curso. Ignorando...');
       return;

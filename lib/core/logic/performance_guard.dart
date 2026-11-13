@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -25,7 +24,7 @@ class PerformanceGuard {
 
     try {
       final deviceInfo = DeviceInfoPlugin();
-      if (Platform.isAndroid) {
+      if (defaultTargetPlatform == TargetPlatform.android) {
         final androidInfo = await deviceInfo.androidInfo;
         
         final model = androidInfo.model.toUpperCase();
@@ -59,7 +58,7 @@ class PerformanceGuard {
           return;
         }
         
-      } else if (Platform.isIOS) {
+      } else if (defaultTargetPlatform == TargetPlatform.iOS) {
         final iosInfo = await deviceInfo.iosInfo;
         final machine = iosInfo.utsname.machine.toLowerCase();
         // Dispositivos antiguos o con menos de 3GB RAM se consideran bajos para efectos pesados

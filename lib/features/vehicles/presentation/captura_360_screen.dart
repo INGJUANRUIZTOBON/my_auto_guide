@@ -5,6 +5,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:image_picker/image_picker.dart';
@@ -819,10 +820,15 @@ class _Captura360ScreenState extends State<Captura360Screen> {
                     fit: StackFit.expand,
                     children: [
                       if (isCaptured && capturedFile != null)
-                        Image.file(
-                          File(capturedFile.path),
-                          fit: BoxFit.cover,
-                        )
+                        kIsWeb
+                            ? Image.network(
+                                capturedFile.path,
+                                fit: BoxFit.cover,
+                              )
+                            : Image.file(
+                                File(capturedFile.path),
+                                fit: BoxFit.cover,
+                              )
                       else
                         Image.asset(
                           guideAsset,

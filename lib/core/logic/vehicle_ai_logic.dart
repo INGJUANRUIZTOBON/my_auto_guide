@@ -3,7 +3,6 @@
 // =============================================================================
 
 import 'dart:math';
-import 'vehicle_performance_logic.dart';
 
 class WeeklyRouteBucket {
   final DateTime weekStart; // Lunes 00:00:00

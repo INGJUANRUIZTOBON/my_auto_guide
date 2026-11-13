@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:typed_data';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -336,9 +337,11 @@ class ReportService {
         }
         return null;
       }
-      final file = File(path);
-      if (await file.exists()) {
-        return await file.readAsBytes();
+      if (!kIsWeb) {
+        final file = File(path);
+        if (await file.exists()) {
+          return await file.readAsBytes();
+        }
       }
       final data = await rootBundle.load(path);
       return data.buffer.asUint8List();

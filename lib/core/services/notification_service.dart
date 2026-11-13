@@ -1,5 +1,4 @@
-import 'dart:io';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -43,7 +42,8 @@ class NotificationService {
     await _notificationsPlugin.initialize(initializationSettings);
 
     // Solicitar permisos explícitos en iOS
-    if (Platform.isIOS || Platform.isMacOS) {
+    if (defaultTargetPlatform == TargetPlatform.iOS ||
+        defaultTargetPlatform == TargetPlatform.macOS) {
       await _notificationsPlugin
           .resolvePlatformSpecificImplementation<
               IOSFlutterLocalNotificationsPlugin>()
@@ -55,7 +55,7 @@ class NotificationService {
     }
 
     // Crear canales específicos
-    if (Platform.isAndroid) {
+    if (defaultTargetPlatform == TargetPlatform.android) {
       const AndroidNotificationChannel navChannel = AndroidNotificationChannel(
         'my_auto_guide_nav',
         'Navegación y Rutas',
@@ -76,7 +76,7 @@ class NotificationService {
   /// ajustes de "Alarmas exactas".
   Future<bool> ensureExactAlarmsEnabled(BuildContext context) async {
     // Solo Android 12+ requiere permiso de alarmas exactas.
-    if (!Platform.isAndroid) return true;
+    if (defaultTargetPlatform != TargetPlatform.android) return true;
 
     try {
       final can =

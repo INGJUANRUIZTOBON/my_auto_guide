@@ -27,7 +27,6 @@ dependencies:
 
   # Web / contenido
   url_launcher: ^6.2.5
-  youtube_player_iframe: ^4.0.4
   webview_flutter: ^4.9.0
 
   # Archivos
