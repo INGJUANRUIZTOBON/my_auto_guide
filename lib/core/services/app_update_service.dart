@@ -10,6 +10,7 @@ import 'package:archive/archive.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../constants/app_version.dart';
 
 class AppUpdateInfo {
   final int versionCode;
@@ -60,28 +61,25 @@ class AppUpdateService {
 
       final updateInfo = AppUpdateInfo.fromMap(response);
 
-      // En Web: Comparamos contra el buildNumber de la web y el localStorage
+      // En Web: Comparamos determinísticamente contra AppVersion.currentVersionCode
+      // y SharedPreferences. Si el código en Supabase NO es estrictamente mayor,
+      // NUNCA se solicita actualizar.
       if (kIsWeb) {
-        int currentWebBuild = 0;
-        try {
-          final packageInfo = await PackageInfo.fromPlatform();
-          currentWebBuild = int.tryParse(packageInfo.buildNumber) ?? 0;
-        } catch (_) {}
-
+        if (updateInfo.versionCode <= AppVersion.currentVersionCode) {
+          return null;
+        }
         final prefs = await SharedPreferences.getInstance();
         final lastSeenCode = prefs.getInt('web_last_seen_version_code') ?? 0;
-        final baseCode = currentWebBuild > 0 ? currentWebBuild : lastSeenCode;
-
-        if (updateInfo.versionCode > baseCode) {
-          return updateInfo;
+        if (updateInfo.versionCode <= lastSeenCode) {
+          return null;
         }
-        return null;
+        return updateInfo;
       }
 
       // En Android Nativo: Comparamos contra el buildNumber de la app instalada
       if (defaultTargetPlatform == TargetPlatform.android) {
         final packageInfo = await PackageInfo.fromPlatform();
-        final currentBuildNumber = int.tryParse(packageInfo.buildNumber) ?? 0;
+        final currentBuildNumber = int.tryParse(packageInfo.buildNumber) ?? AppVersion.currentVersionCode;
         if (updateInfo.versionCode > currentBuildNumber && updateInfo.zipUrl.isNotEmpty) {
           if (kDebugMode) {
             debugPrint('[OTA Update] Nueva versión detectada: ${updateInfo.versionName} (${updateInfo.versionCode}) vs Actual: ${packageInfo.version} ($currentBuildNumber)');

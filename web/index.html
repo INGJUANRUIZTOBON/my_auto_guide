@@ -21,7 +21,7 @@
   <meta name="apple-mobile-web-app-title" content="My Auto Guide">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
-  <!-- Favicon -->
+  <!-- Favicon transparente oficial -->
   <link rel="icon" type="image/png" sizes="32x32" href="favicon.png"/>
   <link rel="icon" type="image/png" sizes="192x192" href="icons/Icon-192.png"/>
 
@@ -53,136 +53,58 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      background: radial-gradient(circle at 50% 45%, #101628 0%, #06080C 75%);
+      background-color: #000000;
       overflow: hidden;
       z-index: 99999;
       transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    /* Fondo planetario y estrellas */
-    .cosmic-canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 1;
-    }
-
-    .horizon-glow {
-      position: absolute;
-      bottom: -15vh;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 140vw;
-      height: 35vh;
-      border-radius: 50%;
-      background: radial-gradient(ellipse at 50% 0%, rgba(99, 102, 241, 0.45) 0%, rgba(0, 229, 255, 0.2) 40%, rgba(6, 8, 12, 0) 75%);
-      box-shadow: 0 -10px 60px rgba(124, 58, 237, 0.35);
-      z-index: 2;
-    }
-
-    /* Contenedor central del logo y anillo orbital */
-    .orbital-stage {
+    .video-stage {
       position: relative;
-      width: 220px;
-      height: 220px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 3;
-    }
-
-    /* Anillo orbital rotativo inspirado en el video cósmico */
-    .orbital-ring {
-      position: absolute;
-      width: 210px;
-      height: 90px;
-      border-radius: 50%;
-      border: 2px solid transparent;
-      border-top-color: #A855F7;
-      border-bottom-color: #00E5FF;
-      box-shadow: 0 0 24px rgba(168, 85, 247, 0.7), inset 0 0 18px rgba(0, 229, 255, 0.5);
-      transform: rotate(-25deg);
-      animation: orbitSpin 3.5s linear infinite;
-    }
-
-    .orbital-ring-outer {
-      position: absolute;
-      width: 236px;
-      height: 106px;
-      border-radius: 50%;
-      border: 1px dashed rgba(0, 229, 255, 0.4);
-      transform: rotate(-25deg);
-      animation: orbitSpinReverse 7s linear infinite;
-    }
-
-    /* Halo pulsante */
-    .center-sphere-aura {
-      position: absolute;
-      width: 140px;
-      height: 140px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(124, 58, 237, 0.3) 0%, rgba(0, 229, 255, 0.15) 55%, transparent 75%);
-      filter: blur(12px);
-      animation: auraPulse 2.8s ease-in-out infinite;
-    }
-
-    /* Logo oficial transparente */
-    .brand-logo-img {
-      position: relative;
-      width: 96px;
-      height: 96px;
-      object-fit: contain;
-      z-index: 4;
-      filter: drop-shadow(0 0 20px rgba(0, 229, 255, 0.65)) drop-shadow(0 0 45px rgba(139, 92, 246, 0.45));
-      animation: logoFloat 3s ease-in-out infinite;
-    }
-
-    /* Tipografía y Badge de Vehículo */
-    .loader-content {
-      position: relative;
-      z-index: 4;
       display: flex;
       flex-direction: column;
       align-items: center;
-      margin-top: 18px;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      max-width: 480px;
+      max-height: 854px;
     }
 
-    .loader-title {
-      font-size: 19px;
-      font-weight: 900;
-      letter-spacing: 3.5px;
-      color: #FFFFFF;
-      text-transform: uppercase;
-      text-shadow: 0 0 16px rgba(0, 229, 255, 0.6);
+    .intro-video-bg {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background-color: #000000;
+      pointer-events: none;
     }
 
-    .loader-subtitle {
-      margin-top: 6px;
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 3px;
-      color: #00E5FF;
-      text-transform: uppercase;
-      opacity: 0.85;
+    .video-overlay-footer {
+      position: absolute;
+      bottom: 24px;
+      left: 0;
+      right: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      pointer-events: none;
+      z-index: 5;
     }
 
     .sync-status {
-      margin-top: 14px;
-      font-size: 10px;
-      font-weight: 600;
-      letter-spacing: 2px;
-      color: rgba(255, 255, 255, 0.55);
+      margin-top: 10px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2.5px;
+      color: rgba(0, 229, 255, 0.85);
       text-transform: uppercase;
+      text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
     }
 
     .progress-bar-container {
-      margin-top: 12px;
       width: 160px;
       height: 3px;
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.12);
       border-radius: 3px;
       overflow: hidden;
     }
@@ -196,52 +118,6 @@
       animation: progressSweep 1.8s ease-in-out infinite;
     }
 
-    /* Controles de sonido */
-    .sound-toggle-btn {
-      position: absolute;
-      top: 24px;
-      right: 24px;
-      z-index: 10;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: #FFFFFF;
-      padding: 8px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: all 0.2s ease;
-      backdrop-filter: blur(8px);
-    }
-
-    .sound-toggle-btn:hover {
-      background: rgba(0, 229, 255, 0.2);
-      border-color: #00E5FF;
-    }
-
-    @keyframes orbitSpin {
-      0% { transform: rotate(-25deg) rotateZ(0deg); }
-      100% { transform: rotate(-25deg) rotateZ(360deg); }
-    }
-
-    @keyframes orbitSpinReverse {
-      0% { transform: rotate(-25deg) rotateZ(360deg); }
-      100% { transform: rotate(-25deg) rotateZ(0deg); }
-    }
-
-    @keyframes auraPulse {
-      0%, 100% { transform: scale(1); opacity: 0.5; }
-      50% { transform: scale(1.15); opacity: 0.85; }
-    }
-
-    @keyframes logoFloat {
-      0%, 100% { transform: translateY(0px) scale(1); }
-      50% { transform: translateY(-4px) scale(1.02); }
-    }
-
     @keyframes progressSweep {
       0% { transform: translateX(-100%); }
       100% { transform: translateX(250%); }
@@ -250,108 +126,19 @@
 </head>
 <body>
   <div id="loading-container">
-    <canvas id="cosmicCanvas" class="cosmic-canvas"></canvas>
-    <div class="horizon-glow"></div>
-
-    <button id="soundToggle" class="sound-toggle-btn" title="Activar/Silenciar sonido de ignición">
-      <span id="soundIcon">🔇</span>
-      <span id="soundLabel">Silenciado</span>
-    </button>
-
-    <div class="orbital-stage">
-      <div class="center-sphere-aura"></div>
-      <div class="orbital-ring"></div>
-      <div class="orbital-ring-outer"></div>
-      <img src="icons/Icon-512.png" alt="My Auto Guide" class="brand-logo-img" id="brandLogo">
-    </div>
-
-    <div class="loader-content">
-      <div class="loader-title">MY AUTO GUIDE</div>
-      <div class="loader-subtitle">ECOSISTEMA VEHICULAR INTELIGENTE</div>
-      <div class="sync-status" id="syncStatus">CARGANDO ECOSISTEMA...</div>
-
-      <div class="progress-bar-container">
-        <div class="progress-bar-fill"></div>
+    <div class="video-stage">
+      <video id="introVideo" class="intro-video-bg" src="intro_video.mp4" autoplay muted playsinline loop></video>
+      <div class="video-overlay-footer">
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill"></div>
+        </div>
+        <div class="sync-status">INICIANDO ECOSISTEMA...</div>
       </div>
     </div>
-
-    <audio id="introAudio" src="intro_audio.mp3" preload="auto"></audio>
   </div>
 
   <script>
-    // 1. Estrellas y nebulosa en Canvas
-    (function () {
-      var canvas = document.getElementById('cosmicCanvas');
-      if (!canvas) return;
-      var ctx = canvas.getContext('2d');
-      var stars = [];
-      var w, h;
-
-      function resize() {
-        w = canvas.width = window.innerWidth;
-        h = canvas.height = window.innerHeight;
-        stars = [];
-        for (var i = 0; i < 75; i++) {
-          stars.push({
-            x: Math.random() * w,
-            y: Math.random() * h,
-            r: Math.random() * 1.5 + 0.4,
-            a: Math.random() * 0.8 + 0.2,
-            v: Math.random() * 0.02 + 0.005
-          });
-        }
-      }
-      window.addEventListener('resize', resize);
-      resize();
-
-      function draw() {
-        ctx.clearRect(0, 0, w, h);
-        for (var i = 0; i < stars.length; i++) {
-          var s = stars[i];
-          s.a += Math.sin(Date.now() * s.v) * 0.02;
-          ctx.beginPath();
-          ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(255, 255, 255, ' + Math.max(0.15, Math.min(0.9, s.a)) + ')';
-          ctx.fill();
-        }
-        requestAnimationFrame(draw);
-      }
-      draw();
-    })();
-
-    // 2. Audio de Ignición (Opción B: con soporte de Mute)
-    (function () {
-      var audio = document.getElementById('introAudio');
-      var btn = document.getElementById('soundToggle');
-      var icon = document.getElementById('soundIcon');
-      var label = document.getElementById('soundLabel');
-      var isMuted = localStorage.getItem('mag_audio_muted') !== 'false';
-
-      function updateUI() {
-        if (isMuted) {
-          icon.textContent = '🔇';
-          label.textContent = 'Silenciado';
-          if (audio) audio.pause();
-        } else {
-          icon.textContent = '🔊';
-          label.textContent = 'Sonido ON';
-          if (audio) {
-            audio.currentTime = 0;
-            audio.play().catch(function () {});
-          }
-        }
-      }
-
-      if (btn) {
-        btn.addEventListener('click', function () {
-          isMuted = !isMuted;
-          localStorage.setItem('mag_audio_muted', isMuted ? 'true' : 'false');
-          updateUI();
-        });
-      }
-    })();
-
-    // 4. Handoff fluido hacia Flutter cuando el primer frame esté listo
+    // Transición suave hacia Flutter cuando el primer frame esté listo
     window.addEventListener('flutter-first-frame', function () {
       var loader = document.getElementById('loading-container');
       if (loader) {
