@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../../../core/logic/performance_guard.dart';
 import '../../../../core/services/pico_y_placa_service.dart';
 import '../../../../core/theme/brand_theme.dart';
 import '../../../../shared/widgets/app_snack_bar.dart';
@@ -218,17 +219,18 @@ class _PicoYPlacaCardState extends State<PicoYPlacaCard> {
           width: 1.4,
         ),
         boxShadow: [
-          BoxShadow(
-            color: accent.withValues(alpha: 0.15),
-            blurRadius: 20,
-            spreadRadius: 0,
-            offset: const Offset(0, 6),
-          ),
-          if (isDark)
+          if (!PerformanceGuard().isLowEnd)
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.6),
-              blurRadius: 16,
+              color: accent.withValues(alpha: 0.15),
+              blurRadius: 18,
+              spreadRadius: 0,
               offset: const Offset(0, 4),
+            ),
+          if (isDark && !PerformanceGuard().isLowEnd)
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.5),
+              blurRadius: 12,
+              offset: const Offset(0, 3),
             ),
         ],
       ),

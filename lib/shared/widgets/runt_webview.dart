@@ -479,16 +479,16 @@ class _RuntWebViewScreenState extends State<RuntWebViewScreen> {
         'runt_full_data_${widget.vehiculoId}',
         jsonEncode(profile.toJson()),
       );
-      if (profile.soatVencimiento.isNotEmpty) {
+      if (profile.effectiveSoatVencimiento.isNotEmpty) {
         await prefs.setString(
           'runt_cached_soat_${widget.vehiculoId}',
-          profile.soatVencimiento,
+          profile.effectiveSoatVencimiento,
         );
       }
-      if (profile.tecnoVencimiento.isNotEmpty) {
+      if (profile.effectiveTecnoVencimiento.isNotEmpty) {
         await prefs.setString(
           'runt_cached_tecno_${widget.vehiculoId}',
-          profile.tecnoVencimiento,
+          profile.effectiveTecnoVencimiento,
         );
       }
       await prefs.setString(
@@ -539,8 +539,8 @@ class _RuntWebViewScreenState extends State<RuntWebViewScreen> {
           if (mounted && p != null && p.hasAnyData) {
             setState(() {
               _extractedProfile = p;
-              _cachedSoat = p.soatVencimiento.isNotEmpty ? p.soatVencimiento : null;
-              _cachedTecno = p.tecnoVencimiento.isNotEmpty ? p.tecnoVencimiento : null;
+              _cachedSoat = p.effectiveSoatVencimiento.isNotEmpty ? p.effectiveSoatVencimiento : null;
+              _cachedTecno = p.effectiveTecnoVencimiento.isNotEmpty ? p.effectiveTecnoVencimiento : null;
               _cachedDate = res?['runt_last_check']?.toString();
               _hasOfflineCache = true;
             });

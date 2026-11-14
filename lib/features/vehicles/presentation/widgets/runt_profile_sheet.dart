@@ -157,8 +157,9 @@ class RuntProfileSheet {
                                 child: _LegalStatusCard(
                                   title: 'SOAT',
                                   icon: Icons.health_and_safety_rounded,
-                                  estado: p.soatEstado,
-                                  vencimiento: p.soatVencimiento,
+                                  estado: p.soatEstado.isNotEmpty ? p.soatEstado : 'REGISTRADO',
+                                  vencimiento: p.effectiveSoatVencimiento,
+                                  expedicion: p.effectiveSoatInicio,
                                   extra: p.soatAseguradora,
                                   accent: cyan,
                                 ),
@@ -170,8 +171,9 @@ class RuntProfileSheet {
                                   icon: Icons.verified_rounded,
                                   estado: p.tecnoEstado.isNotEmpty
                                       ? p.tecnoEstado
-                                      : (p.tecnoVencimiento.isNotEmpty ? 'REGISTRADA' : 'SIN DATO'),
-                                  vencimiento: p.tecnoVencimiento,
+                                      : (p.effectiveTecnoVencimiento.isNotEmpty ? 'REGISTRADA' : 'SIN DATO'),
+                                  vencimiento: p.effectiveTecnoVencimiento,
+                                  expedicion: p.effectiveTecnoInicio,
                                   extra: p.tecnoCda,
                                   accent: emerald,
                                 ),
@@ -285,6 +287,7 @@ class _LegalStatusCard extends StatelessWidget {
   final IconData icon;
   final String estado;
   final String vencimiento;
+  final String expedicion;
   final String extra;
   final Color accent;
 
@@ -293,6 +296,7 @@ class _LegalStatusCard extends StatelessWidget {
     required this.icon,
     required this.estado,
     required this.vencimiento,
+    this.expedicion = '',
     required this.extra,
     required this.accent,
   });
@@ -357,6 +361,17 @@ class _LegalStatusCard extends StatelessWidget {
               fontFeatures: [FontFeature.tabularFigures()],
             ),
           ),
+          if (expedicion.isNotEmpty && expedicion != vencimiento) ...[
+            const SizedBox(height: 2),
+            Text(
+              'Expedido: $expedicion',
+              style: const TextStyle(
+                fontSize: 10,
+                color: Colors.white54,
+                fontFeatures: [FontFeature.tabularFigures()],
+              ),
+            ),
+          ],
           if (extra.isNotEmpty) ...[
             const SizedBox(height: 4),
             Text(

@@ -2907,12 +2907,13 @@ class _InicioAppState extends State<InicioApp> {
             appBar: AppBar(
               title: const Text('Inicio'),
               actions: [
-                IconButton(
-                  tooltip: 'Telemetría GPS en Vivo',
-                  icon: const Icon(Icons.satellite_alt_rounded,
-                      color: Color(0xFF00E5FF)),
-                  onPressed: openLiveTelemetry,
-                ),
+                if (kIsWeb)
+                  IconButton(
+                    tooltip: 'Telemetría GPS en Vivo (Web)',
+                    icon: const Icon(Icons.satellite_alt_rounded,
+                        color: Color(0xFF00E5FF)),
+                    onPressed: openLiveTelemetry,
+                  ),
                 IconButton(
                   tooltip: 'Novedades de la actualización',
                   icon: const Icon(Icons.auto_awesome_motion_rounded,

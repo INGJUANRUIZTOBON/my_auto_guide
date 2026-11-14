@@ -136,5 +136,41 @@ void main() {
       expect(profile.tecnoInicioVigencia, '15/01/2024');
       expect(profile.tecnoEstado, 'VIGENTE');
     });
+
+    test('addOneYear correctly adds exactly 1 year and safely handles leap years', () {
+      expect(RuntVehicleProfile.addOneYear('15/05/2024'), '15/05/2025');
+      expect(RuntVehicleProfile.addOneYear('29/02/2024'), '28/02/2025'); // Leap year adjustment
+      expect(RuntVehicleProfile.addOneYear('2024-05-15'), '2025-05-15');
+      expect(RuntVehicleProfile.addOneYear('2024-02-29'), '2025-02-28');
+    });
+
+    test('effectiveSoatVencimiento and effectiveTecnoVencimiento calculate +1 year when RUNT returns issue date', () {
+      // Caso 1: RUNT solo muestra fecha de expedición / inicio y vencimiento viene vacío o igual a expedición
+      const singleDateProfile = RuntVehicleProfile(
+        soatEstado: 'VIGENTE',
+        soatExpedicion: '14/05/2024',
+        soatInicioVigencia: '14/05/2024',
+        soatVencimiento: '14/05/2024',
+        tecnoEstado: 'VIGENTE',
+        tecnoExpedicion: '22/08/2024',
+        tecnoVencimiento: '22/08/2024',
+      );
+
+      expect(singleDateProfile.effectiveSoatVencimiento, '14/05/2025');
+      expect(singleDateProfile.effectiveTecnoVencimiento, '22/08/2025');
+
+      // Caso 2: RUNT ya tiene fecha de vencimiento explícitamente posterior
+      const futureDateProfile = RuntVehicleProfile(
+        soatEstado: 'VIGENTE',
+        soatInicioVigencia: '10/01/2024',
+        soatVencimiento: '10/01/2025',
+        tecnoEstado: 'VIGENTE',
+        tecnoInicioVigencia: '05/02/2024',
+        tecnoVencimiento: '05/02/2025',
+      );
+
+      expect(futureDateProfile.effectiveSoatVencimiento, '10/01/2025');
+      expect(futureDateProfile.effectiveTecnoVencimiento, '05/02/2025');
+    });
   });
 }

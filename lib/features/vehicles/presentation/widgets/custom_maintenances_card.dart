@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../../../core/logic/performance_guard.dart';
 import '../../../../core/services/custom_maintenance_service.dart';
 import '../../../../core/theme/brand_theme.dart';
 import '../../../../shared/widgets/app_snack_bar.dart';
@@ -358,17 +359,18 @@ class _CustomMaintenancesCardState extends State<CustomMaintenancesCard> {
           width: 1.4,
         ),
         boxShadow: [
-          BoxShadow(
-            color: accent.withValues(alpha: 0.1),
-            blurRadius: 20,
-            spreadRadius: 0,
-            offset: const Offset(0, 6),
-          ),
-          if (isDark)
+          if (!PerformanceGuard().isLowEnd)
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.6),
-              blurRadius: 16,
+              color: accent.withValues(alpha: 0.1),
+              blurRadius: 18,
+              spreadRadius: 0,
               offset: const Offset(0, 4),
+            ),
+          if (isDark && !PerformanceGuard().isLowEnd)
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.5),
+              blurRadius: 12,
+              offset: const Offset(0, 3),
             ),
         ],
       ),
@@ -376,34 +378,39 @@ class _CustomMaintenancesCardState extends State<CustomMaintenancesCard> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: accent.withValues(alpha: 0.14),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: accent.withValues(alpha: 0.3),
-                        width: 1,
+              Expanded(
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(7),
+                      decoration: BoxDecoration(
+                        color: accent.withValues(alpha: 0.14),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: accent.withValues(alpha: 0.3),
+                          width: 1,
+                        ),
+                      ),
+                      child: const Icon(Icons.build_circle_rounded,
+                          color: accent, size: 18),
+                    ),
+                    const SizedBox(width: 8),
+                    const Expanded(
+                      child: Text(
+                        'Mantenimientos Personalizados',
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.2,
+                        ),
                       ),
                     ),
-                    child: const Icon(Icons.build_circle_rounded,
-                        color: accent, size: 20),
-                  ),
-                  const SizedBox(width: 10),
-                  const Text(
-                    'Mantenimientos Personalizados',
-                    style: TextStyle(
-                      fontSize: 15.5,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -0.2,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               InkWell(
                 onTap: () {
                   HapticFeedback.lightImpact();
@@ -412,7 +419,7 @@ class _CustomMaintenancesCardState extends State<CustomMaintenancesCard> {
                 borderRadius: BorderRadius.circular(20),
                 child: Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   decoration: BoxDecoration(
                     color: accent.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(20),
@@ -424,12 +431,12 @@ class _CustomMaintenancesCardState extends State<CustomMaintenancesCard> {
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.add_rounded, size: 16, color: accent),
-                      SizedBox(width: 4),
+                      Icon(Icons.add_rounded, size: 15, color: accent),
+                      SizedBox(width: 3),
                       Text(
                         'Agregar',
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 11.5,
                           fontWeight: FontWeight.w700,
                           color: accent,
                         ),

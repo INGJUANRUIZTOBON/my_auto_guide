@@ -75,6 +75,143 @@ class RuntVehicleProfile {
       estadoVehiculo.isNotEmpty ||
       organismoTransito.isNotEmpty;
 
+  /// Suma exactamente 1 año a una fecha formateada (DD/MM/AAAA o YYYY-MM-DD).
+  /// Respeta años bisiestos (29 de febrero -> 28 de febrero del año siguiente).
+  static String addOneYear(String rawDate) {
+    final trimmed = rawDate.trim();
+    if (trimmed.isEmpty) return '';
+
+    // Formato DD/MM/AAAA o D/M/AAAA
+    final dmyMatch = RegExp(r'^(\d{1,2})[/\-](\d{1,2})[/\-](\d{4})$').firstMatch(trimmed);
+    if (dmyMatch != null) {
+      final day = int.tryParse(dmyMatch.group(1)!) ?? 1;
+      final month = int.tryParse(dmyMatch.group(2)!) ?? 1;
+      final year = (int.tryParse(dmyMatch.group(3)!) ?? 2000) + 1;
+      final safeDay = (month == 2 && day == 29) ? 28 : day;
+      return '${safeDay.toString().padLeft(2, '0')}/${month.toString().padLeft(2, '0')}/$year';
+    }
+
+    // Formato YYYY-MM-DD
+    final isoMatch = RegExp(r'^(\d{4})[/\-](\d{1,2})[/\-](\d{1,2})$').firstMatch(trimmed);
+    if (isoMatch != null) {
+      final year = (int.tryParse(isoMatch.group(1)!) ?? 2000) + 1;
+      final month = int.tryParse(isoMatch.group(2)!) ?? 1;
+      final day = int.tryParse(isoMatch.group(3)!) ?? 1;
+      final safeDay = (month == 2 && day == 29) ? 28 : day;
+      return '$year-${month.toString().padLeft(2, '0')}-${safeDay.toString().padLeft(2, '0')}';
+    }
+
+    try {
+      final dt = DateTime.tryParse(trimmed);
+      if (dt != null) {
+        final safeDay = (dt.month == 2 && dt.day == 29) ? 28 : dt.day;
+        final next = DateTime(dt.year + 1, dt.month, safeDay);
+        return '${next.day.toString().padLeft(2, '0')}/${next.month.toString().padLeft(2, '0')}/${next.year}';
+      }
+    } catch (_) {}
+
+    return trimmed;
+  }
+
+  /// Fecha de vencimiento efectiva del SOAT.
+  /// En Colombia el SOAT vence estrictamente 1 año después de su expedición o inicio de vigencia.
+  /// En el portal ciudadano del RUNT la columna exhibida suele ser la fecha de expedición/inicio;
+  /// si la fecha extraída corresponde al inicio o si no se especificó fecha futura,
+  /// se proyecta 1 año después para evitar falsos vencimientos.
+  String get effectiveSoatVencimiento {
+    final start = soatInicioVigencia.isNotEmpty ? soatInicioVigencia : soatExpedicion;
+
+    if (soatVencimiento.isEmpty) {
+      return start.isNotEmpty ? addOneYear(start) : '';
+    }
+
+    if (soatVencimiento == soatInicioVigencia || soatVencimiento == soatExpedicion) {
+      return addOneYear(soatVencimiento);
+    }
+
+    final vIso = convertToIsoDate(soatVencimiento);
+    final sIso = start.isNotEmpty ? convertToIsoDate(start) : null;
+    if (vIso != null && sIso != null) {
+      final vDate = DateTime.tryParse(vIso);
+      final sDate = DateTime.tryParse(sIso);
+      if (vDate != null && sDate != null && !vDate.isAfter(sDate)) {
+        return addOneYear(soatVencimiento);
+      }
+      if (vDate != null && sDate != null && vDate.isAfter(sDate)) {
+        return soatVencimiento;
+      }
+    }
+
+    if (vIso != null) {
+      final vDate = DateTime.tryParse(vIso);
+      final now = DateTime.now();
+      final isVigente = soatEstado.toUpperCase().contains('VIGENT') ||
+          soatEstado.toUpperCase().contains('ACTIV') ||
+          soatEstado.isEmpty;
+      if (vDate != null && vDate.isBefore(now) && isVigente) {
+        return addOneYear(soatVencimiento);
+      }
+    }
+
+    return soatVencimiento;
+  }
+
+  /// Fecha de vencimiento efectiva de la Tecnomecánica (RTM).
+  /// En Colombia la RTM vence exactamente 1 año después de su expedición/revisión.
+  String get effectiveTecnoVencimiento {
+    final start = tecnoInicioVigencia.isNotEmpty ? tecnoInicioVigencia : tecnoExpedicion;
+
+    if (tecnoVencimiento.isEmpty) {
+      return start.isNotEmpty ? addOneYear(start) : '';
+    }
+
+    if (tecnoVencimiento == tecnoInicioVigencia || tecnoVencimiento == tecnoExpedicion) {
+      return addOneYear(tecnoVencimiento);
+    }
+
+    final vIso = convertToIsoDate(tecnoVencimiento);
+    final sIso = start.isNotEmpty ? convertToIsoDate(start) : null;
+    if (vIso != null && sIso != null) {
+      final vDate = DateTime.tryParse(vIso);
+      final sDate = DateTime.tryParse(sIso);
+      if (vDate != null && sDate != null && !vDate.isAfter(sDate)) {
+        return addOneYear(tecnoVencimiento);
+      }
+      if (vDate != null && sDate != null && vDate.isAfter(sDate)) {
+        return tecnoVencimiento;
+      }
+    }
+
+    if (vIso != null) {
+      final vDate = DateTime.tryParse(vIso);
+      final now = DateTime.now();
+      final isVigente = tecnoEstado.toUpperCase().contains('VIGENT') ||
+          tecnoEstado.toUpperCase().contains('ACTIV') ||
+          tecnoEstado.isEmpty;
+      if (vDate != null && vDate.isBefore(now) && isVigente) {
+        return addOneYear(tecnoVencimiento);
+      }
+    }
+
+    return tecnoVencimiento;
+  }
+
+  /// Fecha de inicio o expedición garantizada para SOAT
+  String get effectiveSoatInicio {
+    if (soatInicioVigencia.isNotEmpty) return soatInicioVigencia;
+    if (soatExpedicion.isNotEmpty) return soatExpedicion;
+    if (soatVencimiento.isNotEmpty) return soatVencimiento;
+    return '';
+  }
+
+  /// Fecha de inicio o expedición garantizada para Tecnomecánica
+  String get effectiveTecnoInicio {
+    if (tecnoInicioVigencia.isNotEmpty) return tecnoInicioVigencia;
+    if (tecnoExpedicion.isNotEmpty) return tecnoExpedicion;
+    if (tecnoVencimiento.isNotEmpty) return tecnoVencimiento;
+    return '';
+  }
+
   Map<String, dynamic> toJson() => {
         'marca': marca,
         'linea': linea,
@@ -93,15 +230,15 @@ class RuntVehicleProfile {
         'soat_estado': soatEstado,
         'soat_aseguradora': soatAseguradora,
         'soat_poliza': soatPoliza,
-        'soat_expedicion': soatExpedicion,
-        'soat_inicio_vigencia': soatInicioVigencia,
-        'soat_vencimiento': soatVencimiento,
+        'soat_expedicion': effectiveSoatInicio,
+        'soat_inicio_vigencia': effectiveSoatInicio,
+        'soat_vencimiento': effectiveSoatVencimiento,
         'tecno_estado': tecnoEstado,
         'tecno_certificado': tecnoCertificado,
         'tecno_cda': tecnoCda,
-        'tecno_expedicion': tecnoExpedicion,
-        'tecno_inicio_vigencia': tecnoInicioVigencia,
-        'tecno_vencimiento': tecnoVencimiento,
+        'tecno_expedicion': effectiveTecnoInicio,
+        'tecno_inicio_vigencia': effectiveTecnoInicio,
+        'tecno_vencimiento': effectiveTecnoVencimiento,
         'updated_at': (updatedAt ?? DateTime.now()).toIso8601String(),
       };
 
@@ -444,7 +581,9 @@ class RuntVehicleProfile {
 
   /// Resuelve la fecha ISO (`YYYY-MM-DD`) de **inicio de vigencia** para mantener consistencia
   /// con los cálculos de vida útil anual en Mantenimientos (`last_soat` / `last_tecno`).
-  /// Prioriza `inicioVigencia` -> `expedicion` -> (`vencimiento` - 1 año).
+  /// Si la fecha provista es futura (vencimiento legítimo), resta 1 año para obtener el inicio.
+  /// Si la fecha provista ya es del pasado (fecha de expedición/inicio del ciclo actual),
+  /// la toma directamente para no empujar erróneamente el documento al año anterior ni marcarlo vencido.
   static String? resolveStartIsoDate({
     required String inicio,
     required String expedicion,
@@ -460,8 +599,15 @@ class RuntVehicleProfile {
     if (expIso == null) return null;
     final expDate = DateTime.tryParse(expIso);
     if (expDate == null) return null;
-    final startDate = DateTime(expDate.year - 1, expDate.month, expDate.day);
-    return '${startDate.year}-${startDate.month.toString().padLeft(2, '0')}-${startDate.day.toString().padLeft(2, '0')}';
+
+    final now = DateTime.now();
+    if (expDate.isAfter(now)) {
+      final startDate = DateTime(expDate.year - 1, expDate.month, expDate.day);
+      return '${startDate.year}-${startDate.month.toString().padLeft(2, '0')}-${startDate.day.toString().padLeft(2, '0')}';
+    }
+
+    // Si expDate <= now, la fecha encontrada fue la fecha de expedición / inicio
+    return expIso;
   }
 
   /// Convierte fechas DD/MM/AAAA o YYYY-MM-DD a ISO `YYYY-MM-DD` para Supabase.

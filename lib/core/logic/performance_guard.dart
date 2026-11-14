@@ -34,25 +34,53 @@ class PerformanceGuard {
         
         debugPrint('PerformanceGuard: Detectando Hardware - Brand: $brand, Model: $model, Hardware: $hardware, Product: $product');
 
-        // 1. Detección específica por modelo (Samsung Galaxy A series y M series son críticos)
-        // El Galaxy A05 suele identificarse como SM-A055...
+        // 1. Detección específica por modelo (Samsung Galaxy A/M series, Xiaomi Redmi A/C, Moto E/G, Realme C)
         if (brand.contains('SAMSUNG') && 
            (model.contains('A05') || model.contains('A04') || model.contains('A03') || 
             model.contains('A02') || model.contains('A01') || model.contains('A10') || 
-            model.contains('A11') || model.contains('A12') || model.contains('A13') ||
+            model.contains('A11') || model.contains('A12') || model.contains('A13') || model.contains('A14') ||
             model.contains('M12') || model.contains('M13') || model.contains('A21') ||
-            product.contains('a05') || product.contains('a04'))) {
+            product.contains('a05') || product.contains('a04') || product.contains('a14'))) {
           _isLowEnd = true;
           debugPrint('PerformanceGuard: MODO BAJO CONSUMO ACTIVADO (Samsung A/M Series)');
           return;
         }
 
-        // 2. Detección por Hardware (Chipsets conocidos de gama baja / entry level)
-        // Helio G35 (mt6765), P22 (mt6762), Unisoc (sc9863a/tiger), etc.
-        // El MT676x y Unisoc son el cuello de botella principal en Android económico.
-        if (hardware.contains('mt676') || hardware.contains('unisoc') || 
-            hardware.contains('sc98') || hardware.contains('exynos850') ||
-            hardware.contains('mt6739') || hardware.contains('spreadtrum')) {
+        // Xiaomi Redmi Gama Entrada (Redmi 9A/C, 10A/C, 12C, A1/A2/A3, Poco C series)
+        if (brand.contains('XIAOMI') || brand.contains('REDMI') || brand.contains('POCO')) {
+          if (model.contains('9A') || model.contains('9C') || model.contains('10A') ||
+              model.contains('10C') || model.contains('12C') || model.contains('A1') ||
+              model.contains('A2') || model.contains('A3') || model.contains('C40') ||
+              model.contains('C50') || model.contains('C51') || model.contains('C55')) {
+            _isLowEnd = true;
+            debugPrint('PerformanceGuard: MODO BAJO CONSUMO ACTIVADO (Xiaomi Redmi/Poco Entry)');
+            return;
+          }
+        }
+
+        // Motorola Gama Entrada (Moto E series, Moto G13, G14, G22, G23, G Pure)
+        if (brand.contains('MOTOROLA') || brand.contains('MOTO')) {
+          if (model.contains(' E') || model.contains('E6') || model.contains('E7') ||
+              model.contains('E13') || model.contains('E20') || model.contains('E22') ||
+              model.contains('E32') || model.contains('G13') || model.contains('G14') ||
+              model.contains('G22') || model.contains('G23') || model.contains('PURE')) {
+            _isLowEnd = true;
+            debugPrint('PerformanceGuard: MODO BAJO CONSUMO ACTIVADO (Motorola E/G Entry)');
+            return;
+          }
+        }
+
+        // 2. Detección por Hardware (Chipsets conocidos de < 2.0 GHz / <= 4GB RAM)
+        // MediaTek Helio A22/P22/P35/G25/G35/G36/G37 (mt6761..mt6769)
+        // Unisoc SC9863A, T606, T610, T612, T616
+        // Exynos 7870, 7884, 850
+        // Snapdragon 4xx / 662 / 665 / 680
+        if (hardware.contains('mt676') || hardware.contains('mt673') || hardware.contains('mt675') ||
+            hardware.contains('unisoc') || hardware.contains('sc98') || hardware.contains('t606') ||
+            hardware.contains('t612') || hardware.contains('t616') || hardware.contains('ums') ||
+            hardware.contains('exynos850') || hardware.contains('exynos7') ||
+            hardware.contains('spreadtrum') || hardware.contains('sdm4') || hardware.contains('sm4') ||
+            hardware.contains('qcom_4')) {
           _isLowEnd = true;
           debugPrint('PerformanceGuard: MODO BAJO CONSUMO ACTIVADO (Chipset Limitado: $hardware)');
           return;
