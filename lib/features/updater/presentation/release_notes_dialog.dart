@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../../core/services/app_update_service.dart';
+import '../../../core/utils/web_reloader.dart';
 
 /// Modal interactivo para visualizar las novedades y cambios de una actualización
 /// tanto en Web como en Android.
@@ -199,38 +200,82 @@ class ReleaseNotesDialog extends StatelessWidget {
               ),
               const SizedBox(height: 24),
 
-              // Botón de Acción
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: cyan,
-                    foregroundColor: Colors.black,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+              // Botones de Acción
+              if (kIsWeb) ...[
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: cyan,
+                      foregroundColor: Colors.black,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                     ),
-                  ),
-                  onPressed: () async {
-                    if (kIsWeb) {
+                    onPressed: () async {
                       await AppUpdateService()
                           .markWebVersionAsSeen(updateInfo.versionCode);
-                    }
-                    if (context.mounted) {
-                      Navigator.pop(context);
-                    }
-                  },
-                  child: Text(
-                    isAutomaticNotice ? '¡Entendido, Comenzar!' : 'Cerrar',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.5,
+                      triggerWebPageReload();
+                    },
+                    icon: const Icon(Icons.refresh_rounded, size: 20, color: Colors.black),
+                    label: Text(
+                      'Actualizar Ahora (v${updateInfo.versionName})',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.5,
+                      ),
                     ),
                   ),
                 ),
-              ),
+                const SizedBox(height: 10),
+                Center(
+                  child: TextButton(
+                    onPressed: () async {
+                      await AppUpdateService()
+                          .markWebVersionAsSeen(updateInfo.versionCode);
+                      if (context.mounted) {
+                        Navigator.pop(context);
+                      }
+                    },
+                    child: Text(
+                      'Continuar en esta versión',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.6),
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ),
+              ] else ...[
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: cyan,
+                      foregroundColor: Colors.black,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Text(
+                      isAutomaticNotice ? '¡Entendido, Comenzar!' : 'Cerrar',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),

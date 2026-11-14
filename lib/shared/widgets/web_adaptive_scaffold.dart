@@ -1,6 +1,10 @@
+import 'dart:async';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/providers/theme_provider.dart';
+import '../../core/services/app_update_service.dart';
+import '../../features/updater/presentation/release_notes_dialog.dart';
 
 /// Shell responsivo para MY AUTO GUIDE Web y Desktop.
 /// En pantallas anchas (>= 900px), presenta una barra lateral (Sidebar)
@@ -48,6 +52,34 @@ class WebAdaptiveScaffold extends StatefulWidget {
 
 class _WebAdaptiveScaffoldState extends State<WebAdaptiveScaffold> {
   bool _isSidebarCollapsed = false;
+  Timer? _webUpdateTimer;
+  AppUpdateInfo? _pendingUpdate;
+
+  @override
+  void initState() {
+    super.initState();
+    if (kIsWeb) {
+      _checkUpdate();
+      _webUpdateTimer = Timer.periodic(const Duration(minutes: 5), (_) => _checkUpdate());
+    }
+  }
+
+  Future<void> _checkUpdate() async {
+    try {
+      final update = await AppUpdateService().checkForUpdate();
+      if (mounted && update != null && update.versionCode != _pendingUpdate?.versionCode) {
+        setState(() {
+          _pendingUpdate = update;
+        });
+      }
+    } catch (_) {}
+  }
+
+  @override
+  void dispose() {
+    _webUpdateTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -204,6 +236,55 @@ class _WebAdaptiveScaffoldState extends State<WebAdaptiveScaffold> {
                         ),
                       ),
                     ],
+
+                    // Banner Dinámico de Actualización Web Pendiente
+                    if (_pendingUpdate != null && !_isSidebarCollapsed)
+                      Container(
+                        margin: const EdgeInsets.only(top: 10, left: 16, right: 16),
+                        child: InkWell(
+                          onTap: () {
+                            ReleaseNotesDialog.show(
+                              context,
+                              updateInfo: _pendingUpdate!,
+                              isAutomaticNotice: true,
+                            );
+                          },
+                          borderRadius: BorderRadius.circular(12),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF00E5FF).withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: const Color(0xFF00E5FF), width: 1.2),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF00E5FF).withValues(alpha: 0.25),
+                                  blurRadius: 10,
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.rocket_launch_rounded, color: Color(0xFF00E5FF), size: 15),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    'v${_pendingUpdate!.versionName} Lista',
+                                    style: const TextStyle(
+                                      color: Color(0xFF00E5FF),
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 0.4,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                const Icon(Icons.refresh_rounded, color: Color(0xFF00E5FF), size: 13),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
 
                     const SizedBox(height: 20),
                     Divider(color: sidebarBorder, height: 1),

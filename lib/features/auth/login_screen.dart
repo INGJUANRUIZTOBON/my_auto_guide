@@ -37,6 +37,7 @@ import 'widgets/change_password_sheet.dart';
 import '../../core/services/biometric_service.dart';
 import '../../core/services/app_update_service.dart';
 import '../updater/presentation/app_update_lock_screen.dart';
+import '../updater/presentation/release_notes_dialog.dart';
 
 class CarRentalLoginScreen extends StatefulWidget {
   const CarRentalLoginScreen({super.key});
@@ -106,12 +107,20 @@ class _CarRentalLoginScreenState extends State<CarRentalLoginScreen> {
     _checkingAutoLogin = _auth.currentUser != null;
     try {
       final update = await _updateService.checkForUpdate();
-      if (!kIsWeb && update != null && mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => AppUpdateLockScreen(updateInfo: update)),
-        );
-        return;
+      if (update != null && mounted) {
+        if (!kIsWeb) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => AppUpdateLockScreen(updateInfo: update)),
+          );
+          return;
+        } else {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              ReleaseNotesDialog.show(context, updateInfo: update, isAutomaticNotice: true);
+            }
+          });
+        }
       }
       await _checkBiometrics();
       await _bootstrapSession();

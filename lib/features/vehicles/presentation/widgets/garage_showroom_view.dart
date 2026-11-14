@@ -759,7 +759,7 @@ class Showroom360Turntable extends StatefulWidget {
     super.key,
     required this.imageUrls,
     required this.isCar,
-    this.rotationInterval = const Duration(milliseconds: 180),
+    this.rotationInterval = const Duration(milliseconds: 1200),
   });
 
   @override
@@ -854,15 +854,21 @@ class _Showroom360TurntableState extends State<Showroom360Turntable> {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          Image.network(
-            currentImgUrl,
-            fit: BoxFit.contain,
-            gaplessPlayback: true,
-            filterQuality: FilterQuality.high,
-            errorBuilder: (_, __, ___) => Icon(
-              widget.isCar ? Icons.directions_car : Icons.two_wheeler,
-              size: 80,
-              color: Colors.white24,
+          AnimatedSwitcher(
+            duration: _isUserDragging ? Duration.zero : const Duration(milliseconds: 380),
+            switchInCurve: Curves.easeInOut,
+            switchOutCurve: Curves.easeInOut,
+            child: Image.network(
+              currentImgUrl,
+              key: ValueKey<String>(currentImgUrl),
+              fit: BoxFit.contain,
+              gaplessPlayback: true,
+              filterQuality: FilterQuality.high,
+              errorBuilder: (_, __, ___) => Icon(
+                widget.isCar ? Icons.directions_car : Icons.two_wheeler,
+                size: 80,
+                color: Colors.white24,
+              ),
             ),
           ),
           Positioned(

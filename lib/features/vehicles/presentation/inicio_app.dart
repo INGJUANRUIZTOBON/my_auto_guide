@@ -3467,7 +3467,7 @@ class _Interactive360SpinnerState extends State<Interactive360Spinner> {
   void _startAutoRotate() {
     _rotationTimer?.cancel();
     if (widget.imageUrls.length <= 1) return;
-    _rotationTimer = Timer.periodic(const Duration(milliseconds: 180), (_) {
+    _rotationTimer = Timer.periodic(const Duration(milliseconds: 1200), (_) {
       if (!_isDragging && mounted) {
         setState(() {
           _currentIndex = (_currentIndex + 1) % widget.imageUrls.length;
@@ -3517,12 +3517,18 @@ class _Interactive360SpinnerState extends State<Interactive360Spinner> {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          Image.network(
-            widget.imageUrls[_currentIndex % widget.imageUrls.length],
-            fit: BoxFit.contain,
-            gaplessPlayback: true,
-            filterQuality: FilterQuality.high,
-            errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image, size: 60),
+          AnimatedSwitcher(
+            duration: _isDragging ? Duration.zero : const Duration(milliseconds: 380),
+            switchInCurve: Curves.easeInOut,
+            switchOutCurve: Curves.easeInOut,
+            child: Image.network(
+              widget.imageUrls[_currentIndex % widget.imageUrls.length],
+              key: ValueKey<String>(widget.imageUrls[_currentIndex % widget.imageUrls.length]),
+              fit: BoxFit.contain,
+              gaplessPlayback: true,
+              filterQuality: FilterQuality.high,
+              errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image, size: 60),
+            ),
           ),
           Positioned(
             bottom: 4,

@@ -60,11 +60,19 @@ class AppUpdateService {
 
       final updateInfo = AppUpdateInfo.fromMap(response);
 
-      // En Web: Comparamos contra el último código de versión visto en localStorage
+      // En Web: Comparamos contra el buildNumber de la web y el localStorage
       if (kIsWeb) {
+        int currentWebBuild = 0;
+        try {
+          final packageInfo = await PackageInfo.fromPlatform();
+          currentWebBuild = int.tryParse(packageInfo.buildNumber) ?? 0;
+        } catch (_) {}
+
         final prefs = await SharedPreferences.getInstance();
         final lastSeenCode = prefs.getInt('web_last_seen_version_code') ?? 0;
-        if (updateInfo.versionCode > lastSeenCode) {
+        final baseCode = currentWebBuild > 0 ? currentWebBuild : lastSeenCode;
+
+        if (updateInfo.versionCode > baseCode) {
           return updateInfo;
         }
         return null;
