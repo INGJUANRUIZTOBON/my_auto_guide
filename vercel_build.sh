@@ -21,7 +21,10 @@ flutter --version
 echo "📦 Habilitando compilación Web..."
 flutter config --enable-web
 
+echo "📥 Descargando dependencias..."
+flutter pub get
+
 echo "⚡ Compilando My Auto Guide para la Web (Release)..."
-flutter build web --release
+flutter build web --release --no-wasm-dry-run
 
 echo "✅ Compilación Web exitosa en build/web"

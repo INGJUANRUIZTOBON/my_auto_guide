@@ -135,6 +135,9 @@ flutter:
     - assets/lineasfondo.png
     - assets/logos/
 
+dependency_overrides:
+  camera_web: ^0.3.6
+
 flutter_launcher_icons:
   android: true
   ios: true
