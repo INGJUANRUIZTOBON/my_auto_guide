@@ -153,12 +153,13 @@ class _CosmicOrbitalIntroState extends State<CosmicOrbitalIntro>
                                   ],
                                 ),
                               ),
-                              // Imagen del Escudo Oficial
+                              // Imagen del Escudo Oficial Transparente HD
                               Image.asset(
                                 'assets/images/app_logo.png',
                                 width: 130,
                                 height: 130,
                                 fit: BoxFit.contain,
+                                filterQuality: FilterQuality.high,
                               ),
                             ],
                           ),

@@ -3425,7 +3425,13 @@ class _ScaleButtonState extends State<_ScaleButton> {
 
 class Interactive360Spinner extends StatefulWidget {
   final List<String> imageUrls;
-  const Interactive360Spinner({super.key, required this.imageUrls});
+  final bool autoRotate;
+
+  const Interactive360Spinner({
+    super.key,
+    required this.imageUrls,
+    this.autoRotate = true,
+  });
 
   @override
   State<Interactive360Spinner> createState() => _Interactive360SpinnerState();
@@ -3434,6 +3440,48 @@ class Interactive360Spinner extends StatefulWidget {
 class _Interactive360SpinnerState extends State<Interactive360Spinner> {
   int _currentIndex = 0;
   double _dragStart = 0.0;
+  Timer? _rotationTimer;
+  Timer? _resumeTimer;
+  bool _isDragging = false;
+  bool _precached = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.autoRotate) {
+      _startAutoRotate();
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_precached) {
+      _precached = true;
+      for (final url in widget.imageUrls) {
+        precacheImage(NetworkImage(url), context).catchError((_) {});
+      }
+    }
+  }
+
+  void _startAutoRotate() {
+    _rotationTimer?.cancel();
+    if (widget.imageUrls.length <= 1) return;
+    _rotationTimer = Timer.periodic(const Duration(milliseconds: 180), (_) {
+      if (!_isDragging && mounted) {
+        setState(() {
+          _currentIndex = (_currentIndex + 1) % widget.imageUrls.length;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _rotationTimer?.cancel();
+    _resumeTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -3441,12 +3489,13 @@ class _Interactive360SpinnerState extends State<Interactive360Spinner> {
 
     return GestureDetector(
       onHorizontalDragStart: (details) {
+        _isDragging = true;
         _dragStart = details.localPosition.dx;
+        _resumeTimer?.cancel();
       },
       onHorizontalDragUpdate: (details) {
-        double offset = details.localPosition.dx - _dragStart;
-        // Sensibilidad de la rotación
-        int change = (offset / 12).round();
+        final double offset = details.localPosition.dx - _dragStart;
+        final int change = (offset / 14).round();
         if (change != 0) {
           setState(() {
             _currentIndex = (_currentIndex - change) % widget.imageUrls.length;
@@ -3455,16 +3504,24 @@ class _Interactive360SpinnerState extends State<Interactive360Spinner> {
           _dragStart = details.localPosition.dx;
         }
       },
+      onHorizontalDragEnd: (_) {
+        _resumeTimer?.cancel();
+        _resumeTimer = Timer(const Duration(milliseconds: 2500), () {
+          if (mounted) {
+            setState(() {
+              _isDragging = false;
+            });
+          }
+        });
+      },
       child: Stack(
         alignment: Alignment.center,
         children: [
           Image.network(
-            widget.imageUrls[_currentIndex],
+            widget.imageUrls[_currentIndex % widget.imageUrls.length],
             fit: BoxFit.contain,
-            loadingBuilder: (context, child, loadingProgress) {
-              if (loadingProgress == null) return child;
-              return const Center(child: CircularProgressIndicator());
-            },
+            gaplessPlayback: true,
+            filterQuality: FilterQuality.high,
             errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image, size: 60),
           ),
           Positioned(
@@ -3473,15 +3530,31 @@ class _Interactive360SpinnerState extends State<Interactive360Spinner> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: Colors.black54,
+                color: Colors.black.withValues(alpha: 0.65),
                 borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: const Color(0xFF00E5FF).withValues(alpha: 0.6),
+                  width: 0.8,
+                ),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.threed_rotation, color: Colors.white, size: 12),
-                  SizedBox(width: 4),
-                  Text('360°', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
+                  Icon(
+                    Icons.threed_rotation,
+                    color: _isDragging ? const Color(0xFF10B981) : const Color(0xFF00E5FF),
+                    size: 12,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    _isDragging ? 'MANUAL' : '360° AUTO',
+                    style: TextStyle(
+                      color: _isDragging ? const Color(0xFF10B981) : const Color(0xFF00E5FF),
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
                 ],
               ),
             ),

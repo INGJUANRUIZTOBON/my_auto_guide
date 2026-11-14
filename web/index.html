@@ -159,25 +159,14 @@
       text-shadow: 0 0 16px rgba(0, 229, 255, 0.6);
     }
 
-    .vehicle-badge-pill {
-      margin-top: 10px;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 16px;
-      border-radius: 20px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(0, 229, 255, 0.35);
-      backdrop-filter: blur(10px);
-      box-shadow: 0 0 20px rgba(0, 229, 255, 0.15);
-    }
-
-    .vehicle-badge-text {
-      font-size: 11px;
+    .loader-subtitle {
+      margin-top: 6px;
+      font-size: 10px;
       font-weight: 700;
-      letter-spacing: 1.5px;
+      letter-spacing: 3px;
       color: #00E5FF;
       text-transform: uppercase;
+      opacity: 0.85;
     }
 
     .sync-status {
@@ -273,18 +262,13 @@
       <div class="center-sphere-aura"></div>
       <div class="orbital-ring"></div>
       <div class="orbital-ring-outer"></div>
-      <img src="favicon.png" alt="My Auto Guide" class="brand-logo-img" id="brandLogo">
+      <img src="icons/Icon-512.png" alt="My Auto Guide" class="brand-logo-img" id="brandLogo">
     </div>
 
     <div class="loader-content">
       <div class="loader-title">MY AUTO GUIDE</div>
-      
-      <div class="vehicle-badge-pill" id="vehiclePill">
-        <span id="vehicleIcon">🏍️</span>
-        <span class="vehicle-badge-text" id="vehicleLabel">LUCIFER • BAJAJ PULSAR NS 200</span>
-      </div>
-
-      <div class="sync-status" id="syncStatus">SINCRONIZANDO CON SUPABASE...</div>
+      <div class="loader-subtitle">ECOSISTEMA VEHICULAR INTELIGENTE</div>
+      <div class="sync-status" id="syncStatus">CARGANDO ECOSISTEMA...</div>
 
       <div class="progress-bar-container">
         <div class="progress-bar-fill"></div>
@@ -335,34 +319,7 @@
       draw();
     })();
 
-    // 2. Cargar snapshot del vehículo de localStorage para pintar en Frame 0
-    (function () {
-      try {
-        var raw = localStorage.getItem('last_boot_vehicle_snapshot') ||
-                  localStorage.getItem('flutter.last_boot_vehicle_snapshot');
-        if (raw) {
-          var snap = typeof raw === 'string' && raw.startsWith('{') ? JSON.parse(raw) : null;
-          if (snap) {
-            var isCar = snap.isCar !== false;
-            var marca = (snap.marca || '').toUpperCase();
-            var modelo = (snap.modelo || '').toUpperCase();
-            var placa = (snap.placa || '').toUpperCase();
-            var labelEl = document.getElementById('vehicleLabel');
-            var iconEl = document.getElementById('vehicleIcon');
-            if (labelEl) {
-              var text = (marca + ' ' + modelo).trim();
-              if (placa) text += ' • ' + placa;
-              labelEl.textContent = text || 'LUCIFER • BAJAJ PULSAR NS 200';
-            }
-            if (iconEl) {
-              iconEl.textContent = isCar ? '🚗' : '🏍️';
-            }
-          }
-        }
-      } catch (e) {}
-    })();
-
-    // 3. Audio de Ignición (Opción B: con soporte de Mute)
+    // 2. Audio de Ignición (Opción B: con soporte de Mute)
     (function () {
       var audio = document.getElementById('introAudio');
       var btn = document.getElementById('soundToggle');

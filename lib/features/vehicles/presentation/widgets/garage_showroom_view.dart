@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -423,7 +424,12 @@ class _GarageShowroomViewState extends State<GarageShowroomView>
                                 ),
                               ),
                             ),
-                            if (bestImage != null && bestImage.isNotEmpty)
+                            if (images360.isNotEmpty)
+                              Showroom360Turntable(
+                                imageUrls: images360,
+                                isCar: isCar,
+                              )
+                            else if (bestImage != null && bestImage.isNotEmpty)
                               SmartVehicleImage(
                                 imagePath: bestImage,
                                 isCar: isCar,
@@ -738,5 +744,170 @@ class _ShowroomEpoxyFloorPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _ShowroomEpoxyFloorPainter oldDelegate) {
     return oldDelegate.pulse != pulse || oldDelegate.isDark != isDark;
+  }
+}
+
+/// Turntable 360 interactivo para el Showroom:
+/// Rotación continua suave (~180ms/fotograma), precarga en memoria para cero parpadeo,
+/// soporte de swipe manual y reanudación automática.
+class Showroom360Turntable extends StatefulWidget {
+  final List<String> imageUrls;
+  final bool isCar;
+  final Duration rotationInterval;
+
+  const Showroom360Turntable({
+    super.key,
+    required this.imageUrls,
+    required this.isCar,
+    this.rotationInterval = const Duration(milliseconds: 180),
+  });
+
+  @override
+  State<Showroom360Turntable> createState() => _Showroom360TurntableState();
+}
+
+class _Showroom360TurntableState extends State<Showroom360Turntable> {
+  int _currentIndex = 0;
+  Timer? _rotationTimer;
+  Timer? _resumeTimer;
+  double _dragStartX = 0.0;
+  bool _isUserDragging = false;
+  bool _precached = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _startAutoRotation();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_precached) {
+      _precached = true;
+      for (final url in widget.imageUrls) {
+        precacheImage(NetworkImage(url), context).catchError((_) {});
+      }
+    }
+  }
+
+  void _startAutoRotation() {
+    _rotationTimer?.cancel();
+    if (widget.imageUrls.length <= 1) return;
+    _rotationTimer = Timer.periodic(widget.rotationInterval, (_) {
+      if (!_isUserDragging && mounted) {
+        setState(() {
+          _currentIndex = (_currentIndex + 1) % widget.imageUrls.length;
+        });
+      }
+    });
+  }
+
+  void _handleDragStart(DragStartDetails details) {
+    _isUserDragging = true;
+    _dragStartX = details.localPosition.dx;
+    _resumeTimer?.cancel();
+  }
+
+  void _handleDragUpdate(DragUpdateDetails details) {
+    if (widget.imageUrls.isEmpty) return;
+    final double offset = details.localPosition.dx - _dragStartX;
+    final int change = (offset / 14).round();
+    if (change != 0) {
+      setState(() {
+        _currentIndex = (_currentIndex - change) % widget.imageUrls.length;
+        if (_currentIndex < 0) _currentIndex += widget.imageUrls.length;
+      });
+      _dragStartX = details.localPosition.dx;
+    }
+  }
+
+  void _handleDragEnd(DragEndDetails details) {
+    _resumeTimer?.cancel();
+    _resumeTimer = Timer(const Duration(milliseconds: 2200), () {
+      if (mounted) {
+        setState(() {
+          _isUserDragging = false;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _rotationTimer?.cancel();
+    _resumeTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.imageUrls.isEmpty) return const SizedBox.shrink();
+
+    final currentImgUrl = widget.imageUrls[_currentIndex % widget.imageUrls.length];
+
+    return GestureDetector(
+      onHorizontalDragStart: _handleDragStart,
+      onHorizontalDragUpdate: _handleDragUpdate,
+      onHorizontalDragEnd: _handleDragEnd,
+      behavior: HitTestBehavior.opaque,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Image.network(
+            currentImgUrl,
+            fit: BoxFit.contain,
+            gaplessPlayback: true,
+            filterQuality: FilterQuality.high,
+            errorBuilder: (_, __, ___) => Icon(
+              widget.isCar ? Icons.directions_car : Icons.two_wheeler,
+              size: 80,
+              color: Colors.white24,
+            ),
+          ),
+          Positioned(
+            bottom: 6,
+            right: 6,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.65),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: const Color(0xFF00E5FF).withValues(alpha: 0.6),
+                  width: 0.8,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF00E5FF).withValues(alpha: 0.2),
+                    blurRadius: 8,
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.threed_rotation_rounded,
+                    size: 13,
+                    color: _isUserDragging ? const Color(0xFF10B981) : const Color(0xFF00E5FF),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    _isUserDragging ? 'MANUAL' : '360° AUTO',
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.8,
+                      color: _isUserDragging ? const Color(0xFF10B981) : const Color(0xFF00E5FF),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
