@@ -99,6 +99,8 @@ import 'widgets/pico_y_placa_card.dart';
 import 'widgets/custom_maintenances_card.dart';
 import 'widgets/legal_extras_sheet.dart';
 import 'widgets/runt_profile_sheet.dart';
+import 'widgets/garage_showroom_view.dart';
+import '../../../shared/widgets/cosmic_orbital_intro.dart';
 import '../../expenses/presentation/driver_profitability_screen.dart';
 import '../../fleet/presentation/fleet_dashboard_screen.dart';
 import '../../obd_scanner/presentation/screens/scanner_dashboard_screen.dart';
@@ -112,7 +114,6 @@ import '../domain/models/maintenance_prediction.dart';
 import 'widgets/achievements_card.dart';
 import 'widgets/weekly_insight_card.dart';
 import 'widgets/dashboard_widgets.dart';
-import '../../../shared/widgets/dashboard_shimmer_loader.dart';
 import '../../../shared/widgets/cinematic_vehicle_loader.dart';
 
 enum DocType { soat, tecno, seguro, propiedad }
@@ -159,6 +160,7 @@ class _InicioAppState extends State<InicioApp> {
   final Map<String, dynamic> _urlCache = {};
   bool _notificacionesProcesadas = false;
   bool _checkedKm24h = false;
+  bool _cosmicIntroCompleted = false;
   bool _introCompleted = false;
   late Future<Map<String, dynamic>> _initAppFuture;
   StreamSubscription<AuthState>? _authSub;
@@ -667,13 +669,20 @@ class _InicioAppState extends State<InicioApp> {
       try {
         _customMaintenancesList = await CustomMaintenanceService().getItems(widget.vehiculoId);
       } catch (_) {}
+      final images360List = (row['images_360_urls'] is List)
+          ? List<String>.from(row['images_360_urls'])
+          : <String>[];
+      final String? bestImg = images360List.isNotEmpty
+          ? images360List.first
+          : (row['image_path'] as String? ?? row['foto_url'] as String?);
+
       unawaited(
         BootVehicleSnapshot.save(
           marca: (row['marca'] as String? ?? ''),
           modelo: (row['modelo'] as String? ?? ''),
           placa: (row['placa'] as String? ?? ''),
           isCar: _isCarForScanner(row),
-          imagePath: row['image_path'] as String?,
+          imagePath: bestImg,
         ),
       );
       return row;
@@ -1009,171 +1018,83 @@ class _InicioAppState extends State<InicioApp> {
   }
 
   Future<void> _abrirGarajeSelector() async {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      builder: (ctx) {
-        final isDark = Theme.of(context).brightness == Brightness.dark;
-        return Container(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Mi Garaje',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Outfit',
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.pop(ctx),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              FutureBuilder<List<Map<String, dynamic>>>(
-                future: SupabaseService().getVehicles(),
-                builder: (ctx, snap) {
-                  if (snap.connectionState != ConnectionState.done) {
-                    return const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(16.0),
-                        child: CircularProgressIndicator(),
-                      ),
-                    );
-                  }
-                  if (snap.hasError) {
-                    return Center(child: Text('Error: ${snap.error}'));
-                  }
-                  final list = snap.data ?? [];
-                  if (list.isEmpty) {
-                    return const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(16.0),
-                        child: Text('No tienes vehículos registrados.'),
-                      ),
-                    );
-                  }
-                  return ConstrainedBox(
-                    constraints: const BoxConstraints(maxHeight: 250),
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: list.length,
-                      itemBuilder: (ctx, index) {
-                        final item = list[index];
-                        final id = item['id'] as String;
-                        final String brand = (item['marca'] as String? ?? '').toUpperCase();
-                        final String model = item['modelo'] as String? ?? '';
-                        final String nickname = item['apodo'] as String? ?? '';
-                        final isCurrent = id == widget.vehiculoId;
+    final isDesktop = MediaQuery.of(context).size.width >= 900;
 
-                        return Card(
-                          elevation: 0,
-                          color: isCurrent
-                              ? Theme.of(context).primaryColor.withOpacity(0.1)
-                              : (isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03)),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                            side: BorderSide(
-                              color: isCurrent
-                                  ? Theme.of(context).primaryColor
-                                  : Colors.transparent,
-                              width: 1.5,
-                            ),
-                          ),
-                          margin: const EdgeInsets.only(bottom: 8),
-                          child: ListTile(
-                            leading: const Icon(Icons.directions_car_filled_outlined),
-                            title: Text(
-                              nickname.isNotEmpty ? nickname : '$brand $model',
-                              style: const TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            subtitle: Text('$brand $model • ${item['kms'] ?? 0} KM'),
-                            trailing: isCurrent
-                                ? const Icon(Icons.check_circle_rounded, color: Colors.green)
-                                : IconButton(
-                                    icon: const Icon(Icons.swap_horiz_rounded),
-                                    onPressed: () {
-                                      Navigator.pop(ctx); // Close sheet
-                                      // Switch vehicle!
-                                      Navigator.pushReplacement(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (_) => InicioApp(vehiculoId: id),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                          ),
-                        );
-                      },
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        Navigator.pop(ctx);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const AgregarVehiculoScreen(),
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.motorcycle_rounded),
-                      label: const Text('Agregar Moto'),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        Navigator.pop(ctx);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const AgregarCarroScreen(),
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.directions_car_rounded),
-                      label: const Text('Agregar Carro'),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+    void onSelect(String id) {
+      Navigator.of(context, rootNavigator: true).pop();
+      if (id != widget.vehiculoId) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => InicioApp(vehiculoId: id),
           ),
         );
-      },
-    );
+      }
+    }
+
+    void onAddMoto() {
+      Navigator.of(context, rootNavigator: true).pop();
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const AgregarVehiculoScreen()),
+      );
+    }
+
+    void onAddCar() {
+      Navigator.of(context, rootNavigator: true).pop();
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const AgregarCarroScreen()),
+      );
+    }
+
+    if (isDesktop) {
+      showDialog(
+        context: context,
+        barrierDismissible: true,
+        builder: (ctx) {
+          return Dialog(
+            backgroundColor: Colors.transparent,
+            insetPadding: const EdgeInsets.symmetric(horizontal: 40, vertical: 30),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(28),
+              child: GarageShowroomView(
+                currentVehicleId: widget.vehiculoId,
+                onSelectVehicle: onSelect,
+                onAddMoto: onAddMoto,
+                onAddCar: onAddCar,
+                onClose: () => Navigator.of(ctx).pop(),
+              ),
+            ),
+          );
+        },
+      );
+    } else {
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        useSafeArea: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        backgroundColor: Colors.transparent,
+        builder: (ctx) {
+          return ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height * 0.88,
+              child: GarageShowroomView(
+                currentVehicleId: widget.vehiculoId,
+                onSelectVehicle: onSelect,
+                onAddMoto: onAddMoto,
+                onAddCar: onAddCar,
+                onClose: () => Navigator.of(ctx).pop(),
+              ),
+            ),
+          );
+        },
+      );
+    }
   }
 
   void _abrirGuias() {
@@ -2180,12 +2101,42 @@ class _InicioAppState extends State<InicioApp> {
       future: _initAppFuture,
       builder: (context, s) {
         final bool dataReady = s.connectionState == ConnectionState.done;
+        if (!_cosmicIntroCompleted) {
+          return CosmicOrbitalIntro(
+            onIntroComplete: () {
+              if (mounted) setState(() => _cosmicIntroCompleted = true);
+            },
+            onSkip: () {
+              if (mounted) {
+                setState(() {
+                  _cosmicIntroCompleted = true;
+                  _introCompleted = true;
+                });
+              }
+            },
+          );
+        }
+
         if (!dataReady || !_introCompleted) {
+          final snap = _cachedVehicleData != null
+              ? BootVehicleSnapshot(
+                  marca: _cachedVehicleData!['marca']?.toString() ?? '',
+                  modelo: _cachedVehicleData!['modelo']?.toString() ?? '',
+                  placa: _cachedVehicleData!['placa']?.toString() ?? '',
+                  isCar: _isCarForScanner(_cachedVehicleData!),
+                  imagePath: (_cachedVehicleData!['images_360_urls'] is List &&
+                          (_cachedVehicleData!['images_360_urls'] as List).isNotEmpty)
+                      ? (_cachedVehicleData!['images_360_urls'] as List).first.toString()
+                      : (_cachedVehicleData!['image_path'] ?? _cachedVehicleData!['foto_url'])?.toString(),
+                )
+              : null;
+
           return Scaffold(
             key: const ValueKey('boot_loader'),
             backgroundColor: const Color(0xFF06080C),
             body: CinematicVehicleLoader(
               isDataReady: dataReady,
+              initialSnapshot: snap,
               onIntroComplete: () {
                 if (mounted && !_introCompleted) {
                   setState(() => _introCompleted = true);
@@ -3160,16 +3111,27 @@ class _MainHero extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: isDark ? Colors.white12 : const Color(0xFFE2E8F0),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(isDark ? 0.25 : 0.06),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
+          ),
+        ],
         gradient: PerformanceGuard().isLowEnd
             ? null
             : LinearGradient(
                 colors: isDark
-                    ? [brandTheme.primaryColor.withOpacity(0.1), Colors.black12]
-                    : [brandTheme.primaryColor.withOpacity(0.05), Colors.white],
+                    ? [brandTheme.primaryColor.withOpacity(0.12), const Color(0xFF0F172A)]
+                    : [brandTheme.primaryColor.withOpacity(0.06), Colors.white],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight),
         color: PerformanceGuard().isLowEnd
-            ? (isDark ? Colors.grey[900] : Colors.grey[100])
+            ? (isDark ? Colors.grey[900] : Colors.white)
             : null,
       ),
       child: Stack(
@@ -3207,10 +3169,11 @@ class _MainHero extends StatelessWidget {
                                 cacheHeight: 60)),
                       const SizedBox(height: 16),
                       Text(modelo,
-                          style: const TextStyle(
+                          style: TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
-                              letterSpacing: -0.5)),
+                              letterSpacing: -0.5,
+                              color: isDark ? Colors.white : Colors.black87)),
                       const SizedBox(height: 4),
                       Text(
                           '${AppFormat.thousandsOrRaw(kms)} KM',
@@ -3227,7 +3190,13 @@ class _MainHero extends StatelessWidget {
                           style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
-                              color: brandTheme.primaryColor)),
+                              color: isDark
+                                  ? (healthIndex > 70
+                                      ? const Color(0xFF34D399)
+                                      : (healthIndex > 40
+                                          ? const Color(0xFFFBBF24)
+                                          : const Color(0xFFF87171)))
+                                  : brandTheme.primaryColor)),
                     ],
                   ),
                 ),

@@ -6,115 +6,402 @@
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="description" content="MY AUTO GUIDE — Tu Copiloto Inteligente, Telemetría en Vivo y Mantenimiento Predictivo">
-  <meta name="theme-color" content="#0A0E1A">
+  <meta name="description" content="My Auto Guide — Tu Copiloto Inteligente, Telemetría en Vivo y Mantenimiento Predictivo">
+  <meta name="theme-color" content="#06080C">
 
   <!-- OpenGraph Meta Tags -->
-  <meta property="og:title" content="MY AUTO GUIDE — Copiloto Inteligente">
-  <meta property="og:description" content="Monitoreo, telemetría GPS en tiempo real y mantenimiento vehicular predictivo.">
+  <meta property="og:title" content="My Auto Guide">
+  <meta property="og:description" content="Monitoreo, telemetría GPS en tiempo real y copiloto vehicular inteligente.">
   <meta property="og:type" content="website">
 
   <!-- iOS PWA Meta Tags -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="MyAutoGuide">
+  <meta name="apple-mobile-web-app-title" content="My Auto Guide">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon.png"/>
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/Icon-192.png"/>
 
-  <title>MY AUTO GUIDE — Tu Copiloto Inteligente</title>
+  <title>My Auto Guide</title>
   <link rel="manifest" href="manifest.json">
 
   <style>
+    * {
+      box-sizing: border-box;
+    }
     body {
       margin: 0;
       padding: 0;
-      background-color: #0A0E1A;
+      background-color: #06080C;
       color: #FFFFFF;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Outfit", sans-serif;
       overflow: hidden;
       height: 100vh;
       width: 100vw;
     }
+
     #loading-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      height: 100vh;
-      width: 100vw;
-      background: radial-gradient(circle at 50% 40%, #151F38 0%, #0A0E1A 70%);
-      transition: opacity 0.4s ease-out;
+      background: radial-gradient(circle at 50% 45%, #101628 0%, #06080C 75%);
+      overflow: hidden;
+      z-index: 99999;
+      transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .loader-brand {
-      width: 80px;
-      height: 80px;
+
+    /* Fondo planetario y estrellas */
+    .cosmic-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .horizon-glow {
+      position: absolute;
+      bottom: -15vh;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 140vw;
+      height: 35vh;
       border-radius: 50%;
-      background: linear-gradient(135deg, #00E5FF 0%, #0070F3 100%);
+      background: radial-gradient(ellipse at 50% 0%, rgba(99, 102, 241, 0.45) 0%, rgba(0, 229, 255, 0.2) 40%, rgba(6, 8, 12, 0) 75%);
+      box-shadow: 0 -10px 60px rgba(124, 58, 237, 0.35);
+      z-index: 2;
+    }
+
+    /* Contenedor central del logo y anillo orbital */
+    .orbital-stage {
+      position: relative;
+      width: 220px;
+      height: 220px;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 0 35px rgba(0, 229, 255, 0.45);
-      animation: pulse 2s infinite ease-in-out;
+      z-index: 3;
     }
-    .loader-spinner {
-      margin-top: 28px;
-      width: 32px;
-      height: 32px;
-      border: 3px solid rgba(0, 229, 255, 0.15);
-      border-top-color: #00E5FF;
+
+    /* Anillo orbital rotativo inspirado en el video cósmico */
+    .orbital-ring {
+      position: absolute;
+      width: 210px;
+      height: 90px;
       border-radius: 50%;
-      animation: spin 0.8s linear infinite;
+      border: 2px solid transparent;
+      border-top-color: #A855F7;
+      border-bottom-color: #00E5FF;
+      box-shadow: 0 0 24px rgba(168, 85, 247, 0.7), inset 0 0 18px rgba(0, 229, 255, 0.5);
+      transform: rotate(-25deg);
+      animation: orbitSpin 3.5s linear infinite;
     }
+
+    .orbital-ring-outer {
+      position: absolute;
+      width: 236px;
+      height: 106px;
+      border-radius: 50%;
+      border: 1px dashed rgba(0, 229, 255, 0.4);
+      transform: rotate(-25deg);
+      animation: orbitSpinReverse 7s linear infinite;
+    }
+
+    /* Halo pulsante */
+    .center-sphere-aura {
+      position: absolute;
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(124, 58, 237, 0.3) 0%, rgba(0, 229, 255, 0.15) 55%, transparent 75%);
+      filter: blur(12px);
+      animation: auraPulse 2.8s ease-in-out infinite;
+    }
+
+    /* Logo oficial transparente */
+    .brand-logo-img {
+      position: relative;
+      width: 96px;
+      height: 96px;
+      object-fit: contain;
+      z-index: 4;
+      filter: drop-shadow(0 0 20px rgba(0, 229, 255, 0.65)) drop-shadow(0 0 45px rgba(139, 92, 246, 0.45));
+      animation: logoFloat 3s ease-in-out infinite;
+    }
+
+    /* Tipografía y Badge de Vehículo */
+    .loader-content {
+      position: relative;
+      z-index: 4;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 18px;
+    }
+
     .loader-title {
-      margin-top: 20px;
-      font-size: 16px;
-      font-weight: 800;
-      letter-spacing: 2.5px;
+      font-size: 19px;
+      font-weight: 900;
+      letter-spacing: 3.5px;
       color: #FFFFFF;
       text-transform: uppercase;
+      text-shadow: 0 0 16px rgba(0, 229, 255, 0.6);
     }
-    .loader-subtitle {
-      margin-top: 6px;
-      font-size: 12px;
+
+    .vehicle-badge-pill {
+      margin-top: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(0, 229, 255, 0.35);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 0 20px rgba(0, 229, 255, 0.15);
+    }
+
+    .vehicle-badge-text {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
       color: #00E5FF;
-      font-weight: 500;
-      letter-spacing: 1px;
+      text-transform: uppercase;
     }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+
+    .sync-status {
+      margin-top: 14px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      color: rgba(255, 255, 255, 0.55);
+      text-transform: uppercase;
     }
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); box-shadow: 0 0 25px rgba(0, 229, 255, 0.35); }
-      50% { transform: scale(1.06); box-shadow: 0 0 45px rgba(0, 229, 255, 0.65); }
+
+    .progress-bar-container {
+      margin-top: 12px;
+      width: 160px;
+      height: 3px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      width: 45%;
+      height: 100%;
+      background: linear-gradient(90deg, #00E5FF, #7C3AED, #00E5FF);
+      background-size: 200% 100%;
+      border-radius: 3px;
+      animation: progressSweep 1.8s ease-in-out infinite;
+    }
+
+    /* Controles de sonido */
+    .sound-toggle-btn {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      z-index: 10;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #FFFFFF;
+      padding: 8px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      backdrop-filter: blur(8px);
+    }
+
+    .sound-toggle-btn:hover {
+      background: rgba(0, 229, 255, 0.2);
+      border-color: #00E5FF;
+    }
+
+    @keyframes orbitSpin {
+      0% { transform: rotate(-25deg) rotateZ(0deg); }
+      100% { transform: rotate(-25deg) rotateZ(360deg); }
+    }
+
+    @keyframes orbitSpinReverse {
+      0% { transform: rotate(-25deg) rotateZ(360deg); }
+      100% { transform: rotate(-25deg) rotateZ(0deg); }
+    }
+
+    @keyframes auraPulse {
+      0%, 100% { transform: scale(1); opacity: 0.5; }
+      50% { transform: scale(1.15); opacity: 0.85; }
+    }
+
+    @keyframes logoFloat {
+      0%, 100% { transform: translateY(0px) scale(1); }
+      50% { transform: translateY(-4px) scale(1.02); }
+    }
+
+    @keyframes progressSweep {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(250%); }
     }
   </style>
 </head>
 <body>
   <div id="loading-container">
-    <div class="loader-brand">
-      <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#0A0E1A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C2.1 11 2 11.5 2 12v4c0 .6.4 1 1 1h2"/>
-        <circle cx="7" cy="17" r="2"/>
-        <path d="M9 17h6"/>
-        <circle cx="17" cy="17" r="2"/>
-      </svg>
+    <canvas id="cosmicCanvas" class="cosmic-canvas"></canvas>
+    <div class="horizon-glow"></div>
+
+    <button id="soundToggle" class="sound-toggle-btn" title="Activar/Silenciar sonido de ignición">
+      <span id="soundIcon">🔇</span>
+      <span id="soundLabel">Silenciado</span>
+    </button>
+
+    <div class="orbital-stage">
+      <div class="center-sphere-aura"></div>
+      <div class="orbital-ring"></div>
+      <div class="orbital-ring-outer"></div>
+      <img src="favicon.png" alt="My Auto Guide" class="brand-logo-img" id="brandLogo">
     </div>
-    <div class="loader-title">MY AUTO GUIDE</div>
-    <div class="loader-subtitle">Iniciando Copiloto Inteligente...</div>
-    <div class="loader-spinner"></div>
+
+    <div class="loader-content">
+      <div class="loader-title">MY AUTO GUIDE</div>
+      
+      <div class="vehicle-badge-pill" id="vehiclePill">
+        <span id="vehicleIcon">🏍️</span>
+        <span class="vehicle-badge-text" id="vehicleLabel">LUCIFER • BAJAJ PULSAR NS 200</span>
+      </div>
+
+      <div class="sync-status" id="syncStatus">SINCRONIZANDO CON SUPABASE...</div>
+
+      <div class="progress-bar-container">
+        <div class="progress-bar-fill"></div>
+      </div>
+    </div>
+
+    <audio id="introAudio" src="intro_audio.mp3" preload="auto"></audio>
   </div>
 
   <script>
+    // 1. Estrellas y nebulosa en Canvas
+    (function () {
+      var canvas = document.getElementById('cosmicCanvas');
+      if (!canvas) return;
+      var ctx = canvas.getContext('2d');
+      var stars = [];
+      var w, h;
+
+      function resize() {
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+        stars = [];
+        for (var i = 0; i < 75; i++) {
+          stars.push({
+            x: Math.random() * w,
+            y: Math.random() * h,
+            r: Math.random() * 1.5 + 0.4,
+            a: Math.random() * 0.8 + 0.2,
+            v: Math.random() * 0.02 + 0.005
+          });
+        }
+      }
+      window.addEventListener('resize', resize);
+      resize();
+
+      function draw() {
+        ctx.clearRect(0, 0, w, h);
+        for (var i = 0; i < stars.length; i++) {
+          var s = stars[i];
+          s.a += Math.sin(Date.now() * s.v) * 0.02;
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(255, 255, 255, ' + Math.max(0.15, Math.min(0.9, s.a)) + ')';
+          ctx.fill();
+        }
+        requestAnimationFrame(draw);
+      }
+      draw();
+    })();
+
+    // 2. Cargar snapshot del vehículo de localStorage para pintar en Frame 0
+    (function () {
+      try {
+        var raw = localStorage.getItem('last_boot_vehicle_snapshot') ||
+                  localStorage.getItem('flutter.last_boot_vehicle_snapshot');
+        if (raw) {
+          var snap = typeof raw === 'string' && raw.startsWith('{') ? JSON.parse(raw) : null;
+          if (snap) {
+            var isCar = snap.isCar !== false;
+            var marca = (snap.marca || '').toUpperCase();
+            var modelo = (snap.modelo || '').toUpperCase();
+            var placa = (snap.placa || '').toUpperCase();
+            var labelEl = document.getElementById('vehicleLabel');
+            var iconEl = document.getElementById('vehicleIcon');
+            if (labelEl) {
+              var text = (marca + ' ' + modelo).trim();
+              if (placa) text += ' • ' + placa;
+              labelEl.textContent = text || 'LUCIFER • BAJAJ PULSAR NS 200';
+            }
+            if (iconEl) {
+              iconEl.textContent = isCar ? '🚗' : '🏍️';
+            }
+          }
+        }
+      } catch (e) {}
+    })();
+
+    // 3. Audio de Ignición (Opción B: con soporte de Mute)
+    (function () {
+      var audio = document.getElementById('introAudio');
+      var btn = document.getElementById('soundToggle');
+      var icon = document.getElementById('soundIcon');
+      var label = document.getElementById('soundLabel');
+      var isMuted = localStorage.getItem('mag_audio_muted') !== 'false';
+
+      function updateUI() {
+        if (isMuted) {
+          icon.textContent = '🔇';
+          label.textContent = 'Silenciado';
+          if (audio) audio.pause();
+        } else {
+          icon.textContent = '🔊';
+          label.textContent = 'Sonido ON';
+          if (audio) {
+            audio.currentTime = 0;
+            audio.play().catch(function () {});
+          }
+        }
+      }
+
+      if (btn) {
+        btn.addEventListener('click', function () {
+          isMuted = !isMuted;
+          localStorage.setItem('mag_audio_muted', isMuted ? 'true' : 'false');
+          updateUI();
+        });
+      }
+    })();
+
+    // 4. Handoff fluido hacia Flutter cuando el primer frame esté listo
     window.addEventListener('flutter-first-frame', function () {
       var loader = document.getElementById('loading-container');
       if (loader) {
         loader.style.opacity = '0';
         setTimeout(function () {
           loader.remove();
-        }, 400);
+        }, 500);
       }
     });
   </script>

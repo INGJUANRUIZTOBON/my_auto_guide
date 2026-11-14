@@ -33,17 +33,20 @@ class BootVehicleSnapshot {
     String? imagePath,
   }) async {
     try {
+      final resolvedImg = (imagePath != null && imagePath.isNotEmpty)
+          ? imagePath
+          : VehicleCatalogService().resolveVehicleImage(marca, modelo, isCar: isCar);
+
+      final payload = jsonEncode({
+        'marca': marca,
+        'modelo': modelo,
+        'placa': placa,
+        'isCar': isCar,
+        'imagePath': resolvedImg,
+      });
+
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(
-        _prefKey,
-        jsonEncode({
-          'marca': marca,
-          'modelo': modelo,
-          'placa': placa,
-          'isCar': isCar,
-          'imagePath': imagePath,
-        }),
-      );
+      await prefs.setString(_prefKey, payload);
     } catch (_) {}
   }
 
@@ -73,6 +76,7 @@ class CinematicVehicleLoader extends StatefulWidget {
   final bool isDataReady;
   final VoidCallback? onIntroComplete;
   final VoidCallback? onSkip;
+  final BootVehicleSnapshot? initialSnapshot;
 
   const CinematicVehicleLoader({
     super.key,
@@ -80,6 +84,7 @@ class CinematicVehicleLoader extends StatefulWidget {
     this.isDataReady = false,
     this.onIntroComplete,
     this.onSkip,
+    this.initialSnapshot,
   });
 
   @override
@@ -99,6 +104,9 @@ class _CinematicVehicleLoaderState extends State<CinematicVehicleLoader>
   @override
   void initState() {
     super.initState();
+    if (widget.initialSnapshot != null) {
+      _snapshot = widget.initialSnapshot;
+    }
     _loadSnapshot();
 
     _ignitionController = AnimationController(
@@ -206,9 +214,10 @@ class _CinematicVehicleLoaderState extends State<CinematicVehicleLoader>
             final int speedPeakDisplay = t < 0.68 ? (rpmVal * 220).round() : 0;
             final flare = _computeHeadlightFlare(t, idle);
             final scan = _computeLaserScan(t);
-            final bool showMoto = _snapshot != null
-                ? !_snapshot!.isCar
-                : (idle > 0.5 && _snapshot == null);
+            final effectiveSnap = _snapshot ?? widget.initialSnapshot;
+            final bool showMoto = effectiveSnap != null
+                ? !effectiveSnap.isCar
+                : false;
 
             return Stack(
               alignment: Alignment.center,
@@ -325,7 +334,7 @@ class _CinematicVehicleLoaderState extends State<CinematicVehicleLoader>
   }
 
   Widget _buildIdentityHeader(double ignition) {
-    final snap = _snapshot;
+    final snap = _snapshot ?? widget.initialSnapshot;
     final hasSnap = snap != null && (snap.marca.isNotEmpty || snap.placa.isNotEmpty);
     final label = hasSnap
         ? '${snap.marca.toUpperCase()} ${snap.modelo}'.trim()
@@ -414,7 +423,7 @@ class _CinematicVehicleLoaderState extends State<CinematicVehicleLoader>
   }
 
   Widget _buildVehicleVisual(bool showMoto) {
-    final snap = _snapshot;
+    final snap = _snapshot ?? widget.initialSnapshot;
     final candidatePath = (snap?.imagePath != null && snap!.imagePath!.isNotEmpty)
         ? snap.imagePath!
         : (snap != null

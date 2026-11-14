@@ -1,14 +1,19 @@
 {
-  "name": "MY AUTO GUIDE — Tu Copiloto Inteligente",
-  "short_name": "MyAutoGuide",
+  "name": "My Auto Guide",
+  "short_name": "My Auto Guide",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#0A0E1A",
+  "background_color": "#06080C",
   "theme_color": "#00E5FF",
-  "description": "Monitoreo, telemetría GPS en vivo y copiloto vehicular inteligente",
+  "description": "My Auto Guide — Tu Copiloto Inteligente, Telemetría en Vivo y Mantenimiento Predictivo",
   "orientation": "any",
   "prefer_related_applications": false,
   "icons": [
+    {
+      "src": "favicon.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
     {
       "src": "icons/Icon-192.png",
       "sizes": "192x192",

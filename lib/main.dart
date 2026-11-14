@@ -14,6 +14,7 @@ import 'core/services/notification_service.dart';
 import 'core/services/auth_service.dart';
 import 'core/providers/auth_provider.dart';
 import 'core/providers/vehicle_provider.dart';
+import 'core/providers/theme_provider.dart';
 import 'core/services/sync_service.dart';
 import 'core/logic/app_widget_logic.dart';
 import 'features/auth/login_screen.dart';
@@ -142,14 +143,19 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => VehicleProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],
-      child: MaterialApp(
-        title: 'My Auto Guide',
-        theme: AppAppleTheme.lightTheme,
-        darkTheme: AppAppleTheme.darkTheme,
-        themeMode: ThemeMode.system,
-        home: const CarRentalLoginScreen(),
-        debugShowCheckedModeBanner: false,
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, _) {
+          return MaterialApp(
+            title: 'My Auto Guide',
+            theme: AppAppleTheme.lightTheme,
+            darkTheme: AppAppleTheme.darkTheme,
+            themeMode: themeProvider.themeMode,
+            home: const CarRentalLoginScreen(),
+            debugShowCheckedModeBanner: false,
+          );
+        },
       ),
     );
   }

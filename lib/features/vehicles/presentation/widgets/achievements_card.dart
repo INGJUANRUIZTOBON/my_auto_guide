@@ -231,7 +231,7 @@ class _AchievementsCardState extends State<AchievementsCard> {
                                     ),
                                     child: Icon(
                                       _getIconData(iconName),
-                                      color: isUnlocked ? baseColor : (isDark ? Colors.white38 : Colors.black38),
+                                      color: isUnlocked ? baseColor : (isDark ? Colors.white60 : Colors.black54),
                                       size: 24,
                                     ),
                                   ),
@@ -241,11 +241,15 @@ class _AchievementsCardState extends State<AchievementsCard> {
                                       right: 0,
                                       child: Container(
                                         padding: const EdgeInsets.all(4),
-                                        decoration: const BoxDecoration(
-                                          color: Color(0xFF20232B),
+                                        decoration: BoxDecoration(
+                                          color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
                                           shape: BoxShape.circle,
                                         ),
-                                        child: const Icon(Icons.lock_rounded, size: 10, color: Colors.white70),
+                                        child: Icon(
+                                          Icons.lock_rounded,
+                                          size: 10,
+                                          color: isDark ? Colors.white70 : Colors.black87,
+                                        ),
                                       ),
                                     ),
                                 ],
@@ -260,10 +264,10 @@ class _AchievementsCardState extends State<AchievementsCard> {
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                     fontSize: 10,
-                                    fontWeight: isUnlocked ? FontWeight.bold : FontWeight.normal,
+                                    fontWeight: isUnlocked ? FontWeight.bold : FontWeight.w500,
                                     color: isUnlocked
                                         ? (isDark ? Colors.white : Colors.black87)
-                                        : (isDark ? Colors.white38 : Colors.black38),
+                                        : (isDark ? Colors.white70 : Colors.black87),
                                   ),
                                 ),
                               ),

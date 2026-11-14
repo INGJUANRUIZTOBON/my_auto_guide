@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../core/providers/theme_provider.dart';
 
 /// Shell responsivo para MY AUTO GUIDE Web y Desktop.
 /// En pantallas anchas (>= 900px), presenta una barra lateral (Sidebar)
-/// con diseño Glassmorphism Cyberpunk (#0A0E1A) que se expande al 100% del viewport.
+/// con diseño Glassmorphism adaptativo y soporte completo de Modo Claro / Modo Oscuro.
 /// En dispositivos móviles (< 900px), mantiene la interfaz nativa táctil.
 class WebAdaptiveScaffold extends StatefulWidget {
   final PreferredSizeWidget? appBar;
@@ -49,6 +51,8 @@ class _WebAdaptiveScaffoldState extends State<WebAdaptiveScaffold> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final isDesktop = constraints.maxWidth >= 900;
@@ -62,11 +66,16 @@ class _WebAdaptiveScaffoldState extends State<WebAdaptiveScaffold> {
           );
         }
 
-        // Desktop / Pantallas Grandes (>= 900px): Sidebar Glassmorphism + 100% Body
+        // Desktop / Pantallas Grandes (>= 900px)
         final sidebarWidth = _isSidebarCollapsed ? 80.0 : 260.0;
+        final scaffoldBg = isDark ? const Color(0xFF080C14) : const Color(0xFFF1F5F9);
+        final sidebarBg = isDark ? const Color(0xFF0F172A).withValues(alpha: 0.95) : Colors.white;
+        final sidebarBorder = isDark ? Colors.white10 : const Color(0xFFE2E8F0);
+        final primaryText = isDark ? Colors.white : const Color(0xFF0F172A);
+        final subtitleColor = isDark ? const Color(0xFF00E5FF) : const Color(0xFF2563EB);
 
         return Scaffold(
-          backgroundColor: const Color(0xFF0A0E1A),
+          backgroundColor: scaffoldBg,
           body: Row(
             children: [
               // 1. Barra Lateral (Sidebar)
@@ -75,22 +84,22 @@ class _WebAdaptiveScaffoldState extends State<WebAdaptiveScaffold> {
                 curve: Curves.easeInOut,
                 width: sidebarWidth,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF0F172A).withValues(alpha: 0.95),
-                  border: const Border(
-                    right: BorderSide(color: Colors.white10, width: 1),
+                  color: sidebarBg,
+                  border: Border(
+                    right: BorderSide(color: sidebarBorder, width: 1),
                   ),
-                  boxShadow: const [
+                  boxShadow: [
                     BoxShadow(
-                      color: Colors.black45,
+                      color: isDark ? Colors.black45 : Colors.black.withValues(alpha: 0.05),
                       blurRadius: 16,
-                      offset: Offset(4, 0),
+                      offset: const Offset(4, 0),
                     ),
                   ],
                 ),
                 child: Column(
                   children: [
                     const SizedBox(height: 24),
-                    // Header con Logo y Botón Colapsar
+                    // Header con Logo Oficial y Botón Colapsar
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Row(
@@ -100,33 +109,31 @@ class _WebAdaptiveScaffoldState extends State<WebAdaptiveScaffold> {
                             height: 38,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFF00E5FF), Color(0xFF0070F3)],
-                              ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF00E5FF).withValues(alpha: 0.4),
+                                  color: subtitleColor.withValues(alpha: 0.35),
                                   blurRadius: 10,
                                   spreadRadius: 1,
                                 ),
                               ],
                             ),
-                            child: const Icon(
-                              Icons.directions_car_filled_rounded,
-                              color: Colors.black,
-                              size: 22,
+                            child: Image.asset(
+                              'assets/images/app_logo.png',
+                              width: 38,
+                              height: 38,
+                              fit: BoxFit.contain,
                             ),
                           ),
                           if (!_isSidebarCollapsed) ...[
                             const SizedBox(width: 12),
-                            const Expanded(
+                            Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     'MY AUTO GUIDE',
                                     style: TextStyle(
-                                      color: Colors.white,
+                                      color: primaryText,
                                       fontWeight: FontWeight.w900,
                                       fontSize: 14,
                                       letterSpacing: 0.8,
@@ -135,7 +142,7 @@ class _WebAdaptiveScaffoldState extends State<WebAdaptiveScaffold> {
                                   Text(
                                     'Web Telemetry Console',
                                     style: TextStyle(
-                                      color: Color(0xFF00E5FF),
+                                      color: subtitleColor,
                                       fontSize: 10,
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -149,7 +156,7 @@ class _WebAdaptiveScaffoldState extends State<WebAdaptiveScaffold> {
                               _isSidebarCollapsed
                                   ? Icons.chevron_right_rounded
                                   : Icons.chevron_left_rounded,
-                              color: Colors.white54,
+                              color: isDark ? Colors.white54 : Colors.black45,
                               size: 20,
                             ),
                             onPressed: () {
@@ -170,23 +177,23 @@ class _WebAdaptiveScaffoldState extends State<WebAdaptiveScaffold> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 12, vertical: 8),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.05),
+                          color: isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF8FAFC),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.white12),
+                          border: Border.all(color: isDark ? Colors.white12 : const Color(0xFFE2E8F0)),
                         ),
                         child: Row(
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.verified_rounded,
-                              color: Color(0xFF00E5FF),
+                              color: subtitleColor,
                               size: 16,
                             ),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
                                 '${widget.vehiclePlate} • ${widget.vehicleBrand ?? ''}',
-                                style: const TextStyle(
-                                  color: Colors.white70,
+                                style: TextStyle(
+                                  color: isDark ? Colors.white70 : const Color(0xFF334155),
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -199,7 +206,7 @@ class _WebAdaptiveScaffoldState extends State<WebAdaptiveScaffold> {
                     ],
 
                     const SizedBox(height: 20),
-                    const Divider(color: Colors.white10, height: 1),
+                    Divider(color: sidebarBorder, height: 1),
                     const SizedBox(height: 12),
 
                     // Opciones de Navegación
@@ -211,21 +218,25 @@ class _WebAdaptiveScaffoldState extends State<WebAdaptiveScaffold> {
                             icon: Icons.dashboard_rounded,
                             label: 'Dashboard',
                             isSelected: widget.selectedIndex == 0,
+                            isDark: isDark,
                             onTap: () {
                               widget.onNavigationChanged?.call(0);
                             },
                           ),
                           _buildNavItem(
-                            icon: Icons.directions_car_rounded,
+                            icon: Icons.garage_rounded,
                             label: 'Mi Garaje',
                             isSelected: widget.selectedIndex == 1,
+                            accentColor: isDark ? const Color(0xFF00E5FF) : const Color(0xFF2563EB),
+                            isDark: isDark,
                             onTap: widget.onOpenGaraje,
                           ),
                           _buildNavItem(
                             icon: Icons.satellite_alt_rounded,
                             label: 'Telemetría GPS',
                             isSelected: widget.selectedIndex == 2,
-                            accentColor: const Color(0xFF00E5FF),
+                            accentColor: isDark ? const Color(0xFF00E5FF) : const Color(0xFF2563EB),
+                            isDark: isDark,
                             onTap: widget.onOpenTelemetry,
                           ),
                           _buildNavItem(
@@ -233,12 +244,14 @@ class _WebAdaptiveScaffoldState extends State<WebAdaptiveScaffold> {
                             label: 'IA Experto',
                             isSelected: widget.selectedIndex == 3,
                             accentColor: const Color(0xFFFFD60A),
+                            isDark: isDark,
                             onTap: widget.onOpenAiChat,
                           ),
                           _buildNavItem(
                             icon: Icons.picture_as_pdf_rounded,
                             label: 'Reporte PDF',
                             isSelected: false,
+                            isDark: isDark,
                             onTap: widget.onGenerateReport,
                           ),
                           _buildNavItem(
@@ -246,20 +259,42 @@ class _WebAdaptiveScaffoldState extends State<WebAdaptiveScaffold> {
                             label: 'Novedades',
                             isSelected: false,
                             accentColor: const Color(0xFF30D158),
+                            isDark: isDark,
                             onTap: widget.onShowReleaseNotes,
                           ),
                           _buildNavItem(
                             icon: Icons.lock_reset_rounded,
                             label: 'Seguridad',
                             isSelected: false,
+                            isDark: isDark,
                             onTap: widget.onChangePassword,
                           ),
                         ],
                       ),
                     ),
 
+                    // Selector Explícito de Tema (Punto 5 Opción A)
+                    Divider(color: sidebarBorder, height: 1),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      child: Consumer<ThemeProvider>(
+                        builder: (context, themeProvider, _) {
+                          return _buildNavItem(
+                            icon: isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+                            label: isDark ? 'Modo Claro' : 'Modo Oscuro',
+                            isSelected: false,
+                            accentColor: isDark ? const Color(0xFFFFD60A) : const Color(0xFF6366F1),
+                            isDark: isDark,
+                            onTap: () {
+                              themeProvider.toggleTheme(context);
+                            },
+                          );
+                        },
+                      ),
+                    ),
+
                     // Footer Usuario y Cerrar Sesión
-                    const Divider(color: Colors.white10, height: 1),
+                    Divider(color: sidebarBorder, height: 1),
                     Padding(
                       padding: const EdgeInsets.all(12),
                       child: _buildNavItem(
@@ -267,6 +302,7 @@ class _WebAdaptiveScaffoldState extends State<WebAdaptiveScaffold> {
                         label: 'Cerrar Sesión',
                         isSelected: false,
                         accentColor: Colors.redAccent,
+                        isDark: isDark,
                         onTap: widget.onLogout,
                       ),
                     ),
@@ -295,10 +331,12 @@ class _WebAdaptiveScaffoldState extends State<WebAdaptiveScaffold> {
     required String label,
     required bool isSelected,
     Color? accentColor,
+    required bool isDark,
     required VoidCallback onTap,
   }) {
-    final effectiveColor =
-        accentColor ?? (isSelected ? const Color(0xFF00E5FF) : Colors.white70);
+    final defaultColor = isDark ? Colors.white70 : const Color(0xFF475569);
+    final activeColor = isDark ? const Color(0xFF00E5FF) : const Color(0xFF2563EB);
+    final effectiveColor = accentColor ?? (isSelected ? activeColor : defaultColor);
 
     return InkWell(
       onTap: onTap,
@@ -308,11 +346,13 @@ class _WebAdaptiveScaffoldState extends State<WebAdaptiveScaffold> {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF00E5FF).withValues(alpha: 0.12)
+              ? (isDark ? const Color(0xFF00E5FF).withValues(alpha: 0.12) : const Color(0xFF2563EB).withValues(alpha: 0.10))
               : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
           border: isSelected
-              ? Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.3))
+              ? Border.all(
+                  color: isDark ? const Color(0xFF00E5FF).withValues(alpha: 0.35) : const Color(0xFF2563EB).withValues(alpha: 0.30),
+                )
               : null,
         ),
         child: Row(
@@ -326,8 +366,7 @@ class _WebAdaptiveScaffoldState extends State<WebAdaptiveScaffold> {
                   style: TextStyle(
                     color: effectiveColor,
                     fontSize: 13,
-                    fontWeight:
-                        isSelected ? FontWeight.bold : FontWeight.w500,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
