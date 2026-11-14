@@ -584,86 +584,114 @@ class _GarageShowroomViewState extends State<GarageShowroomView>
           ),
           const SizedBox(height: 12),
 
-          // Bahía Holográfica Vacía (Requerimiento 1 & 2 Opción A)
+          // Bahía Holográfica Vacía de Superdeportivos (Pedestal Holográfico 3D)
           Expanded(
             child: Container(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
               decoration: BoxDecoration(
                 color: isDark
-                    ? const Color(0xFF0B101B).withValues(alpha: 0.70)
-                    : Colors.white.withValues(alpha: 0.85),
+                    ? const Color(0xFF090E1A).withValues(alpha: 0.85)
+                    : Colors.white.withValues(alpha: 0.90),
                 borderRadius: BorderRadius.circular(24),
                 border: Border.all(
-                  color: const Color(0xFF8B5CF6).withValues(alpha: 0.35 + pulse * 0.25),
-                  width: 1.8,
-                  style: BorderStyle.solid,
+                  color: const Color(0xFF00E5FF).withValues(alpha: 0.25 + pulse * 0.20),
+                  width: 1.5,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF8B5CF6).withValues(alpha: 0.15 + pulse * 0.15),
-                    blurRadius: 25,
-                    offset: const Offset(0, 8),
+                    color: const Color(0xFF00E5FF).withValues(alpha: 0.12 + pulse * 0.10),
+                    blurRadius: 28,
+                    offset: const Offset(0, 10),
                   ),
                 ],
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Holograma pulsante central
+                  // Pedestal de Proyección Holográfica con Siluetas Animadas
                   Stack(
                     alignment: Alignment.center,
                     children: [
+                      // Base del Pedestal Iluminado
                       Container(
-                        width: 110,
-                        height: 110,
+                        width: 130,
+                        height: 130,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: const Color(0xFF8B5CF6).withValues(alpha: 0.08 + pulse * 0.10),
+                          gradient: RadialGradient(
+                            colors: [
+                              const Color(0xFF00E5FF).withValues(alpha: 0.18 + pulse * 0.12),
+                              const Color(0xFF8B5CF6).withValues(alpha: 0.08),
+                              Colors.transparent,
+                            ],
+                            stops: const [0.0, 0.6, 1.0],
+                          ),
                           border: Border.all(
-                            color: const Color(0xFF8B5CF6).withValues(alpha: 0.30),
+                            color: const Color(0xFF00E5FF).withValues(alpha: 0.35 + pulse * 0.25),
+                            width: 1.2,
                           ),
                         ),
                       ),
+                      // Haz de luz cilíndrico
+                      Container(
+                        width: 70,
+                        height: 70,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: const Color(0xFF00E5FF).withValues(alpha: 0.10 + pulse * 0.10),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF00E5FF).withValues(alpha: 0.30 + pulse * 0.20),
+                              blurRadius: 18,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Icono Holográfico Wireframe
                       Icon(
-                        Icons.add_circle_outline_rounded,
-                        size: 50,
-                        color: const Color(0xFFA78BFA).withValues(alpha: 0.85 + pulse * 0.15),
+                        pulse > 0.5 ? Icons.two_wheeler_rounded : Icons.directions_car_rounded,
+                        size: 48,
+                        color: const Color(0xFF00E5FF).withValues(alpha: 0.85 + pulse * 0.15),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 18),
                   Text(
-                    'Espacio Disponible',
+                    'Bahía de Exhibición',
                     style: TextStyle(
                       fontFamily: 'Outfit',
-                      fontSize: 17,
+                      fontSize: 18,
                       fontWeight: FontWeight.w800,
                       color: isDark ? Colors.white : const Color(0xFF0F172A),
                     ),
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'Aparca un nuevo vehículo en tu garaje',
+                    'Añade un nuevo vehículo a tu colección',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 12,
-                      color: isDark ? Colors.white54 : Colors.black54,
+                      color: isDark ? Colors.white60 : Colors.black54,
                     ),
                   ),
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 24),
 
-                  // Botones Rápidos para Moto y Carro
+                  // Botones Táctiles con Micro-Interacciones
                   Row(
                     children: [
                       Expanded(
                         child: OutlinedButton.icon(
-                          onPressed: widget.onAddMoto,
+                          onPressed: () {
+                            if (!kIsWeb) HapticFeedback.selectionClick();
+                            widget.onAddMoto();
+                          },
                           icon: const Icon(Icons.two_wheeler_rounded, size: 16),
                           label: const Text('Moto'),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: const Color(0xFF00E5FF),
                             side: const BorderSide(color: Color(0xFF00E5FF), width: 1.2),
-                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            padding: const EdgeInsets.symmetric(vertical: 13),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14),
                             ),
@@ -673,13 +701,16 @@ class _GarageShowroomViewState extends State<GarageShowroomView>
                       const SizedBox(width: 10),
                       Expanded(
                         child: OutlinedButton.icon(
-                          onPressed: widget.onAddCar,
+                          onPressed: () {
+                            if (!kIsWeb) HapticFeedback.selectionClick();
+                            widget.onAddCar();
+                          },
                           icon: const Icon(Icons.directions_car_rounded, size: 16),
                           label: const Text('Carro'),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: const Color(0xFFA78BFA),
                             side: const BorderSide(color: Color(0xFFA78BFA), width: 1.2),
-                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            padding: const EdgeInsets.symmetric(vertical: 13),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14),
                             ),
@@ -861,8 +892,34 @@ class _Showroom360TurntableState extends State<Showroom360Turntable> {
   }
 
   void _handleDragEnd(DragEndDetails details) {
+    final double vx = details.velocity.pixelsPerSecond.dx;
+    if (vx.abs() > 250 && widget.imageUrls.isNotEmpty) {
+      final int direction = vx > 0 ? -1 : 1;
+      final int steps = (vx.abs() / 400).clamp(1, 4).toInt();
+      _runInertialSteps(steps, direction);
+    } else {
+      _scheduleAutoResume();
+    }
+  }
+
+  void _runInertialSteps(int remainingSteps, int direction) {
+    if (remainingSteps <= 0 || !mounted) {
+      _scheduleAutoResume();
+      return;
+    }
+    setState(() {
+      _currentIndex = (_currentIndex + direction) % widget.imageUrls.length;
+      if (_currentIndex < 0) _currentIndex += widget.imageUrls.length;
+    });
+    final int delay = 75 + (4 - remainingSteps) * 55;
+    Timer(Duration(milliseconds: delay), () {
+      _runInertialSteps(remainingSteps - 1, direction);
+    });
+  }
+
+  void _scheduleAutoResume() {
     _resumeTimer?.cancel();
-    _resumeTimer = Timer(const Duration(milliseconds: 2200), () {
+    _resumeTimer = Timer(const Duration(milliseconds: 2400), () {
       if (mounted) {
         setState(() {
           _isUserDragging = false;

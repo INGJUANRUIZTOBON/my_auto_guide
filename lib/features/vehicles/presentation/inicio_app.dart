@@ -3550,6 +3550,43 @@ class _Interactive360SpinnerState extends State<Interactive360Spinner>
     super.dispose();
   }
 
+  void _handleDragEnd(DragEndDetails details) {
+    final double vx = details.velocity.pixelsPerSecond.dx;
+    if (vx.abs() > 250 && widget.imageUrls.isNotEmpty) {
+      final int direction = vx > 0 ? -1 : 1;
+      final int steps = (vx.abs() / 400).clamp(1, 4).toInt();
+      _runInertialSteps(steps, direction);
+    } else {
+      _scheduleDragResume();
+    }
+  }
+
+  void _runInertialSteps(int remainingSteps, int direction) {
+    if (remainingSteps <= 0 || !mounted) {
+      _scheduleDragResume();
+      return;
+    }
+    setState(() {
+      _currentIndex = (_currentIndex + direction) % widget.imageUrls.length;
+      if (_currentIndex < 0) _currentIndex += widget.imageUrls.length;
+    });
+    final int delay = 75 + (4 - remainingSteps) * 55;
+    Timer(Duration(milliseconds: delay), () {
+      _runInertialSteps(remainingSteps - 1, direction);
+    });
+  }
+
+  void _scheduleDragResume() {
+    _resumeTimer?.cancel();
+    _resumeTimer = Timer(const Duration(milliseconds: 1800), () {
+      if (mounted) {
+        setState(() {
+          _isDragging = false;
+        });
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     if (widget.imageUrls.isEmpty) return const SizedBox.shrink();
@@ -3578,16 +3615,7 @@ class _Interactive360SpinnerState extends State<Interactive360Spinner>
           _dragStart = details.localPosition.dx;
         }
       },
-      onHorizontalDragEnd: (_) {
-        _resumeTimer?.cancel();
-        _resumeTimer = Timer(const Duration(milliseconds: 1800), () {
-          if (mounted) {
-            setState(() {
-              _isDragging = false;
-            });
-          }
-        });
-      },
+      onHorizontalDragEnd: _handleDragEnd,
       child: Stack(
         alignment: Alignment.center,
         children: [

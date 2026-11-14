@@ -23,7 +23,7 @@ class IndicatorTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return RepaintBoundary(
-      child: GestureDetector(
+      child: _ActiveScaleWrapper(
         onTap: onTap,
         child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
@@ -338,3 +338,36 @@ class DocTileInteractive extends StatelessWidget {
     );
   }
 }
+
+class _ActiveScaleWrapper extends StatefulWidget {
+  final Widget child;
+  final VoidCallback? onTap;
+
+  const _ActiveScaleWrapper({required this.child, this.onTap});
+
+  @override
+  State<_ActiveScaleWrapper> createState() => _ActiveScaleWrapperState();
+}
+
+class _ActiveScaleWrapperState extends State<_ActiveScaleWrapper> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapUp: (_) {
+        setState(() => _isPressed = false);
+        widget.onTap?.call();
+      },
+      onTapCancel: () => setState(() => _isPressed = false),
+      child: AnimatedScale(
+        scale: _isPressed ? 0.95 : 1.0,
+        duration: const Duration(milliseconds: 90),
+        curve: Curves.easeOut,
+        child: widget.child,
+      ),
+    );
+  }
+}
+
