@@ -137,7 +137,29 @@
     </div>
   </div>
 
+  <audio id="introAudio" src="intro_audio.mp3" preload="auto"></audio>
+
   <script>
+    // Audio de ignición inteligente: reproduce únicamente en la primera visita del día para no saturar al cliente
+    (function () {
+      try {
+        var today = new Date().toISOString().slice(0, 10);
+        var lastAudioDate = localStorage.getItem('mag_last_audio_date');
+        var audio = document.getElementById('introAudio');
+        if (audio && today !== lastAudioDate) {
+          audio.volume = 0.60;
+          var playPromise = audio.play();
+          if (playPromise !== undefined) {
+            playPromise.then(function () {
+              localStorage.setItem('mag_last_audio_date', today);
+            }).catch(function () {
+              // Políticas de autoplay del navegador: requiere interacción previa
+            });
+          }
+        }
+      } catch (err) {}
+    })();
+
     // Transición suave hacia Flutter cuando el primer frame esté listo
     window.addEventListener('flutter-first-frame', function () {
       var loader = document.getElementById('loading-container');

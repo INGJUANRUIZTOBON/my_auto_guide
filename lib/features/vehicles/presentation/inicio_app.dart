@@ -2330,6 +2330,9 @@ class _InicioAppState extends State<InicioApp> {
                     kms: kms,
                     brandTheme: bTheme,
                     healthIndex: currentHealthIndex,
+                    pctAceite: _pctAceite,
+                    pctCadena: _pctCadena,
+                    pctFiltro: _pctFiltro,
                     has360: v['has_360_view'] as bool? ?? false,
                     images360: List<String>.from(v['images_360_urls'] ?? []),
                     onCapture360: () async {
@@ -3088,6 +3091,9 @@ class _MainHero extends StatelessWidget {
   final String kms;
   final BrandTheme brandTheme;
   final double healthIndex;
+  final double pctAceite;
+  final double pctCadena;
+  final double pctFiltro;
   final bool has360;
   final List<String> images360;
   final VoidCallback onCapture360;
@@ -3101,6 +3107,9 @@ class _MainHero extends StatelessWidget {
     required this.brandTheme,
     required this.healthIndex,
     required this.onCapture360,
+    this.pctAceite = 100.0,
+    this.pctCadena = 100.0,
+    this.pctFiltro = 100.0,
     this.has360 = false,
     this.images360 = const [],
   });
@@ -3208,7 +3217,16 @@ class _MainHero extends StatelessWidget {
                       Hero(
                         tag: 'vehicle_main_image',
                         child: has360 && images360.isNotEmpty
-                            ? Interactive360Spinner(imageUrls: images360)
+                            ? Interactive360Spinner(
+                                imageUrls: images360,
+                                autoRotate: false,
+                                isCar: imagePath.toLowerCase().contains('carro') ||
+                                    imagePath.toLowerCase().contains('carros/'),
+                                pctAceite: pctAceite,
+                                pctCadena: pctCadena,
+                                pctFiltro: pctFiltro,
+                                kms: kms,
+                              )
                             : SmartVehicleImage(
                                 imagePath: imagePath,
                                 fit: BoxFit.contain,
@@ -3426,29 +3444,49 @@ class _ScaleButtonState extends State<_ScaleButton> {
 class Interactive360Spinner extends StatefulWidget {
   final List<String> imageUrls;
   final bool autoRotate;
+  final bool isCar;
+  final double pctAceite;
+  final double pctCadena;
+  final double pctFiltro;
+  final String kms;
 
   const Interactive360Spinner({
     super.key,
     required this.imageUrls,
-    this.autoRotate = true,
+    this.autoRotate = false,
+    this.isCar = false,
+    this.pctAceite = 100.0,
+    this.pctCadena = 100.0,
+    this.pctFiltro = 100.0,
+    this.kms = '0',
   });
 
   @override
   State<Interactive360Spinner> createState() => _Interactive360SpinnerState();
 }
 
-class _Interactive360SpinnerState extends State<Interactive360Spinner> {
+class _Interactive360SpinnerState extends State<Interactive360Spinner>
+    with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
   double _dragStart = 0.0;
   Timer? _rotationTimer;
   Timer? _resumeTimer;
   bool _isDragging = false;
   bool _precached = false;
+  late bool _isAutoRotating;
+  String? _selectedHotspot;
+  late final AnimationController _pulseController;
 
   @override
   void initState() {
     super.initState();
-    if (widget.autoRotate) {
+    _isAutoRotating = widget.autoRotate;
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1600),
+    )..repeat(reverse: true);
+
+    if (_isAutoRotating) {
       _startAutoRotate();
     }
   }
@@ -3476,10 +3514,39 @@ class _Interactive360SpinnerState extends State<Interactive360Spinner> {
     });
   }
 
+  void _toggleAutoRotation() {
+    if (!kIsWeb) HapticFeedback.selectionClick();
+    setState(() {
+      _isAutoRotating = !_isAutoRotating;
+      _selectedHotspot = null;
+      if (_isAutoRotating) {
+        _startAutoRotate();
+      } else {
+        _rotationTimer?.cancel();
+      }
+    });
+  }
+
+  void _selectHotspot(String key) {
+    if (!kIsWeb) HapticFeedback.heavyImpact();
+    setState(() {
+      if (_selectedHotspot == key) {
+        _selectedHotspot = null;
+      } else {
+        _selectedHotspot = key;
+        if (_isAutoRotating) {
+          _isAutoRotating = false;
+          _rotationTimer?.cancel();
+        }
+      }
+    });
+  }
+
   @override
   void dispose() {
     _rotationTimer?.cancel();
     _resumeTimer?.cancel();
+    _pulseController.dispose();
     super.dispose();
   }
 
@@ -3487,11 +3554,18 @@ class _Interactive360SpinnerState extends State<Interactive360Spinner> {
   Widget build(BuildContext context) {
     if (widget.imageUrls.isEmpty) return const SizedBox.shrink();
 
+    final bool showHotspots = !_isDragging && !_isAutoRotating;
+    final int cycleKms = widget.isCar ? 5000 : 3000;
+    final int remainingOilKm = ((widget.pctAceite.clamp(0.0, 100.0) / 100.0) * cycleKms).round();
+
     return GestureDetector(
       onHorizontalDragStart: (details) {
         _isDragging = true;
         _dragStart = details.localPosition.dx;
         _resumeTimer?.cancel();
+        if (_selectedHotspot != null) {
+          setState(() => _selectedHotspot = null);
+        }
       },
       onHorizontalDragUpdate: (details) {
         final double offset = details.localPosition.dx - _dragStart;
@@ -3506,7 +3580,7 @@ class _Interactive360SpinnerState extends State<Interactive360Spinner> {
       },
       onHorizontalDragEnd: (_) {
         _resumeTimer?.cancel();
-        _resumeTimer = Timer(const Duration(milliseconds: 2500), () {
+        _resumeTimer = Timer(const Duration(milliseconds: 1800), () {
           if (mounted) {
             setState(() {
               _isDragging = false;
@@ -3517,6 +3591,7 @@ class _Interactive360SpinnerState extends State<Interactive360Spinner> {
       child: Stack(
         alignment: Alignment.center,
         children: [
+          // 1. Imagen del Vehículo en 360 con transición disuelta
           AnimatedSwitcher(
             duration: _isDragging ? Duration.zero : const Duration(milliseconds: 380),
             switchInCurve: Curves.easeInOut,
@@ -3530,38 +3605,103 @@ class _Interactive360SpinnerState extends State<Interactive360Spinner> {
               errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image, size: 60),
             ),
           ),
+
+          // 2. Capa de Hotspots de Diagnóstico Interactivo (Motor, Ruedas, Transmisión)
+          if (showHotspots) ...[
+            // Hotspot Motor & Aceite
+            Align(
+              alignment: Alignment(widget.isCar ? 0.05 : 0.0, widget.isCar ? 0.25 : 0.18),
+              child: _buildPulsingHotspot(
+                key: 'motor',
+                label: 'Motor',
+                icon: Icons.oil_barrel_rounded,
+                color: widget.pctAceite > 50
+                    ? const Color(0xFF10B981)
+                    : (widget.pctAceite > 25 ? const Color(0xFFF59E0B) : const Color(0xFFEF4444)),
+              ),
+            ),
+
+            // Hotspot Neumáticos
+            Align(
+              alignment: Alignment(widget.isCar ? -0.45 : 0.0, widget.isCar ? 0.40 : 0.60),
+              child: _buildPulsingHotspot(
+                key: 'llantas',
+                label: 'Llantas',
+                icon: Icons.radio_button_checked_rounded,
+                color: const Color(0xFF00E5FF),
+              ),
+            ),
+
+            // Hotspot Transmisión / Cadena
+            if (!widget.isCar)
+              Align(
+                alignment: const Alignment(-0.38, 0.32),
+                child: _buildPulsingHotspot(
+                  key: 'cadena',
+                  label: 'Cadena',
+                  icon: Icons.settings_suggest_rounded,
+                  color: widget.pctCadena > 50
+                      ? const Color(0xFF10B981)
+                      : (widget.pctCadena > 25 ? const Color(0xFFF59E0B) : const Color(0xFFEF4444)),
+                ),
+              ),
+          ],
+
+          // 3. Tarjeta HUD de Diagnóstico Flotante (al tocar un Hotspot)
+          if (_selectedHotspot != null)
+            Positioned(
+              top: 10,
+              left: 14,
+              right: 14,
+              child: _buildDiagnosticHudCard(remainingOilKm, cycleKms),
+            ),
+
+          // 4. Chip Interactivo de Control: Alternar entre Giro Auto y Pausado
           Positioned(
             bottom: 4,
             right: 4,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.65),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: const Color(0xFF00E5FF).withValues(alpha: 0.6),
-                  width: 0.8,
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.threed_rotation,
-                    color: _isDragging ? const Color(0xFF10B981) : const Color(0xFF00E5FF),
-                    size: 12,
+            child: InkWell(
+              onTap: _toggleAutoRotation,
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.75),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: _isAutoRotating
+                        ? const Color(0xFF10B981)
+                        : const Color(0xFF00E5FF).withValues(alpha: 0.7),
+                    width: 0.9,
                   ),
-                  const SizedBox(width: 4),
-                  Text(
-                    _isDragging ? 'MANUAL' : '360° AUTO',
-                    style: TextStyle(
-                      color: _isDragging ? const Color(0xFF10B981) : const Color(0xFF00E5FF),
-                      fontSize: 9,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.8,
+                  boxShadow: [
+                    BoxShadow(
+                      color: (_isAutoRotating ? const Color(0xFF10B981) : const Color(0xFF00E5FF))
+                          .withValues(alpha: 0.25),
+                      blurRadius: 8,
                     ),
-                  ),
-                ],
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      _isAutoRotating ? Icons.pause_circle_rounded : Icons.threed_rotation_rounded,
+                      color: _isAutoRotating ? const Color(0xFF10B981) : const Color(0xFF00E5FF),
+                      size: 13,
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      _isAutoRotating ? 'PAUSAR 360°' : 'GIRAR 360°',
+                      style: TextStyle(
+                        color: _isAutoRotating ? const Color(0xFF10B981) : const Color(0xFF00E5FF),
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -3569,6 +3709,176 @@ class _Interactive360SpinnerState extends State<Interactive360Spinner> {
       ),
     );
   }
+
+  Widget _buildPulsingHotspot({
+    required String key,
+    required String label,
+    required IconData icon,
+    required Color color,
+  }) {
+    final bool isSelected = _selectedHotspot == key;
+
+    return AnimatedBuilder(
+      animation: _pulseController,
+      builder: (context, _) {
+        final double pulse = _pulseController.value;
+        return GestureDetector(
+          onTap: () => _selectHotspot(key),
+          child: Container(
+            padding: const EdgeInsets.all(5),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: color.withValues(alpha: 0.25),
+              boxShadow: [
+                BoxShadow(
+                  color: color.withValues(alpha: 0.35 + pulse * 0.40),
+                  blurRadius: 10 + pulse * 8,
+                  spreadRadius: 2 + pulse * 3,
+                ),
+              ],
+            ),
+            child: Container(
+              width: isSelected ? 26 : 22,
+              height: isSelected ? 26 : 22,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: isSelected ? color : Colors.black87,
+                border: Border.all(color: color, width: 1.6),
+              ),
+              child: Icon(
+                icon,
+                size: 13,
+                color: isSelected ? Colors.black : color,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDiagnosticHudCard(int remainingOilKm, int cycleKms) {
+    String title = '';
+    String subtitle = '';
+    double percent = 100.0;
+    Color statusColor = const Color(0xFF10B981);
+    IconData icon = Icons.info_outline_rounded;
+
+    if (_selectedHotspot == 'motor') {
+      title = 'Motor & Cambio de Aceite';
+      percent = widget.pctAceite;
+      statusColor = percent > 50
+          ? const Color(0xFF10B981)
+          : (percent > 25 ? const Color(0xFFF59E0B) : const Color(0xFFEF4444));
+      subtitle = '$remainingOilKm KM restantes para el próximo cambio';
+      icon = Icons.oil_barrel_rounded;
+    } else if (_selectedHotspot == 'llantas') {
+      title = 'Neumáticos & Tracción';
+      percent = 92.0;
+      statusColor = const Color(0xFF00E5FF);
+      subtitle = 'Presión y desgaste en rango óptimo de seguridad';
+      icon = Icons.radio_button_checked_rounded;
+    } else if (_selectedHotspot == 'cadena') {
+      title = 'Cadena & Transmisión';
+      percent = widget.pctCadena;
+      statusColor = percent > 50
+          ? const Color(0xFF10B981)
+          : (percent > 25 ? const Color(0xFFF59E0B) : const Color(0xFFEF4444));
+      subtitle = 'Tensión y lubricación preventiva monitoreadas';
+      icon = Icons.settings_suggest_rounded;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0A0F1D).withValues(alpha: 0.94),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: statusColor.withValues(alpha: 0.65), width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: statusColor.withValues(alpha: 0.25),
+            blurRadius: 16,
+            spreadRadius: 1,
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.6),
+            blurRadius: 12,
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: statusColor, size: 16),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 12.5,
+                    fontFamily: 'Outfit',
+                  ),
+                ),
+              ),
+              InkWell(
+                onTap: () => setState(() => _selectedHotspot = null),
+                child: const Padding(
+                  padding: EdgeInsets.all(2.0),
+                  child: Icon(Icons.close_rounded, color: Colors.white60, size: 16),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Salud del componente:',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.7),
+                  fontSize: 11,
+                ),
+              ),
+              Text(
+                '${percent.toStringAsFixed(0)}%',
+                style: TextStyle(
+                  color: statusColor,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(3),
+            child: LinearProgressIndicator(
+              value: (percent / 100.0).clamp(0.0, 1.0),
+              minHeight: 4,
+              backgroundColor: Colors.white12,
+              valueColor: AlwaysStoppedAnimation<Color>(statusColor),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            subtitle,
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.8),
+              fontSize: 10.5,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
+
 
 

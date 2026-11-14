@@ -698,7 +698,8 @@ class _GarageShowroomViewState extends State<GarageShowroomView>
   }
 }
 
-/// CustomPainter que proyecta el piso de resina epoxi reflectiva y las marcas de bahía
+/// CustomPainter que proyecta el piso de resina epoxi de un Taller de Superdeportivos Ultra-Lujoso
+/// con reflectores cenitales de estudio, brillo especular y cuadrícula arquitectónica pulida.
 class _ShowroomEpoxyFloorPainter extends CustomPainter {
   final bool isDark;
   final double pulse;
@@ -710,33 +711,70 @@ class _ShowroomEpoxyFloorPainter extends CustomPainter {
     final w = size.width;
     final h = size.height;
 
-    // Gradiente ambiental de fondo con haz de luz cenital
+    // 1. Iluminación Cenital Focalizada (Spotlights de Estudio de Detallado de Lujo)
     final centerSpotRect = Rect.fromCenter(
       center: Offset(w / 2, 0),
-      width: w * 0.9,
-      height: h * 1.4,
+      width: w * 0.95,
+      height: h * 1.5,
     );
     final spotPaint = Paint()
       ..shader = RadialGradient(
         colors: [
-          (isDark ? const Color(0xFF00E5FF) : const Color(0xFF3B82F6)).withValues(alpha: 0.08 + pulse * 0.03),
+          (isDark ? const Color(0xFFFEF9C3) : const Color(0xFFE0F2FE))
+              .withValues(alpha: isDark ? (0.12 + pulse * 0.04) : 0.20),
+          (isDark ? const Color(0xFF00E5FF) : const Color(0xFF38BDF8))
+              .withValues(alpha: isDark ? (0.05 + pulse * 0.02) : 0.08),
           Colors.transparent,
         ],
-        stops: const [0.0, 1.0],
+        stops: const [0.0, 0.45, 1.0],
       ).createShader(centerSpotRect);
 
     canvas.drawRect(Rect.fromLTWH(0, 0, w, h), spotPaint);
 
-    // Cuadrícula perspectiva del suelo
-    final gridPaint = Paint()
-      ..color = (isDark ? Colors.white : Colors.black).withValues(alpha: 0.035)
-      ..strokeWidth = 1.0;
+    // 2. Reflector secundario superior derecho (luz de contorno automotriz)
+    final rightRimRect = Rect.fromCenter(
+      center: Offset(w * 0.85, 0),
+      width: w * 0.6,
+      height: h * 1.1,
+    );
+    final rimPaint = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          (isDark ? const Color(0xFFF59E0B) : const Color(0xFF60A5FA))
+              .withValues(alpha: isDark ? (0.06 + pulse * 0.02) : 0.10),
+          Colors.transparent,
+        ],
+        stops: const [0.0, 1.0],
+      ).createShader(rightRimRect);
 
-    final double step = 60.0;
+    canvas.drawRect(Rect.fromLTWH(0, 0, w, h), rimPaint);
+
+    // 3. Brillo Especular en el Piso Epoxi Pulido
+    final floorHorizonY = h * 0.32;
+    final specularPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          (isDark ? Colors.white : Colors.blueGrey).withValues(alpha: isDark ? 0.04 : 0.08),
+          Colors.transparent,
+        ],
+        stops: const [0.0, 0.25],
+      ).createShader(Rect.fromLTWH(0, floorHorizonY, w, h - floorHorizonY));
+
+    canvas.drawRect(Rect.fromLTWH(0, floorHorizonY, w, h - floorHorizonY), specularPaint);
+
+    // 4. Cuadrícula arquitectónica de suelo de alta precisión
+    final gridPaint = Paint()
+      ..color = (isDark ? const Color(0xFFE2E8F0) : const Color(0xFF64748B))
+          .withValues(alpha: isDark ? 0.045 : 0.07)
+      ..strokeWidth = 0.8;
+
+    final double step = 64.0;
     for (double x = 0; x <= w; x += step) {
-      canvas.drawLine(Offset(x, h * 0.35), Offset(x, h), gridPaint);
+      canvas.drawLine(Offset(x, floorHorizonY), Offset(x, h), gridPaint);
     }
-    for (double y = h * 0.35; y <= h; y += 45.0) {
+    for (double y = floorHorizonY; y <= h; y += 48.0) {
       canvas.drawLine(Offset(0, y), Offset(w, y), gridPaint);
     }
   }
