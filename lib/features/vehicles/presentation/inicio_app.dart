@@ -3266,43 +3266,50 @@ class _HealthBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          const Text('ISH',
-              style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey)),
-          Text('${healthIndex.toInt()}%',
-              style:
-                  const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
-        ]),
-        const SizedBox(height: 4),
-        Container(
-          height: 6,
-          width: 120,
-          decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.05),
-              borderRadius: BorderRadius.circular(10)),
-          child: FractionallySizedBox(
-              alignment: Alignment.centerLeft,
-              widthFactor: healthIndex / 100,
-              child: Container(
-                  decoration: BoxDecoration(
-                      gradient: PerformanceGuard().isLowEnd
-                          ? null
-                          : LinearGradient(colors: [
-                              brandTheme.primaryColor,
-                              brandTheme.primaryColor.withOpacity(0.6)
-                            ]),
-                      color: PerformanceGuard().isLowEnd
-                          ? brandTheme.primaryColor
-                          : null,
-                      borderRadius: BorderRadius.circular(10)))),
-        ),
-      ],
+    return SizedBox(
+      width: 140,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('ISH',
+                  style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey)),
+              Text('${healthIndex.toInt()}%',
+                  style:
+                      const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Container(
+            height: 6,
+            width: 140,
+            decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(10)),
+            child: FractionallySizedBox(
+                alignment: Alignment.centerLeft,
+                widthFactor: (healthIndex / 100).clamp(0.0, 1.0),
+                child: Container(
+                    decoration: BoxDecoration(
+                        gradient: PerformanceGuard().isLowEnd
+                            ? null
+                            : LinearGradient(colors: [
+                                brandTheme.primaryColor,
+                                brandTheme.primaryColor.withOpacity(0.6)
+                              ]),
+                        color: PerformanceGuard().isLowEnd
+                            ? brandTheme.primaryColor
+                            : null,
+                        borderRadius: BorderRadius.circular(10)))),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -3591,9 +3598,33 @@ class _Interactive360SpinnerState extends State<Interactive360Spinner>
   Widget build(BuildContext context) {
     if (widget.imageUrls.isEmpty) return const SizedBox.shrink();
 
-    final bool showHotspots = !_isDragging && !_isAutoRotating;
+    final bool isDesktop = MediaQuery.of(context).size.width >= 900;
+    final int effectiveIdx = _currentIndex % widget.imageUrls.length;
+    final String currentUrl = widget.imageUrls[effectiveIdx].toLowerCase();
+
+    // Detección precisa de foto lateral/perfil donde los componentes mecánicos son visibles
+    final bool isProfileFrame = widget.imageUrls.length == 1 ||
+        currentUrl.contains('img_6') ||
+        currentUrl.contains('img_5') ||
+        currentUrl.contains('img_2') ||
+        currentUrl.contains('lateral') ||
+        currentUrl.contains('perfil') ||
+        (widget.imageUrls.length == 8 && (effectiveIdx == 6 || effectiveIdx == 5 || effectiveIdx == 2)) ||
+        (widget.imageUrls.length > 1 && widget.imageUrls.length < 8 && effectiveIdx != 0);
+
+    // En motos, la cadena se encuentra físicamente en el lateral izquierdo
+    final bool isLeftProfile = currentUrl.contains('img_6') ||
+        currentUrl.contains('img_5') ||
+        currentUrl.contains('lateral_izquierda') ||
+        (widget.imageUrls.length == 8 && (effectiveIdx == 6 || effectiveIdx == 5)) ||
+        widget.imageUrls.length <= 1;
+
+    // Solo se muestran los Hotspots en PC de escritorio, cuando no esté girando y esté en foto de perfil
+    final bool showHotspots = isDesktop && !_isDragging && !_isAutoRotating && isProfileFrame;
+
     final int cycleKms = widget.isCar ? 5000 : 3000;
     final int remainingOilKm = ((widget.pctAceite.clamp(0.0, 100.0) / 100.0) * cycleKms).round();
+    final int remainingCadenaKm = ((widget.pctCadena.clamp(0.0, 100.0) / 100.0) * 1000).round();
 
     return GestureDetector(
       onHorizontalDragStart: (details) {
@@ -3625,8 +3656,8 @@ class _Interactive360SpinnerState extends State<Interactive360Spinner>
             switchInCurve: Curves.easeInOut,
             switchOutCurve: Curves.easeInOut,
             child: Image.network(
-              widget.imageUrls[_currentIndex % widget.imageUrls.length],
-              key: ValueKey<String>(widget.imageUrls[_currentIndex % widget.imageUrls.length]),
+              widget.imageUrls[effectiveIdx],
+              key: ValueKey<String>(widget.imageUrls[effectiveIdx]),
               fit: BoxFit.contain,
               gaplessPlayback: true,
               filterQuality: FilterQuality.high,
@@ -3634,24 +3665,37 @@ class _Interactive360SpinnerState extends State<Interactive360Spinner>
             ),
           ),
 
-          // 2. Capa de Hotspots de Diagnóstico Interactivo (Motor, Ruedas, Transmisión)
+          // 2. Capa de Hotspots de Diagnóstico Interactivo (Exclusivo PC / Desktop)
           if (showHotspots) ...[
             // Hotspot Motor & Aceite
             Align(
-              alignment: Alignment(widget.isCar ? 0.05 : 0.0, widget.isCar ? 0.25 : 0.18),
+              alignment: Alignment(widget.isCar ? 0.15 : 0.0, widget.isCar ? 0.20 : 0.22),
               child: _buildPulsingHotspot(
                 key: 'motor',
                 label: 'Motor',
-                icon: Icons.oil_barrel_rounded,
+                icon: Icons.water_drop_rounded,
                 color: widget.pctAceite > 50
                     ? const Color(0xFF10B981)
                     : (widget.pctAceite > 25 ? const Color(0xFFF59E0B) : const Color(0xFFEF4444)),
               ),
             ),
 
+            // Hotspot Filtro de Aire
+            Align(
+              alignment: Alignment(widget.isCar ? 0.32 : -0.06, widget.isCar ? 0.05 : -0.05),
+              child: _buildPulsingHotspot(
+                key: 'filtro',
+                label: 'Filtro',
+                icon: Icons.air_rounded,
+                color: widget.pctFiltro > 50
+                    ? const Color(0xFF10B981)
+                    : (widget.pctFiltro > 25 ? const Color(0xFFF59E0B) : const Color(0xFFEF4444)),
+              ),
+            ),
+
             // Hotspot Neumáticos
             Align(
-              alignment: Alignment(widget.isCar ? -0.45 : 0.0, widget.isCar ? 0.40 : 0.60),
+              alignment: Alignment(widget.isCar ? -0.45 : 0.58, widget.isCar ? 0.40 : 0.42),
               child: _buildPulsingHotspot(
                 key: 'llantas',
                 label: 'Llantas',
@@ -3660,14 +3704,14 @@ class _Interactive360SpinnerState extends State<Interactive360Spinner>
               ),
             ),
 
-            // Hotspot Transmisión / Cadena
-            if (!widget.isCar)
+            // Hotspot Transmisión / Cadena (SOLO EN MOTOS Y EN PERFIL IZQUIERDO)
+            if (!widget.isCar && isLeftProfile)
               Align(
-                alignment: const Alignment(-0.38, 0.32),
+                alignment: const Alignment(-0.38, 0.30),
                 child: _buildPulsingHotspot(
                   key: 'cadena',
                   label: 'Cadena',
-                  icon: Icons.settings_suggest_rounded,
+                  icon: Icons.link_rounded,
                   color: widget.pctCadena > 50
                       ? const Color(0xFF10B981)
                       : (widget.pctCadena > 25 ? const Color(0xFFF59E0B) : const Color(0xFFEF4444)),
@@ -3681,54 +3725,59 @@ class _Interactive360SpinnerState extends State<Interactive360Spinner>
               top: 10,
               left: 14,
               right: 14,
-              child: _buildDiagnosticHudCard(remainingOilKm, cycleKms),
+              child: _buildDiagnosticHudCard(remainingOilKm, remainingCadenaKm, cycleKms),
             ),
 
           // 4. Chip Interactivo de Control: Alternar entre Giro Auto y Pausado
           Positioned(
-            bottom: 4,
-            right: 4,
-            child: InkWell(
-              onTap: _toggleAutoRotation,
-              borderRadius: BorderRadius.circular(12),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.75),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: _isAutoRotating
-                        ? const Color(0xFF10B981)
-                        : const Color(0xFF00E5FF).withValues(alpha: 0.7),
-                    width: 0.9,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: (_isAutoRotating ? const Color(0xFF10B981) : const Color(0xFF00E5FF))
-                          .withValues(alpha: 0.25),
-                      blurRadius: 8,
+            bottom: 8,
+            right: 12,
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: _toggleAutoRotation,
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0A0F1D).withValues(alpha: 0.85),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: _isAutoRotating
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFF00E5FF).withValues(alpha: 0.75),
+                      width: 1.0,
                     ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      _isAutoRotating ? Icons.pause_circle_rounded : Icons.threed_rotation_rounded,
-                      color: _isAutoRotating ? const Color(0xFF10B981) : const Color(0xFF00E5FF),
-                      size: 13,
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      _isAutoRotating ? 'PAUSAR 360°' : 'GIRAR 360°',
-                      style: TextStyle(
-                        color: _isAutoRotating ? const Color(0xFF10B981) : const Color(0xFF00E5FF),
-                        fontSize: 9.5,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.8,
+                    boxShadow: [
+                      BoxShadow(
+                        color: (_isAutoRotating ? const Color(0xFF10B981) : const Color(0xFF00E5FF))
+                            .withValues(alpha: 0.22),
+                        blurRadius: 8,
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Icon(
+                        _isAutoRotating ? Icons.pause_rounded : Icons.rotate_right_rounded,
+                        color: _isAutoRotating ? const Color(0xFF10B981) : const Color(0xFF00E5FF),
+                        size: 14,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        _isAutoRotating ? 'PAUSAR 360°' : 'GIRAR 360°',
+                        style: TextStyle(
+                          color: _isAutoRotating ? const Color(0xFF10B981) : const Color(0xFF00E5FF),
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.6,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -3785,7 +3834,7 @@ class _Interactive360SpinnerState extends State<Interactive360Spinner>
     );
   }
 
-  Widget _buildDiagnosticHudCard(int remainingOilKm, int cycleKms) {
+  Widget _buildDiagnosticHudCard(int remainingOilKm, int remainingCadenaKm, int cycleKms) {
     String title = '';
     String subtitle = '';
     double percent = 100.0;
@@ -3793,18 +3842,26 @@ class _Interactive360SpinnerState extends State<Interactive360Spinner>
     IconData icon = Icons.info_outline_rounded;
 
     if (_selectedHotspot == 'motor') {
-      title = 'Motor & Cambio de Aceite';
+      title = widget.isCar ? 'Motor & Aceite Sintético' : 'Motor & Aceite';
       percent = widget.pctAceite;
       statusColor = percent > 50
           ? const Color(0xFF10B981)
           : (percent > 25 ? const Color(0xFFF59E0B) : const Color(0xFFEF4444));
-      subtitle = '$remainingOilKm KM restantes para el próximo cambio';
-      icon = Icons.oil_barrel_rounded;
+      subtitle = '$remainingOilKm KM restantes para el próximo cambio de aceite';
+      icon = Icons.water_drop_rounded;
+    } else if (_selectedHotspot == 'filtro') {
+      title = widget.isCar ? 'Filtro de Aire & Cabina' : 'Filtro de Aire';
+      percent = widget.pctFiltro;
+      statusColor = percent > 50
+          ? const Color(0xFF10B981)
+          : (percent > 25 ? const Color(0xFFF59E0B) : const Color(0xFFEF4444));
+      subtitle = 'Capacidad de filtración y flujo al ${percent.toStringAsFixed(0)}%';
+      icon = Icons.air_rounded;
     } else if (_selectedHotspot == 'llantas') {
       title = 'Neumáticos & Tracción';
       percent = 92.0;
       statusColor = const Color(0xFF00E5FF);
-      subtitle = 'Presión y desgaste en rango óptimo de seguridad';
+      subtitle = 'Presión y desgaste de banda de rodadura en rango óptimo';
       icon = Icons.radio_button_checked_rounded;
     } else if (_selectedHotspot == 'cadena') {
       title = 'Cadena & Transmisión';
@@ -3812,8 +3869,8 @@ class _Interactive360SpinnerState extends State<Interactive360Spinner>
       statusColor = percent > 50
           ? const Color(0xFF10B981)
           : (percent > 25 ? const Color(0xFFF59E0B) : const Color(0xFFEF4444));
-      subtitle = 'Tensión y lubricación preventiva monitoreadas';
-      icon = Icons.settings_suggest_rounded;
+      subtitle = '$remainingCadenaKm KM estimados para lubricación / ajuste de tensión';
+      icon = Icons.link_rounded;
     }
 
     return Container(
