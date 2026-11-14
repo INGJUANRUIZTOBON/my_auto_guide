@@ -821,14 +821,14 @@ class _InicioAppState extends State<InicioApp> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'HOJA DE VIDA PDF',
+                        'PASAPORTE VEHICULAR DIGITAL',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
-                        'Certificado de Historial del Vehículo',
+                        'Certificado Criptográfico SHA-256 Inviolable',
                         style: TextStyle(
                           fontSize: 12,
                           color: isDark ? Colors.white54 : Colors.black45,

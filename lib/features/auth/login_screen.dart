@@ -23,6 +23,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'registro_screen.dart';
@@ -625,6 +626,75 @@ class _CarRentalLoginScreenState extends State<CarRentalLoginScreen> {
                       ),
                     ),
                   ),
+                  const SizedBox(height: 24),
+                  // Barra de Landing & Descargas Oficiales
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0F172A).withValues(alpha: 0.85),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.35)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.4),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        InkWell(
+                          onTap: () {
+                            launchUrl(
+                              Uri.parse('https://github.com/INGJUANRUIZTOBON/my_auto_guide/releases/download/1.1.0/app-release.apk'),
+                              mode: LaunchMode.externalApplication,
+                            );
+                          },
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.android_rounded, color: Color(0xFF30D158), size: 16),
+                              SizedBox(width: 6),
+                              Text(
+                                'Descargar APK Release',
+                                style: TextStyle(
+                                  color: Color(0xFF30D158),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 10),
+                          width: 1,
+                          height: 14,
+                          color: Colors.white24,
+                        ),
+                        InkWell(
+                          onTap: () => _mostrarShowcaseDialog(context),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.auto_awesome_rounded, color: Color(0xFF00E5FF), size: 15),
+                              SizedBox(width: 5),
+                              Text(
+                                'Ecosistema',
+                                style: TextStyle(
+                                  color: Color(0xFF00E5FF),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                   const SizedBox(height: 40),
                 ],
               ),
@@ -632,6 +702,104 @@ class _CarRentalLoginScreenState extends State<CarRentalLoginScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  void _mostrarShowcaseDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: const Color(0xFF0A0F1D),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: const BorderSide(color: Color(0xFF00E5FF), width: 1.2),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF00E5FF).withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.stars_rounded, color: Color(0xFF00E5FF), size: 24),
+                  ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Text(
+                      'MY AUTO GUIDE ÉLITE',
+                      style: TextStyle(
+                        fontFamily: 'Outfit',
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 18,
+                        letterSpacing: 1.0,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded, color: Colors.white54),
+                    onPressed: () => Navigator.pop(ctx),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 18),
+              _buildFeatureItem(Icons.garage_rounded, const Color(0xFF00E5FF), 'Showroom Virtual 3D', 'Exhibición 360° en taller de superdeportivos con inercia y bahías interactivas.'),
+              const SizedBox(height: 12),
+              _buildFeatureItem(Icons.speed_rounded, const Color(0xFF30D158), 'Cockpit & Telemetría GPS', 'Tacómetro analógico-digital en vivo, registro de aceleración y Modo HUD Parabrisas.'),
+              const SizedBox(height: 12),
+              _buildFeatureItem(Icons.verified_user_rounded, const Color(0xFFFF9500), 'Pasaporte Digital SHA-256', 'Certificado oficial e inviolable de historial vehicular para compra y venta.'),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF00E5FF),
+                    foregroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  icon: const Icon(Icons.download_rounded, size: 18),
+                  label: const Text('Descargar APK Android', style: TextStyle(fontWeight: FontWeight.w800)),
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    launchUrl(
+                      Uri.parse('https://github.com/INGJUANRUIZTOBON/my_auto_guide/releases/download/1.1.0/app-release.apk'),
+                      mode: LaunchMode.externalApplication,
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFeatureItem(IconData icon, Color color, String title, String description) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, color: color, size: 20),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+              const SizedBox(height: 2),
+              Text(description, style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 11)),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

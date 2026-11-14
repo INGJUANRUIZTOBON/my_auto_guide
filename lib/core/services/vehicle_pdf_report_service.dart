@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'dart:io';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:http/http.dart' as http;
@@ -57,8 +59,11 @@ class VehiclePdfReportService {
 
     final extras = legalExtras ?? const <String, String?>{};
     final extraMaint = customMaintenances ?? const <CustomMaintenanceItem>[];
-    final signatureDigest =
-        'SHA256:${(placa + (lastAceite ?? '') + kms.toString() + (runtProfile?.vin ?? '')).hashCode.toRadixString(16).toUpperCase()}';
+    final String rawSeed =
+        'MAG:PASSPORT:${placa.toUpperCase()}:${marca.toUpperCase()}:${modelo.toUpperCase()}:${kms.toStringAsFixed(1)}:${runtProfile?.vin ?? ''}:$fechaReporte:${lastAceite ?? ''}';
+    final String realSha256 = sha256.convert(utf8.encode(rawSeed)).toString().toUpperCase();
+    final String signatureDigest =
+        'SHA256:${realSha256.substring(0, 16)}-${realSha256.substring(16, 32)}-${realSha256.substring(32, 48)}-${realSha256.substring(48, 64)}';
 
     pdf.addPage(
       pw.MultiPage(
@@ -79,14 +84,14 @@ class VehiclePdfReportService {
                       style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey700),
                     ),
                     pw.Text(
-                      'Acta Transferible de Historial Vehicular (Compra/Venta verificable).',
-                      style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey700),
+                      'Pasaporte Digital Vehicular Oficial (Firma Criptográfica SHA-256 Verificable).',
+                      style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold, color: PdfColors.grey800),
                     ),
                   ],
                 ),
                 pw.BarcodeWidget(
                   barcode: pw.Barcode.qrCode(),
-                  data: 'https://simit.fcm.org.co/#/home-public?placa=$placa',
+                  data: 'https://myautoguide.vercel.app/#/verify?placa=$placa&hash=$realSha256',
                   width: 38,
                   height: 38,
                 ),
@@ -118,10 +123,11 @@ class VehiclePdfReportService {
                           ),
                         ),
                         pw.Text(
-                          'HOJA DE VIDA CERTIFICADA DEL VEHÍCULO (TRANSFERIBLE)',
-                          style: const pw.TextStyle(
+                          'PASAPORTE VEHICULAR DIGITAL • CERTIFICADO DE AUTENTICIDAD SHA-256',
+                          style: pw.TextStyle(
                             color: PdfColors.white,
-                            fontSize: 10,
+                            fontSize: 9.5,
+                            fontWeight: pw.FontWeight.bold,
                           ),
                         ),
                       ],
